@@ -123,6 +123,7 @@ const loadlogin = async (req, res) => {
 const loadHomepage = async (req, res) => {
     try {
         const user = req.session.user;
+        console.log("this is working")
         console.log("User from session:", req.session.user);
         const categories = await Category.find({ isListed: true })
         const productData = await Product.find({}).limit(3)
