@@ -1,5 +1,417 @@
 <%- include("../../views/partials/user/header") %>
 
+    <style>
+        .signup-section {
+            padding: 80px 0;
+            background-color: #f5f5f5;
+        }
 
+        .signup-form-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .signup-form-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #051922;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #051922;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #F28123;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 42px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .signup-btn {
+            width: 100%;
+            background-color: #F28123;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+        }
+
+        .signup-btn:hover {
+            background-color: #051922;
+        }
+
+        .google-login-btn {
+            width: 100%;
+            background-color: #fff;
+            color: #757575;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+            text-decoration: none;
+        }
+
+        .google-login-btn:hover {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+
+        .google-login-btn img {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-link a {
+            color: #F28123;
+            font-weight: 600;
+        }
+
+        .error-message {
+            color: #dc3545;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .validation-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .breadcrumb-bg {
+            background-image: url('assets/img/breadcrumb-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 150px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .breadcrumb-bg:after {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            content: "";
+            background-color: #07212e;
+            opacity: 0.6;
+            z-index: -1;
+        }
+    </style>
+
+    <!-- breadcrumb-section -->
+    <div class="breadcrumb-section breadcrumb-bg">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2 text-center">
+                    <div class="breadcrumb-text">
+                        <p>Join Our Community</p>
+                        <h1>Sign Up</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end breadcrumb section -->
+
+    <section class="signup-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="signup-form-container" id="signupForm">
+                        <h2>Create an Account</h2>
+
+                        <% if (message && message.length> 0) { %>
+                            <div class="error-message">
+                                <%= message %>
+                            </div>
+                            <% } %>
+
+                                <form action="/signup" method="POST" id="registrationForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="username">Full Name</label>
+                                                <input type="text" id="username" name="username"
+                                                    placeholder="Enter your name" required>
+                                                <div id="nameError" class="validation-error">Name must be at least 3
+                                                    characters.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email">Email Address</label>
+                                                <input type="email" id="email" name="email"
+                                                    placeholder="Enter your email" required>
+                                                <div id="emailError" class="validation-error">Please enter a valid
+                                                    email.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="phone">Phone Number</label>
+                                                <input type="tel" id="phone" name="phone"
+                                                    placeholder="Enter 10-digit phone number" required>
+                                                <div id="phoneError" class="validation-error">Please enter a valid
+                                                    10-digit phone number.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="referCode">Referral Code (Optional)</label>
+                                                <input type="text" id="referCode" name="referCode"
+                                                    placeholder="Enter referral code">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="password">Password</label>
+                                                <input type="password" id="password" name="password"
+                                                    placeholder="Enter password" required>
+                                                <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                                                <div id="passwordError" class="validation-error">Password must be at
+                                                    least 6 characters.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="cPassword">Confirm Password</label>
+                                                <input type="password" id="cPassword" name="cPassword"
+                                                    placeholder="Confirm password" required>
+                                                <i class="fas fa-eye password-toggle" id="toggleCPassword"></i>
+                                                <div id="cPasswordError" class="validation-error">Passwords do not
+                                                    match.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="signup-btn">Create Account</button>
+                                </form>
+
+                                <div class="divider text-center my-3">
+                                    <span class="bg-white px-2 text-muted">OR</span>
+                                    <hr class="mt-n3">
+                                </div>
+
+                                <a href="/auth/google" class="google-login-btn">
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                                        alt="Google">
+                                    SignUp with Google
+                                </a>
+
+                                <div class="login-link">
+                                    Already have an account? <a href="/login">Login</a>
+                                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GSAP Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // GSAP Animations
+            gsap.from("#signupForm", {
+                duration: 1,
+                y: 50,
+                opacity: 0,
+                ease: "power3.out"
+            });
+
+            gsap.from(".breadcrumb-text h1", {
+                duration: 1,
+                x: -50,
+                opacity: 0,
+                delay: 0.3,
+                ease: "power3.out"
+            });
+
+            gsap.from(".breadcrumb-text p", {
+                duration: 1,
+                x: 50,
+                opacity: 0,
+                delay: 0.3,
+                ease: "power3.out"
+            });
+
+            // Show/Hide Password Toggle
+            const togglePassword = document.querySelector('#togglePassword');
+            const password = document.querySelector('#password');
+            const toggleCPassword = document.querySelector('#toggleCPassword');
+            const cPassword = document.querySelector('#cPassword');
+
+            togglePassword.addEventListener('click', function (e) {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                this.classList.toggle('fa-eye-slash');
+            });
+
+            toggleCPassword.addEventListener('click', function (e) {
+                const type = cPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                cPassword.setAttribute('type', type);
+                this.classList.toggle('fa-eye-slash');
+            });
+
+            // Live Validation
+            const nameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const passwordInput = document.getElementById('password');
+            const cPasswordInput = document.getElementById('cPassword');
+
+            const nameError = document.getElementById('nameError');
+            const emailError = document.getElementById('emailError');
+            const phoneError = document.getElementById('phoneError');
+            const passwordError = document.getElementById('passwordError');
+            const cPasswordError = document.getElementById('cPasswordError');
+
+            function validateEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+            }
+
+            function validatePhone(phone) {
+                const re = /^\d{10}$/;
+                return re.test(phone);
+            }
+
+            nameInput.addEventListener('input', function () {
+                if (this.value.length >= 3) {
+                    nameError.style.display = 'none';
+                    this.style.borderColor = '#ddd';
+                } else {
+                    nameError.style.display = 'block';
+                    this.style.borderColor = '#dc3545';
+                }
+            });
+
+            emailInput.addEventListener('input', function () {
+                if (validateEmail(this.value)) {
+                    emailError.style.display = 'none';
+                    this.style.borderColor = '#ddd';
+                } else {
+                    emailError.style.display = 'block';
+                    this.style.borderColor = '#dc3545';
+                }
+            });
+
+            phoneInput.addEventListener('input', function () {
+                if (validatePhone(this.value)) {
+                    phoneError.style.display = 'none';
+                    this.style.borderColor = '#ddd';
+                } else {
+                    phoneError.style.display = 'block';
+                    this.style.borderColor = '#dc3545';
+                }
+            });
+
+            passwordInput.addEventListener('input', function () {
+                if (this.value.length >= 6) {
+                    passwordError.style.display = 'none';
+                    this.style.borderColor = '#ddd';
+                } else {
+                    passwordError.style.display = 'block';
+                    this.style.borderColor = '#dc3545';
+                }
+            });
+
+            cPasswordInput.addEventListener('input', function () {
+                if (this.value === passwordInput.value) {
+                    cPasswordError.style.display = 'none';
+                    this.style.borderColor = '#ddd';
+                } else {
+                    cPasswordError.style.display = 'block';
+                    this.style.borderColor = '#dc3545';
+                }
+            });
+
+            // Form Submit Validation
+            document.getElementById('registrationForm').addEventListener('submit', function (e) {
+                let isValid = true;
+
+                if (nameInput.value.length < 3) {
+                    nameError.style.display = 'block';
+                    isValid = false;
+                }
+
+                if (!validateEmail(emailInput.value)) {
+                    emailError.style.display = 'block';
+                    isValid = false;
+                }
+
+                if (!validatePhone(phoneInput.value)) {
+                    phoneError.style.display = 'block';
+                    isValid = false;
+                }
+
+                if (passwordInput.value.length < 6) {
+                    passwordError.style.display = 'block';
+                    isValid = false;
+                }
+
+                if (cPasswordInput.value !== passwordInput.value) {
+                    cPasswordError.style.display = 'block';
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
 
     <%- include("../../views/partials/user/footer") %>

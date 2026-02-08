@@ -360,13 +360,8 @@ const loadShoppingPage1 = async (req, res) => {
 const loadAboutpage = async (req, res) => {
     try {
         const userId = req.session.user;
-        const userData = await User.findById(userId)
-        if (!req.session.user) {
-            return res.render("user/about",{user:userData});
-        } else {
-            res.redirect('/')
-
-        }
+        const userData = userId ? await User.findById(userId) : null;
+        return res.render("user/about", { user: userData });
     } catch (error) {
         return res.redirect("/pageNotFound")
     }
