@@ -1,298 +1,345 @@
-<%-include("../../views/partials/user/header")%>
-	<style>
-		#filter-form {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 10px;
-			background: #f8f9fa;
-			padding: 15px;
-			border-radius: 8px;
-			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-			align-items: center;
-			justify-content: center;
-		}
+<%- include("../../views/partials/user/header") %>
 
-		#filter-form input[type="text"],
-		#filter-form select {
-			padding: 10px;
-			font-size: 16px;
-			border: 1px solid #ccc;
-			border-radius: 6px;
-			width: 200px;
-			transition: 0.3s;
-		}
+<style>
+    #filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        align-items: center;
+        justify-content: center;
+    }
 
-		#filter-form input[type="text"]:focus,
-		#filter-form select:focus {
-			border-color: #007bff;
-			outline: none;
-			box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-		}
+    #filter-form input[type="text"],
+    #filter-form select {
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        width: 200px;
+        transition: 0.3s;
+    }
 
-		#filter-form button {
-			padding: 10px 15px;
-			font-size: 16px;
-			border: none;
-			border-radius: 6px;
-			cursor: pointer;
-			transition: 0.3s;
-		}
+    #filter-form input[type="text"]:focus,
+    #filter-form select:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
 
-		#filter-form button[type="submit"] {
-			background: #007bff;
-			color: #fff;
-		}
+    #filter-form button {
+        padding: 10px 15px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
 
-		#filter-form button[type="submit"]:hover {
-			background: #0056b3;
-		}
+    #filter-form button[type="submit"] {
+        background: #007bff;
+        color: #fff;
+    }
 
-		#filter-form button[type="reset"] {
-			background: #dc3545;
-			color: #fff;
-		}
+    #filter-form button[type="submit"]:hover {
+        background: #0056b3;
+    }
 
-		#filter-form button[type="reset"]:hover {
-			background: #b02a37;
-		}
+    #filter-form button[type="reset"] {
+        background: #dc3545;
+        color: #fff;
+    }
 
-		/* Make it responsive */
-		@media (max-width: 600px) {
-			#filter-form {
-				flex-direction: column;
-			}
+    #filter-form button[type="reset"]:hover {
+        background: #b02a37;
+    }
 
-			#filter-form input[type="text"],
-			#filter-form select,
-			#filter-form button {
-				width: 100%;
-			}
-		}
-	</style>
+    /* Make it responsive */
+    @media (max-width: 600px) {
+        #filter-form {
+            flex-direction: column;
+        }
 
+        #filter-form input[type="text"],
+        #filter-form select,
+        #filter-form button {
+            width: 100%;
+        }
+    }
+</style>
 
+<!-- breadcrumb-section -->
+<div class="breadcrumb-section breadcrumb-bg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2 text-center">
+                <div class="breadcrumb-text">
+                    <p>Fresh and Organic</p>
+                    <h1>Shop</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end breadcrumb section -->
 
+<!-- products -->
+<div class="product-section mt-150 mb-150">
+    <form id="filter-form">
+        <input type="text" name="search" placeholder="Search Products" value="<%= search || '' %>">
+        <select name="sort">
+            <option value="">Sort By</option>
+            <option value="lowToHigh" <%= sort === "lowToHigh" ? "selected" : "" %>>Price: Low to High</option>
+            <option value="highToLow" <%= sort === "highToLow" ? "selected" : "" %>>Price: High to Low</option>
+            <option value="aToZ" <%= sort === "aToZ" ? "selected" : "" %>>A-Z</option>
+            <option value="zToA" <%= sort === "zToA" ? "selected" : "" %>>Z-A</option>
+            <option value="newArrivals" <%= sort === "newArrivals" ? "selected" : "" %>>New Arrivals</option>
+        </select>
+        <button type="submit">Apply</button>
+        <button type="reset" onclick="resetFilters()">Clear</button>
+    </form>
+    <div class="container">
+        <div class="product-filters">
+            <ul>
+                <li class="filter-btn <%= !currentCategory ? 'active' : '' %>" data-category="">
+                    All
+                </li>
+                <% categories.forEach(category => { %>
+                    <li class="filter-btn <%= currentCategory === category._id.toString() ? 'active' : '' %>"
+                        data-category="<%= category._id %>">
+                        <%= category.name %>
+                    </li>
+                <% }); %>
+            </ul>
+        </div>
 
-	<!-- breadcrumb-section -->
-	<div class="breadcrumb-section breadcrumb-bg">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-8 offset-lg-2 text-center">
-					<div class="breadcrumb-text">
-						<p>Fresh and Organic</p>
-						<h1>Shop</h1>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- end breadcrumb section -->
+        <div class="row">
+            <% products.forEach(product => { %>
+                <div class="col-lg-4 col-md-6 text-center">
+                    <div class="single-product-item">
+                        <div class="product-image">
+                            <a href="/productDetails?id=<%= product._id %>">
+                                <img src="<%= product.productImages[0] %>" alt="<%= product.productName %>">
+                            </a>
+                        </div>
+                        <h3><%= product.productName %></h3>
+                        <p class="product-price">
+                            <span><%= product.category.name === 'juice' ? 'Per Ltr' : 'Per Kg' %></span>
+                            ₹<%= product.salePrice %>
+                        </p>
+                        <a href="/productDetails?id=<%= product._id %>" class="cart-btn">
+                            <i class="fas fa-shopping-cart"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
 
-	<!-- products -->
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="pagination-wrap">
+                    <ul id="pagination">
+                        <% if (currentPage > 1) { %>
+                            <li>
+                                <a href="?page=<%= currentPage - 1 %><%= currentCategory ? `&category=${currentCategory}` : '' %>">Prev</a>
+                            </li>
+                        <% } %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <li class="<%= currentPage === i ? 'active' : '' %>">
+                                <a href="?page=<%= i %><%= currentCategory ? `&category=${currentCategory}` : '' %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+                        <% if (currentPage < totalPages) { %>
+                            <li>
+                                <a href="?page=<%= currentPage + 1 %><%= currentCategory ? `&category=${currentCategory}` : '' %>">Next</a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end products -->
 
-	<div class="product-section mt-150 mb-150">
-		<form id="filter-form">
-			<input type="text" name="search" placeholder="Search Products" value="<%= search || '' %>">
-			<select name="sort">
-				<option value="">Sort By</option>
-				<option value="lowToHigh" <%=sort==="lowToHigh" ? "selected" : "" %>>Price: Low to High</option>
-				<option value="highToLow" <%=sort==="highToLow" ? "selected" : "" %>>Price: High to Low</option>
-				<option value="aToZ" <%=sort==="aToZ" ? "selected" : "" %>>A-Z</option>
-				<option value="zToA" <%=sort==="zToA" ? "selected" : "" %>>Z-A</option>
-				<option value="newArrivals" <%=sort==="newArrivals" ? "selected" : "" %>>New Arrivals</option>
-			</select>
-			<button type="submit">Apply</button>
-			<button type="reset" onclick="resetFilters()">Clear</button>
-		</form>
-		<div class="container">
+<%- include("../../views/partials/user/footer") %>
 
-			<div class="product-filters">
-				<ul>
-					<li class="filter-btn <%= !currentCategory ? 'active' : '' %>" data-category="">
-						All
-					</li>
-					<% categories.forEach(category=> { %>
-						<li class="filter-btn <%= currentCategory === category._id.toString() ? 'active' : '' %>"
-							data-category="<%= category._id %>">
-							<%= category.name %>
-						</li>
-						<% }); %>
-				</ul>
-			</div>
+<script>
+function resetFilters() {
+    window.location.href = "/shop"; // Reset to base shop page
+}
 
+document.addEventListener("DOMContentLoaded", function () {
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const searchForm = document.getElementById("filter-form");
+    const paginationContainer = document.getElementById("pagination");
+    const productContainer = document.querySelector(".product-section .row"); // Selects the row for products
 
+    // Load Products via AJAX
+    function loadProducts(category = "", page = 1, search = "", sort = "") {
+        const params = new URLSearchParams();
+        if (category) params.set("category", category);
+        if (page) params.set("page", page);
+        if (search) params.set("search", search);
+        if (sort) params.set("sort", sort);
 
-			<div class="row">
-				<% products.forEach(product=> { %>
-					<div class="col-lg-4 col-md-6 text-center">
-						<div class="single-product-item">
-							<div class="product-image">
-								<a href="/productDetails?id=<%=product._id%>">
-									<img src="<%= product.productImages[0] %>" alt="<%= product.productName  %>">
-								</a>
-							</div>
-							<h3>
-								<%= product.productName %>
-							</h3>
-							<p class="product-price">
-								<span>
-									<%= product.category.name==='juice' ? 'Per Ltr' : 'Per Kg' %>
-								</span>
-								₹<%= product.salePrice %>
-							</p>
-							<a href="/productDetails?id=<%=product._id%>" class="cart-btn">
-								<i class="fas fa-shopping-cart"></i> view details
-							</a>
-						</div>
-					</div>
-					<% }); %>
-			</div>
+        fetch(`/shop?${params.toString()}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Clear existing products
+            productContainer.innerHTML = "";
 
+            if (data.products.length === 0) {
+                productContainer.innerHTML = "<p>No products found.</p>";
+            } else {
+                data.products.forEach(product => {
+                    const productHTML = `
+                        <div class="col-lg-4 col-md-6 text-center category-${product.category}">
+                            <div class="single-product-item">
+                                <div class="product-image">
+                                    <a href="/productDetails?id=${product._id}">
+                                        <img src="${product.productImages[0]}" alt="${product.productName}">
+                                    </a>
+                                </div>
+                                <h3>${product.productName}</h3>
+                                <p class="product-price">
+                                    <span>${product.category.name === 'juice' ? 'Per Ltr' : 'Per Kg'}</span>
+                                    ₹${product.salePrice}
+                                </p>
+                                <a href="/productDetails?id=${product._id}" class="cart-btn">
+                                    <i class="fas fa-shopping-cart"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    productContainer.innerHTML += productHTML;
+                });
+            }
 
-			<div class="row">
-				<div class="col-lg-12 text-center">
-					<div class="pagination-wrap">
-						<ul id="pagination">
-							<% if (currentPage> 1) { %>
-								<li><a
-										href="?page=<%= currentPage - 1 %><%= currentCategory ? `&category=${currentCategory}` : '' %>">Prev</a>
-								</li>
-								<% } %>
+            // Update pagination
+            updatePagination(data.totalPages, category, page, search, sort);
 
-									<% for (let i=1; i <=totalPages; i++) { %>
-										<li class="<%= currentPage === i ? 'active' : '' %>">
-											<a
-												href="?page=<%= i %><%= currentCategory ? `&category=${currentCategory}` : '' %>">
-												<%= i %>
-											</a>
-										</li>
-										<% } %>
+            // Update URL without reloading
+            const newUrl = `/shop?${params.toString()}`;
+            window.history.pushState({ category, page, search, sort }, "", newUrl);
+        })
+        .catch(error => {
+            console.error("Error fetching products:", error);
+            productContainer.innerHTML = "<p>Error loading products. Please try again.</p>";
+        });
+    }
 
-											<% if (currentPage < totalPages) { %>
-												<li><a
-														href="?page=<%= currentPage + 1 %><%= currentCategory ? `&category=${currentCategory}` : '' %>">Next</a>
-												</li>
-												<% } %>
-						</ul>
-					</div>
-				</div>
-			</div>
+    // Update Pagination
+    function updatePagination(totalPages, category, currentPage, search, sort) {
+        paginationContainer.innerHTML = "";
 
+        // Add Previous button
+        if (currentPage > 1) {
+            paginationContainer.innerHTML += `
+                <li>
+                    <a href="#" class="pagination-btn" data-page="${currentPage - 1}" data-category="${category}" data-search="${search}" data-sort="${sort}">Prev</a>
+                </li>
+            `;
+        }
 
-		</div>
-	</div>
-	<!-- end products -->
+        // Add page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            const activeClass = i === currentPage ? "active" : "";
+            paginationContainer.innerHTML += `
+                <li>
+                    <a href="#" class="pagination-btn ${activeClass}" data-page="${i}" data-category="${category}" data-search="${search}" data-sort="${sort}">${i}</a>
+                </li>
+            `;
+        }
 
+        // Add Next button
+        if (currentPage < totalPages) {
+            paginationContainer.innerHTML += `
+                <li>
+                    <a href="#" class="pagination-btn" data-page="${currentPage + 1}" data-category="${category}" data-search="${search}" data-sort="${sort}">Next</a>
+                </li>
+            `;
+        }
 
-	<!-- end logo carousel -->
-	<%-include("../../views/partials/user/footer")%>
+        attachPaginationEvents();
+    }
 
-	<script>
-		function resetFilters() {
-			window.location.href = "/shop";
-		}
-	
-		document.addEventListener("DOMContentLoaded", function () {
-			const filterButtons = document.querySelectorAll(".filter-btn");
-			const searchForm = document.getElementById("filter-form");
-			const paginationContainer = document.getElementById("pagination");
-	
-			// Load Products
-			function loadProducts(category, page = 1) {
-				fetch(`/shop?category=${category}&page=${page}`, { 
-					headers: { "X-Requested-With": "XMLHttpRequest" } 
-				})
-				.then(response => response.json())
-				.then(data => {
-					let productContainer = document.querySelector(".product-section .row");
-					productContainer.innerHTML = "";
-	
-					if (data.products.length === 0) {
-						productContainer.innerHTML = "<p>No products found.</p>";
-					} else {
-						data.products.forEach(product => {
-							let productHTML = `
-								<div class="col-lg-4 col-md-6 text-center category-${product.category}">
-									<div class="single-product-item">
-										<div class="product-image">
-											<a href="/productDetails?id=${product._id}">
-												<img src="${product.productImages[0]}" alt="${product.productName}">
-											</a>
-										</div>
-										<h3>${product.productName}</h3>
-										<p class="product-price"><span>Per Kg</span> ${product.salePrice}₹ </p>
-										<a href="/productDetails?id=${product._id}" class="cart-btn">
-											<i class="fas fa-shopping-cart"></i> View Details
-										</a>
-									</div>
-								</div>
-							`;
-							productContainer.innerHTML += productHTML;
-						});
-					}
-	
-					updatePagination(data.totalPages, category, page);
-				})
-				.catch(error => console.error("Error fetching products:", error));
-			}
-	
-			// Update Pagination
-			function updatePagination(totalPages, category, currentPage) {
-				paginationContainer.innerHTML = "";
-				for (let i = 1; i <= totalPages; i++) {
-					let activeClass = i === currentPage ? "active" : "";
-					paginationContainer.innerHTML += `
-						<li>
-							<a href="#" class="pagination-btn ${activeClass}" data-page="${i}" data-category="${category}">${i}</a>
-						</li>
-					`;
-				}
-				attachPaginationEvents();
-			}
-	
-			// Attach Pagination Events
-			function attachPaginationEvents() {
-				document.querySelectorAll(".pagination-btn").forEach(button => {
-					button.addEventListener("click", function (event) {
-						event.preventDefault();
-						let category = this.getAttribute("data-category") || "";
-						let page = this.getAttribute("data-page");
-						loadProducts(category, page);
-					});
-				});
-			}
-	
-			// Attach Category Filter Events
-			filterButtons.forEach(button => {
-				button.addEventListener("click", function () {
-					// Remove active class from all buttons
-					filterButtons.forEach(btn => btn.classList.remove("active"));
-	
-					// Add active class to clicked button
-					this.classList.add("active");
-	
-					const category = this.getAttribute("data-category");
-					const url = new URL(window.location.href);
-	
-					if (category) {
-						url.searchParams.set('category', category);
-					} else {
-						url.searchParams.delete('category');
-					}
-	
-					url.searchParams.delete('page');
-					window.location.href = url.toString();
-				});
-			});
-	
-			// Handle Search Form Submission
-			searchForm.addEventListener('submit', function (e) {
-				e.preventDefault();
-				const formData = new FormData(this);
-				const params = new URLSearchParams(formData).toString();
-				window.location.href = `/shop?${params}`;
-			});
-	
-			attachPaginationEvents(); // Initialize pagination events
-		});
-	</script>
+    // Attach Pagination Events
+    function attachPaginationEvents() {
+        document.querySelectorAll(".pagination-btn").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+                const category = this.getAttribute("data-category") || "";
+                const page = this.getAttribute("data-page");
+                const search = this.getAttribute("data-search") || "";
+                const sort = this.getAttribute("data-sort") || "";
+                loadProducts(category, page, search, sort);
+            });
+        });
+    }
+
+    // Attach Category Filter Events
+    filterButtons.forEach(button => {
+        button.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent default link behavior
+
+            // Update active class
+            filterButtons.forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+
+            // Get category and current search/sort values
+            const category = this.getAttribute("data-category");
+            const formData = new FormData(searchForm);
+            const search = formData.get("search") || "";
+            const sort = formData.get("sort") || "";
+
+            // Load products for the selected category
+            loadProducts(category, 1, search, sort);
+        });
+    });
+
+    // Handle Search Form Submission
+    searchForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const search = formData.get("search") || "";
+        const sort = formData.get("sort") || "";
+        const activeCategory = document.querySelector(".filter-btn.active")?.getAttribute("data-category") || "";
+        loadProducts(activeCategory, 1, search, sort);
+    });
+
+    // Handle browser back/forward navigation
+    window.addEventListener("popstate", function (event) {
+        const state = event.state || {};
+        const category = state.category || "";
+        const page = state.page || 1;
+        const search = state.search || "";
+        const sort = state.sort || "";
+
+        // Update active category button
+        filterButtons.forEach(btn => {
+            btn.classList.remove("active");
+            if (btn.getAttribute("data-category") === category || (!category && btn.getAttribute("data-category") === "")) {
+                btn.classList.add("active");
+            }
+        });
+
+        // Update form inputs
+        searchForm.querySelector("input[name='search']").value = search;
+        searchForm.querySelector("select[name='sort']").value = sort;
+
+        // Load products for the state
+        loadProducts(category, page, search, sort);
+    });
+
+    // Initialize pagination events
+    attachPaginationEvents();
+});
+</script>

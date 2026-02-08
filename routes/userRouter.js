@@ -12,11 +12,11 @@ const walletController = require("../controllers/user/walletController")
 const walletController1 = require("../controllers/user/walletController1")
 const couponController = require('../controllers/user/couponController')
 const contactcontroller = require('../controllers/user/contactcontroller')
-
-
 const Coupon = require("../models/couponSchema")
 const Address = require("../models/addressSchema")
 const Order = require("../models/orderSchema")
+
+
 
 
 
@@ -108,7 +108,7 @@ router.delete("/removeFromWishList", userAuth, wishlistController.removeProduct)
 //cart management
 
 router.get('/cart', userAuth, cartController.loadCart)
-router.patch('/add-cart', cartController.addCart)
+router.post('/add-cart', cartController.addCart)
 router.delete('/remove-cart/:id', userAuth, cartController.removeCart)
 router.post('/update-cart-quantity', cartController.updatecartquantity)
 

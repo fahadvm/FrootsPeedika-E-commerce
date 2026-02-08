@@ -497,7 +497,7 @@
         //add to cart
         function addToCart(productId) {
             fetch('/add-cart', {
-                method: 'patch',
+                method: 'post',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ productId })
             })

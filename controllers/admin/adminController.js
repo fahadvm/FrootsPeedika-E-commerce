@@ -25,11 +25,11 @@ const login = async (req, res) => {
         const findadmin = await User.findOne({ isAdmin: 1, email: email });
 
         if (!findadmin) {
-            return res.render('admin/login', { message: 'User not found' });
+            return res.render('admin/login', { message: 'Who are you??' });
         }
 
         if (findadmin.isBlocked == true) {
-            return res.render('admin/login', { message: 'User is blocked by admin' });
+            return res.render('admin/login', { message: 'Admin is blocked by admin' });
         }
 
         const passwordMatch = await bcrypt.compare(password, findadmin.password);

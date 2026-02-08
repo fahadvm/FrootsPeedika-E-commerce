@@ -93,12 +93,9 @@
       <h4 class="card-title mb-0">Search Customers</h4>
     </div>
     <div class="card-body">
-      <form action="/admin/users/" method="get">
-        <div class="input-group">
-          <input type="text" class="form-control" placeholder="Search customers..." name="search">
-          <button class="btn btn-primary" type="submit">Search</button>
-        </div>
-      </form>
+      <div class="input-group">
+        <input type="text" class="form-control" id="searchInput" placeholder="Search customers...">
+      </div>
     </div>
   </div>
 
@@ -111,15 +108,14 @@
         <table class="table table-hover">
           <thead>
             <tr>
-              <th scope="col">Name</th>
-              <th scope="col">Email</th>
-              <th scope="col">Phone No</th>
-              <th scope="col">Action</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone No</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            
-            <% for(let i=0; i < data.length; i++) { %>
+            <% for(let i = 0; i < data.length; i++) { %>
               <tr>
                 <td><%= data[i].username %></td>
                 <td><%= data[i].email %></td>
@@ -127,10 +123,8 @@
                 <td>
                   <% if(data[i].isBlocked == false || data[i].isBlocked === "false") { %>
                     <a href="#" onclick="confirmBlock(event, '<%= data[i]._id %>')" class="btn btn-sm btn-danger">Block</a>
-                    <% } else { %>
-                      <a href="#" onclick="confirmUnblock(event, '<%= data[i]._id %>')" class="btn btn-sm btn-success">Unblock</a>
-                    <!-- <a href="#" onclick="confirmBlock(event, '<%= data[i]._id %>')" class="btn btn-sm btn-danger">Block</a> -->
-
+                  <% } else { %>
+                    <a href="#" onclick="confirmUnblock(event, '<%= data[i]._id %>')" class="btn btn-sm btn-success">Unblock</a>
                   <% } %>
                 </td>
               </tr>
@@ -216,5 +210,35 @@ function confirmUnblock(event, userId) {
   });
 }
 </script>
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const tableBody = document.querySelector('tbody');
+
+  let debounceTimer;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(async () => {
+      const query = searchInput.value.trim();
+      const res = await fetch(`/admin/users?q=${query}`);
+      const data = await res.json();
+
+      tableBody.innerHTML = data.map(user => `
+        <tr>
+          <td>${user.username}</td>
+          <td>${user.email}</td>
+          <td>${user.phone}</td>
+          <td>
+            ${user.isBlocked ? `
+              <a href="#" onclick="confirmUnblock(event, '${user._id}')" class="btn btn-sm btn-success">Unblock</a>
+            ` : `
+              <a href="#" onclick="confirmBlock(event, '${user._id}')" class="btn btn-sm btn-danger">Block</a>
+            `}
+          </td>
+        </tr>
+      `).join('');
+    }, 300);
+  });
+</script>
+
 
 <%- include("../../views/partials/admin/footer") %>

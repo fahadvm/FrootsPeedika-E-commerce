@@ -10,10 +10,6 @@ const userRouter = require('./routes/userRouter')
 const adminRouters = require('./routes/adminRouter')
 const flash = require('connect-flash');
 
-
-
-
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(session({
@@ -33,9 +29,6 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session())
-
-
-
 
 app.use(flash());
 
@@ -62,7 +55,7 @@ app.use('/',userRouter);
 app.use('/admin',adminRouters)
 
 
-db() 
+db()
 app.listen(process.env.PORT,()=>{
     console.log(`server running http://localhost:${process.env.PORT}`)
 })

@@ -96,8 +96,8 @@ const login = async (req, res) => {
 
         if (!passwordMatch) {
             return res.render('user/login', { message: 'Incorrect password' });
-        }
-
+        }  
+        
         req.session.user = findUser._id;
         console.log('in login session.user:', req.session.user)
         return res.redirect('/');
@@ -267,7 +267,7 @@ const loadShoppingPage = async (req, res) => {
     try {
         const isAjax = req.get('X-Requested-With') === 'XMLHttpRequest';
         const user = req.session.user;
-        const userData = await User.findById(user);
+        const userData = user ? await User.findById(user) : null;
 
         const { search, category, sort, minPrice, maxPrice, page = 1 } = req.query;
         const perPage = 9;
@@ -275,18 +275,25 @@ const loadShoppingPage = async (req, res) => {
         // Base filter
         const filter = {
             isBlocked: false,
-            stock: { $gt: 0 },
-            category: { $in: (await Category.find({ isListed: true })).map(c => c._id) }
+            stock: { $gt: 0 }
         };
 
         // Apply filters
-        if (search) filter.productName = { $regex: search, $options: "i" };
-        if (category) filter.category = category;
+        if (search) {
+            filter.productName = { $regex: search, $options: 'i' };
+        }
+        if (category && category !== '') {
+            filter.category = category;
+        } else {
+            // Only include listed categories
+            filter.category = { $in: (await Category.find({ isListed: true })).map(c => c._id) };
+        }
         if (minPrice && maxPrice) {
             filter.salePrice = { $gte: Number(minPrice), $lte: Number(maxPrice) };
         }
 
         // Sorting
+        const validSortOptions = ['lowToHigh', 'highToLow', 'aToZ', 'zToA', 'newArrivals'];
         const sortOptions = {
             lowToHigh: { salePrice: 1 },
             highToLow: { salePrice: -1 },
@@ -294,18 +301,20 @@ const loadShoppingPage = async (req, res) => {
             zToA: { productName: -1 },
             newArrivals: { createdAt: -1 }
         };
+        const sortCriteria = validSortOptions.includes(sort) ? sortOptions[sort] : { createdAt: -1 };
 
         // Pagination
         const totalProducts = await Product.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / perPage);
-        const currentPage = Math.max(1, Math.min(page, totalPages));
+        const currentPage = Math.max(1, Math.min(parseInt(page) || 1, totalPages));
 
         // Get products
         const products = await Product.find(filter)
-            .sort(sortOptions[sort] || { createdAt: -1 })
+            .sort(sortCriteria)
             .skip((currentPage - 1) * perPage)
             .limit(perPage)
-            .populate('category');
+            .populate('category')
+            .lean(); // Use lean() for better performance in read-only queries
 
         // Response handling
         if (isAjax) {
@@ -313,28 +322,30 @@ const loadShoppingPage = async (req, res) => {
                 products,
                 totalPages,
                 currentPage,
-                category
+                category: category || ''
             });
         } else {
-            res.render("user/shop", {
+            res.render('user/shop', {
                 products,
                 categories: await Category.find({ isListed: true }),
                 totalPages,
                 currentPage,
-                search,
-                sort,
-                category,
-                currentCategory: category || "",
+                search: search || '',
+                sort: sort || '',
+                category: category || '',
+                currentCategory: category || '',
                 user: userData
             });
         }
-
     } catch (error) {
-        console.error("Error loading shop page:", error);
-        res.status(500).send(isAjax ? { error: true } : "Error loading shop page");
+        console.error('Error loading shop page:', error);
+        if (isAjax) {
+            res.status(500).json({ error: true, message: 'Failed to load products' });
+        } else {
+            res.status(500).send('Error loading shop page');
+        }
     }
 };
-
 const loadAboutpage = async (req, res) => {
     try {
         const userId = req.session.user;

@@ -2,7 +2,7 @@ const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
 
 const addCategory = async (req, res) => {
-  try {
+  try { 
     const { name, description } = req.body;
     console.log(" req.body:", req.body)
     const trimmedName = name.trim();
