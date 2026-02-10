@@ -8,7 +8,7 @@ const Product = require("../../models/productSchema")
 
 
 function calculateShipping(subtotal) {
-// Free shipping over $100, $10 otherwise
+    // Free shipping over $100, $10 otherwise
     if (subtotal > 100) {
         return 0;
     } else {
@@ -17,32 +17,32 @@ function calculateShipping(subtotal) {
 }
 
 
-const loadCart = async (req,res) => {
+const loadCart = async (req, res) => {
     try {
         const userId = req.session.user;
         const userData = await User.findById(userId);
         const cartData = await Cart.findOne({ userId: userId }).populate({
             path: 'items.productId',
             select: 'productName price salePrice productImages stock isBlocked category',
-            populate: { 
-                path: 'category', 
-                select: 'isListed' 
+            populate: {
+                path: 'category',
+                select: 'isListed'
             }
         });
         if (cartData) {
             cartData.items = cartData.items.filter(item => {
                 const product = item.productId;
                 return (
-                    product && 
-                    !product.isBlocked && 
-                    product.stock > 0 && 
+                    product &&
+                    !product.isBlocked &&
+                    product.stock > 0 &&
                     product.category?.isListed
                 );
             });
         }
 
 
-        if(!userData){
+        if (!userData) {
             return res.redirect("/login")
         }
 
@@ -55,12 +55,12 @@ const loadCart = async (req,res) => {
 
 
 
-        return res.render("user/cart",{ user: userData, cartItems: cartData, subtotal:subtotal, shipping:shipping, total:total })
+        return res.render("user/cart", { user: userData, cartItems: cartData, subtotal: subtotal, shipping: shipping, total: total })
 
     } catch (error) {
         return res.redirect("/pageNotFound")
     }
-    
+
 }
 
 
@@ -69,7 +69,7 @@ const addCart = async (req, res) => {
     try {
         const { productId } = req.body;
         const quantity = 1;
-        
+
         const userId = req.session.user;
 
         if (!userId) {
@@ -97,7 +97,7 @@ const addCart = async (req, res) => {
             });
         } else {
             const existingProduct = userCart.items.find(item => item.productId.toString() === productId);
-            
+
             if (existingProduct) {
                 const newQuantity = existingProduct.quantity + 1;
 
@@ -113,7 +113,7 @@ const addCart = async (req, res) => {
             } else {
                 userCart.items.push({ productId, quantity, price, totalPrice });
             }
-        }   
+        }
 
         await userCart.save();
 
@@ -129,7 +129,7 @@ const addCart = async (req, res) => {
 
 const removeCart = async (req, res) => {
     try {
-        const productId = req.params.id;  
+        const productId = req.params.id;
         const userId = req.session.user;
 
         if (!userId) {
@@ -148,7 +148,8 @@ const removeCart = async (req, res) => {
         await cart.save();
 
         // Respond with success or redirect
-        res.redirect('/cart'); // Or: res.json({ success: true, message: "Product removed from cart" });
+        // Respond with success
+        res.json({ success: true, message: "Product removed from cart" });
 
     } catch (error) {
         console.error("Error removing from cart:", error);
@@ -183,7 +184,20 @@ const updatecartquantity = async (req, res) => {
         if (isNaN(parsedQuantity) || parsedQuantity < 1) {
             return res.status(400).json({ success: false, message: "Invalid quantity" });
         }
-        
+
+        if (parsedQuantity > 5) {
+            return res.status(400).json({ success: false, message: "Maximum quantity is 5 per product" });
+        }
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        if (parsedQuantity > product.stock) {
+            return res.status(400).json({ success: false, message: `Only ${product.stock} items available in stock` });
+        }
+
         cart.items[itemIndex].quantity = parsedQuantity; // Update the quantity in the cart item
         cart.items[itemIndex].totalPrice = cart.items[itemIndex].quantity * cart.items[itemIndex].price; // Recalculate totalPrice
 
@@ -240,10 +254,10 @@ const updatecartquantity = async (req, res) => {
 
 
 
-module.exports ={
+module.exports = {
     loadCart,
     addCart,
     removeCart,
     updatecartquantity
-    
+
 }

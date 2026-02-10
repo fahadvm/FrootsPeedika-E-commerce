@@ -1,164 +1,687 @@
-    <section class="breadcrumb_part">
+<%- include("../../views/partials/user/header") %>
+
+    <style>
+        :root {
+            --primary-color: #F28123;
+            --secondary-color: #051922;
+            --text-color: #444;
+            --bg-color: #f5f5f5;
+            --white: #ffffff;
+            --danger: #dc3545;
+            --success: #28a745;
+        }
+
+        .cart-section {
+            padding: 80px 0;
+            background-color: var(--bg-color);
+            min-height: 80vh;
+        }
+
+        .cart-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 991px) {
+            .cart-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cart-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .cart-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 15px;
+        }
+
+        .cart-table th {
+            text-align: left;
+            padding: 10px;
+            color: #888;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .cart-item {
+            transition: transform 0.3s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .cart-item td {
+            background: #fdfdfd;
+            padding: 20px 10px;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .cart-item td:first-child {
+            border-left: 1px solid #f0f0f0;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .cart-item td:last-child {
+            border-right: 1px solid #f0f0f0;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .product-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+
+        .price-unit {
+            color: #777;
+            font-weight: 500;
+        }
+
+        .qty-selector {
+            display: flex;
+            align-items: center;
+            background: #f0f0f0;
+            border-radius: 50px;
+            padding: 5px;
+            width: fit-content;
+        }
+
+        .qty-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: var(--white);
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .qty-btn:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .qty-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .qty-input {
+            width: 40px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            appearance: textfield;
+        }
+
+        .subtotal-item {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .remove-item {
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s;
+            font-size: 18px;
+        }
+
+        .remove-item:hover {
+            color: var(--danger);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .summary-total {
+            border-top: 2px dashed #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--secondary-color);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .checkout-btn:hover:not(:disabled) {
+            background: var(--secondary-color);
+            transform: scale(1.02);
+        }
+
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .continue-shopping {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #888;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .continue-shopping:hover {
+            color: var(--primary-color);
+        }
+
+        .coupon-section {
+            margin-top: 25px;
+        }
+
+        .coupon-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .coupon-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #eee;
+            border-radius: 50px;
+            outline: none;
+        }
+
+        .apply-btn {
+            background: var(--secondary-color);
+            color: var(--white);
+            border: none;
+            padding: 0 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .available-coupons {
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .coupon-chip {
+            background: #fff8f0;
+            border: 1px dashed var(--primary-color);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .coupon-chip:hover {
+            background: #fff0df;
+            border-style: solid;
+        }
+
+        .coupon-info h4 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--secondary-color);
+            font-weight: 700;
+        }
+
+        .coupon-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .apply-coupon-link {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .stock-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .badge-in-stock {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+
+        .badge-low-stock {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .badge-out-stock {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 100px 0;
+        }
+
+        .empty-cart i {
+            font-size: 80px;
+            color: #eee;
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <div class="breadcrumb-section breadcrumb-bg">
         <div class="container">
             <div class="row">
-                <div class="col-lg-12">
-                    <div class="breadcrumb_iner">
-                        <h2>cart list</h2>
+                <div class="col-lg-8 offset-lg-2 text-center">
+                    <div class="breadcrumb-text">
+                        <p>Fresh and Organic</p>
+                        <h1>Your Shopping Cart</h1>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-    <!-- breadcrumb part end-->
+    </div>
 
-  <!--================Cart Area =================-->
-  <section class="cart_area section_padding">
-    <div class="container">
-      <div class="cart_inner">
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">Product</th>
-                <th scope="col">Price</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div class="media">
-                    <div class="d-flex">
-                      <img src="img/arrivel/arrivel_1.png" alt="" />
+    <div class="cart-section">
+        <div class="container">
+            <% if (cartItems && cartItems.items && cartItems.items.length> 0) { %>
+                <div class="cart-container">
+                    <!-- Left: Product List -->
+                    <div class="cart-left">
+                        <div class="cart-card" id="cartItemsList">
+                            <h3 class="cart-title"><i class="fas fa-shopping-basket"></i> Items in Cart</h3>
+                            <table class="cart-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Subtotal</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% cartItems.items.forEach(item=> { %>
+                                        <tr class="cart-item" data-id="<%= item.productId._id %>">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <img src="<%= item.productId.productImages[0] %>"
+                                                        alt="<%= item.productId.productName %>" class="product-img">
+                                                    <div>
+                                                        <p class="product-name">
+                                                            <%= item.productId.productName %>
+                                                        </p>
+                                                        <% if (item.productId.stock <=0) { %>
+                                                            <span class="stock-badge badge-out-stock">Out of
+                                                                Stock</span>
+                                                            <% } else if (item.productId.stock <=5) { %>
+                                                                <span class="stock-badge badge-low-stock">Only <%=
+                                                                        item.productId.stock %> left</span>
+                                                                <% } else { %>
+                                                                    <span class="stock-badge badge-in-stock">In
+                                                                        Stock</span>
+                                                                    <% } %>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="price-unit">₹<%= item.productId.salePrice %></span></td>
+                                            <td>
+                                                <div class="qty-selector">
+                                                    <button class="qty-btn"
+                                                        onclick="updateQty('<%= item.productId._id %>', -1)"
+                                                        <%=item.quantity <=1 ? 'disabled' : '' %>>-</button>
+                                                    <input type="number" class="qty-input" value="<%= item.quantity %>"
+                                                        readonly>
+                                                    <button class="qty-btn"
+                                                        onclick="updateQty('<%= item.productId._id %>', 1)"
+                                                        <%=item.quantity>= 5 || item.quantity >= item.productId.stock ?
+                                                        'disabled' : '' %>>+</button>
+                                                </div>
+                                            </td>
+                                            <td><span class="subtotal-item">₹<%= item.totalPrice %></span></td>
+                                            <td>
+                                                <a href="#" onclick="confirmRemove('<%= item.productId._id %>')">
+                                                    <i class="fas fa-trash remove-item"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="media-body">
-                      <p>Minimalistic shop for multipurpose use</p>
+
+                    <!-- Right: Summary & Checkout -->
+                    <div class="cart-right">
+                        <div class="cart-card" id="orderSummary">
+                            <h3 class="cart-title"><i class="fas fa-receipt"></i> Order Summary</h3>
+                            <div class="summary-item">
+                                <span>Subtotal</span>
+                                <span id="summary-subtotal">₹<%= subtotal %></span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Shipping</span>
+                                <span id="summary-shipping">₹<%= shipping %></span>
+                            </div>
+                            <div class="summary-item" id="discount-row" style="display: none;">
+                                <span>Discount</span>
+                                <span id="summary-discount" class="text-success">-₹0</span>
+                            </div>
+                            <div class="summary-total">
+                                <span>Total</span>
+                                <span id="summary-total">₹<%= total %></span>
+                            </div>
+
+                            <% let hasOutOfStock=cartItems.items.some(item=> item.productId.stock <= 0 || item.quantity>
+                                    item.productId.stock);
+                                    %>
+                                    <button onclick="handleCheckout()" class="checkout-btn" id="proceed-btn"
+                                        <%=hasOutOfStock ? 'disabled' : '' %>>
+                                        Proceed to Checkout
+                                    </button>
+                                    <a href="/shop" class="continue-shopping">Continue Shopping</a>
+                        </div>
+
+                        <div class="cart-card" id="couponBox">
+                            <h3 class="cart-title"><i class="fas fa-tag"></i> Coupons</h3>
+                            <div class="coupon-section">
+                                <div id="appliedCouponInfo"
+                                    style="display: none; background: #e8f5e9; padding: 10px; border-radius: 10px; margin-bottom: 15px;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span style="color: var(--success); font-weight: 700;"
+                                            id="appliedCouponCode"></span>
+                                        <button class="btn btn-sm text-danger" onclick="handleClearCoupon()"><i
+                                                class="fas fa-times-circle"></i> Remove</button>
+                                    </div>
+                                </div>
+                                <div class="coupon-input-group" id="couponInputGroup">
+                                    <input type="text" id="couponInput" class="coupon-input" placeholder="Enter code">
+                                    <button class="apply-btn" onclick="handleApplyCoupon()">Apply</button>
+                                </div>
+                                <div id="couponMessage" class="mt-2" style="font-size: 13px; font-weight: 600;"></div>
+
+                                <div class="available-coupons" id="availableCouponsList">
+                                    <p class="text-muted small mb-2">Available Coupons:</p>
+                                    <!-- Will be populated by JS -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
-                </td>
-                <td>
-                  <h5>$360.00</h5>
-                </td>
-                <td>
-                  <div class="product_count">
-                    <!-- <input type="text" value="1" min="0" max="10" title="Quantity:"
-                      class="input-text qty input-number" />
-                    <button
-                      class="increase input-number-increment items-count" type="button">
-                      <i class="ti-angle-up"></i>
-                    </button>
-                    <button
-                      class="reduced input-number-decrement items-count" type="button">
-                      <i class="ti-angle-down"></i>
-                    </button> -->
-                    <span class="input-number-decrement"> <i class="ti-minus"></i></span>
-                    <input class="input-number" type="text" value="1" min="0" max="10">
-                    <span class="input-number-increment"> <i class="ti-plus"></i></span>
-                  </div>
-                </td>
-                <td>
-                  <h5>$720.00</h5>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="media">
-                    <div class="d-flex">
-                      <img src="img/arrivel/arrivel_2.png" alt="" />
+                </div>
+                <% } else { %>
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h2>Your cart is empty</h2>
+                        <p>Add something to your cart to see it here!</p>
+                        <a href="/shop" class="boxed-btn mt-4">Start Shopping</a>
                     </div>
-                    <div class="media-body">
-                      <p>Minimalistic shop for multipurpose use</p>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <h5>$360.00</h5>
-                </td>
-                <td>
-                  <div class="product_count">
-                      <span class="input-number-decrement"> <i class="ti-minus"></i></span>
-                      <input class="input-number" type="text" value="1" min="0" max="10">
-                      <span class="input-number-increment"> <i class="ti-plus"></i></span>
-                  </div>
-                </td>
-                <td>
-                  <h5>$720.00</h5>
-                </td>
-              </tr>
-              <tr class="bottom_button">
-                <td>
-                  <a class="btn_1" href="#">Update Cart</a>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                  <div class="cupon_text float-right">
-                    <a class="btn_1" href="#">Close Coupon</a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td></td>
-                <td></td>
-                <td>
-                  <h5>Subtotal</h5>
-                </td>
-                <td>
-                  <h5>$2160.00</h5>
-                </td>
-              </tr>
-              <tr class="shipping_area">
-                <td></td>
-                <td></td>
-                <td>
-                  <h5>Shipping</h5>
-                </td>
-                <td>
-                  <div class="shipping_box">
-                    <ul class="list">
-                      <li>
-                        Flat Rate: $5.00
-                        <input type="radio" aria-label="Radio button for following text input">
-                      </li>
-                      <li>
-                        Free Shipping
-                        <input type="radio" aria-label="Radio button for following text input">
-                      </li>
-                      <li>
-                        Flat Rate: $10.00
-                        <input type="radio" aria-label="Radio button for following text input">
-                      </li>
-                      <li class="active">
-                        Local Delivery: $2.00
-                        <input type="radio" aria-label="Radio button for following text input">
-                      </li>
-                    </ul>
-                    <h6>
-                      Calculate Shipping
-                      <i class="fa fa-caret-down" aria-hidden="true"></i>
-                    </h6>
-                    <select class="shipping_select">
-                      <option value="1">Bangladesh</option>
-                      <option value="2">India</option>
-                      <option value="4">Pakistan</option>
-                    </select>
-                    <select class="shipping_select section_bg">
-                      <option value="1">Select a State</option>
-                      <option value="2">Select a State</option>
-                      <option value="4">Select a State</option>
-                    </select>
-                    <input class="post_code" type="text" placeholder="Postcode/Zipcode" />
-                    <a class="btn_1" href="#">Update Details</a>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="checkout_btn_inner float-right">
-            <a class="btn_1" href="#">Continue Shopping</a>
-            <a class="btn_1 checkout_btn_1" href="#">Proceed to checkout</a>
-          </div>
+                    <% } %>
         </div>
-      </div>
-  </section>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initial animations
+            gsap.from(".cart-card", {
+                duration: 1,
+                y: 30,
+                opacity: 0,
+                stagger: 0.2,
+                ease: "power3.out"
+            });
+
+            // Load available coupons
+            loadCoupons();
+        });
+
+        async function loadCoupons() {
+            try {
+                const response = await fetch('/getAvailableCoupons');
+                const coupons = await response.json();
+                const list = document.getElementById('availableCouponsList');
+
+                if (coupons && coupons.length > 0) {
+                    list.innerHTML = '<p class="text-muted small mb-2">Available Coupons:</p>';
+                    coupons.forEach(coupon => {
+                        list.innerHTML += `
+                        <div class="coupon-chip" onclick="selectCoupon('${coupon.couponCode}')">
+                            <div class="coupon-info">
+                                <h4>${coupon.couponCode}</h4>
+                                <p>${coupon.offerPrice}% OFF (Min: ₹${coupon.minPrice})</p>
+                            </div>
+                            <span class="apply-coupon-link">Apply</span>
+                        </div>
+                    `;
+                    });
+                } else {
+                    list.innerHTML = '<p class="text-muted small">No coupons available</p>';
+                }
+            } catch (error) {
+                console.error('Error loading coupons:', error);
+            }
+        }
+
+        function selectCoupon(code) {
+            document.getElementById('couponInput').value = code;
+            handleApplyCoupon();
+        }
+
+        function handleCheckout() {
+            window.location.href = '/checkout';
+        }
+
+        async function handleClearCoupon() {
+            try {
+                const response = await fetch('/clearCoupon', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('appliedCouponInfo').style.display = 'none';
+                    document.getElementById('couponInputGroup').style.display = 'flex';
+                    document.getElementById('discount-row').style.display = 'none';
+                    document.getElementById('couponInput').value = '';
+                    document.getElementById('couponMessage').innerText = '';
+
+                    // Recalculate based on current subtotal (simpler to just reload or refetch cart data)
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Error clearing coupon:', error);
+            }
+        }
+
+        async function handleApplyCoupon() {
+            const code = document.getElementById('couponInput').value.trim();
+            const messageDiv = document.getElementById('couponMessage');
+
+            if (!code) return;
+
+            try {
+                const response = await fetch('/applycoupon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ couponCode: code })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.style.color = 'var(--success)';
+                    messageDiv.innerText = `Coupon applied! You saved ₹${data.discountAmount}`;
+
+                    document.getElementById('appliedCouponInfo').style.display = 'block';
+                    document.getElementById('appliedCouponCode').innerText = code;
+                    document.getElementById('couponInputGroup').style.display = 'none';
+
+                    document.getElementById('discount-row').style.display = 'flex';
+                    document.getElementById('summary-discount').innerText = `-₹${data.discountAmount}`;
+                    document.getElementById('summary-total').innerText = `₹${data.totalAmount}`;
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Coupon Applied!',
+                        text: `You saved ₹${data.discountAmount}`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    messageDiv.style.color = 'var(--danger)';
+                    messageDiv.innerText = data.message;
+                }
+            } catch (error) {
+                console.error('Error applying coupon:', error);
+            }
+        }
+
+        async function updateQty(productId, change) {
+            const row = document.querySelector(`.cart-item[data-id="${productId}"]`);
+            const input = row.querySelector('.qty-input');
+            const currentQty = parseInt(input.value);
+            const newQty = currentQty + change;
+
+            // Frontend validation
+            if (newQty < 1 || newQty > 5) return;
+
+            try {
+                const response = await fetch('/update-cart-quantity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, quantity: newQty })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update UI
+                    input.value = newQty;
+                    row.querySelector('.subtotal-item').innerText = `₹${data.itemTotal}`;
+                    document.getElementById('summary-subtotal').innerText = `₹${data.subtotal}`;
+                    document.getElementById('summary-shipping').innerText = `₹${data.shipping}`;
+                    document.getElementById('summary-total').innerText = `₹${data.total}`;
+
+                    // Update row buttons
+                    const btns = row.querySelectorAll('.qty-btn');
+                    btns[0].disabled = newQty <= 1;
+                    btns[1].disabled = newQty >= 5;
+
+                    // Re-validate checkout button (Wait for a sec to let UI update or just check locally)
+                    // If any coupon was applied, it might be invalidated or need recalculation
+                    // For simplicity, we can reload or show a message that coupon has been removed 
+                    if (document.getElementById('appliedCouponInfo').style.display === 'block') {
+                        handleClearCoupon();
+                    }
+
+                    gsap.to(row, { scale: 1.02, duration: 0.1, yoyo: true, repeat: 1 });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Cannot update quantity'
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating quantity:', error);
+            }
+        }
+
+        async function confirmRemove(productId) {
+            const result = await Swal.fire({
+                title: 'Remove item?',
+                text: "Do you want to remove this product from your cart?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--secondary-color)',
+                confirmButtonText: 'Yes, remove it!'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/remove-cart/${productId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Removed!',
+                            text: 'Product removed from cart',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', 'Failed to remove item', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error removing item:', error);
+                    Swal.fire('Error', 'Something went wrong', 'error');
+                }
+            }
+        }
+    </script>
+
+    <%- include("../../views/partials/user/footer") %>
