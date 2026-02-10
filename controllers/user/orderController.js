@@ -263,24 +263,33 @@ const processReturn = async (orderId) => {
 const getOrder = async (req, res) => {
     try {
         const userId = req.session.user;
-        const orders = await Order.find({ userId: userId }).populate({
-            path: 'product',
-            select: 'productName productImages salePrice'
-        }).sort({ createdAt: -1 }); //.populate({path: 'address.address',select: 'name addressType landMark city state pincode phone'})
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip = (page - 1) * limit;
+
+        const totalOrders = await Order.countDocuments({ userId: userId });
+        const orders = await Order.find({ userId: userId })
+            .populate({
+                path: 'product',
+                select: 'productName productImages salePrice'
+            })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
         const user = await User.findById(userId);
 
         res.render("user/orders", {
             orders: orders,
-            user: user
+            user: user,
+            currentPage: page,
+            totalPages: Math.ceil(totalOrders / limit),
+            totalOrders: totalOrders
         });
     } catch (error) {
         console.error("Error in getOrders:", error);
         res.status(500).json({ error: "Internal server error" });
     }
-
-
-
 }
 
 

@@ -1,4 +1,4 @@
-<%-include("../../views/partials/user/header")%>
+<%-include(".. /../views/partials/user/header")%>
 
     <title>Frootspeedika - Order History</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -381,7 +381,7 @@
                     <a href="/editProfile"><i class="fas fa-cog"></i> Account Settings</a>
                     <a href="/wallet"><i class="fa-solid fa-wallet"></i> Wallet</a>
                     <a href="/coupons"><i class="fa-duotone fa-solid fa-ticket"></i> Coupons</a>
-                    <a href="#" onclick="confirmAdminLogout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </nav>
 
                 <!-- Main Content -->
@@ -456,6 +456,33 @@
                                 </div>
                             </div>
                             <% }); %>
+
+                                <nav aria-label="Page navigation" class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        <% if (currentPage> 1) { %>
+                                            <li class="page-item">
+                                                <a class="page-item btn btn-primary m-1"
+                                                    href="/orders?page=<%= currentPage - 1 %>">Previous</a>
+                                            </li>
+                                            <% } %>
+
+                                                <% for(let i=1; i <=totalPages; i++) { %>
+                                                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                                        <a class="page-item btn <%= i === currentPage ? 'btn-orange' : 'btn-primary' %> m-1"
+                                                            href="/orders?page=<%= i %>">
+                                                            <%= i %>
+                                                        </a>
+                                                    </li>
+                                                    <% } %>
+
+                                                        <% if (currentPage < totalPages) { %>
+                                                            <li class="page-item">
+                                                                <a class="page-item btn btn-primary m-1"
+                                                                    href="/orders?page=<%= currentPage + 1 %>">Next</a>
+                                                            </li>
+                                                            <% } %>
+                                    </ul>
+                                </nav>
                                 <% } else { %>
                                     <div class="text-center py-5">
                                         <div class="mb-4">
@@ -511,7 +538,7 @@
 
                                                     try {
                                                         const response = await fetch('/orders/cancel', {
-                                                            method: 'patch',
+                                                            method: 'PATCH',
                                                             headers: { 'Content-Type': 'application/json' },
                                                             body: JSON.stringify({ reason: finalReason, orderId })
                                                         });
@@ -605,22 +632,22 @@
                                         </script>
                                         <script>
                                             function confirmAdminLogout(event) {
-                                            event.preventDefault();
-                                            Swal.fire({
-                                            title: "Are you sure?",
-                                            text: "You will be logged out!",
-                                            icon: "warning",
-                                            showCancelButton: true,
-                                            confirmButtonColor: "#3085d6",
-                                            cancelButtonColor: "#d33",
-                                            confirmButtonText: "Yes, Logout"
-                                        }).then((result) => {
-                                            if (result.isConfirmed) {
-                                                window.location.href = "/logout"; // Redirect only if confirmed
+                                                event.preventDefault();
+                                                Swal.fire({
+                                                    title: "Are you sure?",
+                                                    text: "You will be logged out!",
+                                                    icon: "warning",
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: "#3085d6",
+                                                    cancelButtonColor: "#d33",
+                                                    confirmButtonText: "Yes, Logout"
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        window.location.href = "/logout"; // Redirect only if confirmed
+                                                    }
+                                                });
+
                                             }
-                                        });
-                                            
-                                        }
                                         </script>
 
                                         <!-- jquery -->
