@@ -276,11 +276,11 @@
                         finalReason = `Other: ${otherReason}`;
                     } try {
                         const response = await fetch('/orders/cancel', {
-                            method: 'patch',
+                            method: 'PATCH',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ orderId, reason }),
+                            body: JSON.stringify({ orderId, reason: finalReason }),
                         });
 
                         const data = await response.json();

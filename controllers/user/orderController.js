@@ -322,52 +322,75 @@ const loadOrderDetails = async (req, res) => {
 
 const cancelOrder = async (req, res) => {
     try {
-        const { orderId, reason } = req.body
-        const orderData = await Order.findById(orderId)
-        if (!orderData) {
-            return res.json({ success: false, message: 'Order not found' })
-        }
-        const product = await Product.findById(orderData.product)
-        const productCound = product.stock + orderData.quantity
-        product.stock = productCound
-        await product.save()
-        if (orderData.paymentMethod != 'cod') {
-            const wallet = await Wallet.findOne({ userId: orderData.userId })
-            if (wallet) {
-                wallet.balance += orderData.discountedPrice
-                wallet.transactions.push({
-                    type: 'credit',
-                    amount: orderData.discountedPrice,
-                    description: 'cancelled amount',
-                });
+        const { orderId, reason } = req.body;
+        const orderData = await Order.findById(orderId);
 
-                await wallet.save()
+        if (!orderData) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        if (orderData.status === 'cancelled') {
+            return res.status(400).json({ success: false, message: 'Order is already cancelled' });
+        }
+
+        // Restore product stock
+        await Product.findByIdAndUpdate(orderData.product, {
+            $inc: { stock: orderData.quantity }
+        });
+
+        // Refund to wallet if not COD
+        if (orderData.paymentMethod !== 'cod') {
+            let wallet = await Wallet.findOne({ userId: orderData.userId });
+
+            if (!wallet) {
+                wallet = new Wallet({
+                    userId: orderData.userId,
+                    balance: 0,
+                    transactions: []
+                });
             }
 
+            const refundAmount = orderData.finalAmount;
+            wallet.balance += refundAmount;
+            wallet.transactions.push({
+                type: 'credit',
+                amount: refundAmount,
+                description: `Refund for cancelled order #${orderData.orderId}`,
+            });
+
+            await wallet.save();
+
+            // Record transaction
             const transaction = new Transaction({
                 userId: orderData.userId,
-                amount: orderData.discountedPrice,
+                amount: refundAmount,
                 transactionType: "credit",
                 paymentMethod: "wallet",
                 paymentGateway: "wallet",
                 status: "completed",
                 purpose: "cancellation",
-                description: "Order cancallatoin payment to wallet",
-                orders: orderData,
-                orderIds: { orderId: orderData.orderId },
+                description: `Order cancellation refund to wallet for #${orderData.orderId}`,
+                orders: [{
+                    name: orderData.productName,
+                    price: orderData.price,
+                    quantity: orderData.quantity,
+                    finalPrice: orderData.finalAmount
+                }],
+                orderIds: [{ orderId: orderData._id }],
                 walletBalanceAfter: wallet.balance,
-            })
-            await transaction.save()
-
-
+            });
+            await transaction.save();
         }
-        orderData.status = 'cancelled'
-        await orderData.save()
-        return res.json({ success: true, message: 'Order returned successfully' });
+
+        orderData.status = 'cancelled';
+        orderData.cancelReason = reason;
+        await orderData.save();
+
+        return res.json({ success: true, message: 'Order cancelled successfully' });
 
     } catch (error) {
-        console.error('error occur while cancelOrder', error)
-        return res.redirect('/pageNotFound')
+        console.error('Error in cancelOrder:', error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 }
 
