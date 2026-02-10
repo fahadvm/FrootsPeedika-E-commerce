@@ -351,8 +351,7 @@
                 <div class="product-gallery-side" style="position: relative; z-index: 10;">
                     <div class="main-image-container" id="mainImageArea">
                         <div id="zoomLens" class="zoom-lens"></div>
-                        <img id="main-img" src="<%= product.productImages[0] %>"
-                            alt="<%= product.productName %>">
+                        <img id="main-img" src="<%= product.productImages[0] %>" alt="<%= product.productName %>">
                     </div>
                     <div id="zoomResult" class="zoom-result"></div>
                     <div class="thumbnails-container">
@@ -443,7 +442,7 @@
                         </button>
                     </div>
 
-                    
+
                 </div>
             </div>
         </div>
@@ -621,6 +620,19 @@
                             timer: 2000,
                             showConfirmButton: false,
                             timerProgressBar: true
+                        });
+                    } else if (response.message === "Product already in wishlist") {
+                        Swal.fire({
+                            title: 'Already in Wishlist',
+                            text: 'This product is already in your wishlist.',
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: 'Go to Wishlist',
+                            cancelButtonText: 'Continue Shopping'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '/wishlist';
+                            }
                         });
                     } else {
                         Swal.fire({
