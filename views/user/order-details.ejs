@@ -195,9 +195,8 @@
                                     <%}%>
 
 
-                                        <!-- Cancel Order Button -->
                                         <% if (order.status !=='cancelled' && order.status !=='delivered' &&
-                                            order.status !=='Returned' ) { %>
+                                            order.status !=='returned' && order.status !=='return request' ) { %>
                                             <button onclick="cancelOrder('<%= order._id %>')"
                                                 class="btn btn-danger w-100 mt-3">
                                                 Cancel Order
@@ -205,10 +204,22 @@
 
                                             <% } else if (order.status==='delivered' ) { %>
                                                 <button onclick="returnOrder('<%= order._id %>')"
-                                                    class="btn btn-outline-primary btn-sm mt-2">
+                                                    class="btn btn-outline-primary btn-sm mt-2 w-100">
                                                     Return Order
                                                 </button>
-                                                <% } %>
+                                                <% } else if (order.status==='return request' ||
+                                                    order.status==='returned' ) { %>
+                                                    <div class="badge bg-warning text-dark mt-2 w-100 p-2">
+                                                        <%= order.status==='return request' ? 'Return Requested'
+                                                            : 'Returned' %>
+                                                    </div>
+                                                    <% if (order.returnReason) { %>
+                                                        <div class="mt-2 small text-muted">
+                                                            <strong>Reason:</strong>
+                                                            <%= order.returnReason %>
+                                                        </div>
+                                                        <% } %>
+                                                            <% } %>
                             </div>
                         </div>
 
@@ -309,26 +320,50 @@
 
             async function returnOrder(orderId) {
                 const { value: reason } = await Swal.fire({
-                    title: 'return Order',
-                    input: 'textarea',
-                    inputLabel: 'Reason for returnoing',
-                    inputPlaceholder: 'Type your reason here...',
+                    title: 'Return Order',
+                    input: 'select',
+                    inputLabel: 'Reason for returning',
+                    inputPlaceholder: 'Select a reason...',
                     showCancelButton: true,
-                    inputValidator: (value) => !value && 'Please provide a reason!'
+                    inputOptions: {
+                        'defective': 'Defective Product',
+                        'wrong': 'Wrong Item Received',
+                        'damaged': 'Damaged During Shipping',
+                        'quality': 'Not Satisfied with Quality',
+                        'changed': 'Changed My Mind',
+                        'other': 'Other (Please specify)'
+                    },
+                    inputValidator: (value) => !value && 'Please select a reason!'
                 });
 
                 if (reason) {
+                    let finalReason = reason;
+
+                    if (reason === 'other') {
+                        const { value: otherReason } = await Swal.fire({
+                            title: 'Please Specify Reason',
+                            input: 'textarea',
+                            inputLabel: 'Describe your reason for return',
+                            inputPlaceholder: 'Type your reason here...',
+                            showCancelButton: true,
+                            inputValidator: (value) => !value && 'Please provide a description!'
+                        });
+
+                        if (!otherReason) return;
+                        finalReason = `Other: ${otherReason}`;
+                    }
+
                     try {
                         const response = await fetch(`/orders/return`, {
-                            method: 'patch',
+                            method: 'PATCH',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ reason, orderId })
+                            body: JSON.stringify({ reason: finalReason, orderId })
                         });
 
                         const data = await response.json();
 
                         if (data.success) {
-                            await Swal.fire('Success!', 'Order return successfully', 'success');
+                            await Swal.fire('Success!', 'Order return successfully initiated', 'success');
                             location.reload();
                         } else {
                             throw new Error(data.message);

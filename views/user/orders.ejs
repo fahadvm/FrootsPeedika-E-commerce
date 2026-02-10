@@ -440,7 +440,7 @@
                                                 View Details
                                             </a>
                                             <% if (order.status !=='cancelled' && order.status !=='delivered' &&
-                                                order.status !=='returned' ) { %>
+                                                order.status !=='returned' && order.status !=='return request' ) { %>
                                                 <button onclick="cancelOrder('<%= order._id %>')"
                                                     class="btn btn-outline-danger btn-sm mt-2">
                                                     Cancel Order
@@ -598,7 +598,7 @@
 
                                                     try {
                                                         const response = await fetch('/orders/return', {  // Fixed the URL syntax
-                                                            method: 'patch',
+                                                            method: 'PATCH',
                                                             headers: { 'Content-Type': 'application/json' },
                                                             body: JSON.stringify({ reason: finalReason, orderId })
                                                         });

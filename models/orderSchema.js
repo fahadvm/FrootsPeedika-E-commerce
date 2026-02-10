@@ -9,13 +9,13 @@ const orderSchema = new Schema(
       type: String,
       default: () => uuidv4(),
       unique: true,
-      index: true, 
+      index: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true, 
+      index: true,
     },
     product: {
       type: Schema.Types.ObjectId,
@@ -49,7 +49,7 @@ const orderSchema = new Schema(
       default: 0,
       min: 0,
     },
-   
+
     discountedPrice: {
       type: Number,
       min: 0,
@@ -62,18 +62,18 @@ const orderSchema = new Schema(
     address: {
       type: {
         name: { type: String, },
-        phone: { type: String,},
-        pincode: { type: String,  },
+        phone: { type: String, },
+        pincode: { type: String, },
         locality: { type: String },
-        address: { type: String,  },
-        city: { type: String,  },
+        address: { type: String, },
+        city: { type: String, },
         state: { type: String, },
         landmark: { type: String },
         alternatePhone: { type: String },
-        addressType: { 
-          type: String, 
-          enum: ['home', 'work'], 
-          default: 'home' 
+        addressType: {
+          type: String,
+          enum: ['home', 'work'],
+          default: 'home'
         }
       },
       required: true,
@@ -104,22 +104,22 @@ const orderSchema = new Schema(
     },
     returnReason: {
       type: String,
-      required: function() { return this.status === 'return-request' || this.status === 'returned'; },
+      required: function () { return this.status === 'return request' || this.status === 'returned'; },
     },
     paymentMethod: {
       type: String,
       required: true, // Make required if payment is always needed
-   
+
     },
     couponApplied: {
       type: Boolean,
       default: false,
     },
-    couponCode: { 
+    couponCode: {
       type: String,
       required: false,
     },
-    deliveredOn:{
+    deliveredOn: {
       type: Date,
     }
   },

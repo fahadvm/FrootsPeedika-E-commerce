@@ -68,7 +68,7 @@ const Transaction = require("../../models/transactionSchema")
 const getOrders = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10; 
+        const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
         const totalOrders = await Order.countDocuments();
@@ -143,7 +143,7 @@ const updateOrderStatus = async (req, res) => {
         if (status === 'delivered') {
             order.deliveredOn = new Date();
         }
-        
+
         // Update order status
         order.status = status;
 
@@ -192,44 +192,55 @@ const handleOrderReturn = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
-        // Restore product stock
-        const product = await Product.findById(orderData.product);
-        if (product) {
-            product.stock += orderData.quantity;
-            await product.save();
-        }
+        if (action === 'approve') {
+            // Restore product stock
+            const product = await Product.findById(orderData.product);
+            if (product) {
+                product.stock += orderData.quantity;
+                await product.save();
+            }
 
-        // Refund money to wallet
-        const wallet = await Wallet.findOne({ userId: orderData.userId });
-        if (wallet) {
-            wallet.balance += orderData.finalAmount;
+            // Refund money to wallet
+            let wallet = await Wallet.findOne({ userId: orderData.userId });
+            if (!wallet) {
+                wallet = new Wallet({ userId: orderData.userId, balance: 0, transactions: [] });
+            }
+
+            const refundAmount = orderData.finalAmount;
+            wallet.balance += refundAmount;
             wallet.transactions.push({
                 type: 'credit',
-                amount: orderData.discountedPrice,
-                description: 'Returned amount',
+                amount: refundAmount,
+                description: `Refund for returned order #${orderData.orderId}`,
             });
 
             await wallet.save();
 
             const transaction = new Transaction({
                 userId: orderData.userId,
-                amount: orderData.discountedPrice,
+                amount: refundAmount,
                 transactionType: "credit",
                 paymentMethod: "wallet",
                 paymentGateway: "wallet",
                 status: "completed",
                 purpose: "return",
-                description: "Return Order payment to wallet",
-                orders: orderData,
-                orderIds: { orderId: orderData.orderId },
+                description: `Return Order refund to wallet for #${orderData.orderId}`,
+                orders: [{
+                    name: orderData.productName,
+                    price: orderData.price,
+                    quantity: orderData.quantity,
+                    finalPrice: orderData.finalAmount
+                }],
+                orderIds: [{ orderId: orderData._id }],
                 walletBalanceAfter: wallet.balance,
-            })
-            await transaction.save()
-        }
+            });
+            await transaction.save();
 
-        // Update order status
-        orderData.status = action === 'approve' ? 'returned' : 'delivered';
-        await orderData.save(); // Added missing await
+            orderData.status = 'returned';
+        } else {
+            orderData.status = 'delivered';
+        }
+        await orderData.save();
 
         return res.json({ success: true });
     } catch (error) {
