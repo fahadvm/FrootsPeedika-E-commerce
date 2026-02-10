@@ -11,6 +11,15 @@
             --success: #28a745;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         .cart-section {
             padding: 80px 0;
             background-color: var(--bg-color);
@@ -21,11 +30,195 @@
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 30px;
+            width: 100%;
+            max-width: 100%;
         }
 
         @media (max-width: 991px) {
             .cart-container {
-                grid-template-columns: 1fr;
+                display: block;
+                width: 100%;
+            }
+
+            .cart-left,
+            .cart-right {
+                width: 100%;
+                margin-bottom: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cart-section {
+                padding: 30px 10px;
+            }
+
+            .cart-card {
+                padding: 12px;
+                border-radius: 12px;
+                width: 100%;
+                margin-left: 0;
+                margin-right: 0;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            }
+
+            .cart-title {
+                font-size: 1.15rem;
+                margin-bottom: 20px;
+                word-break: break-all;
+                max-width: 100%;
+            }
+
+            .cart-table,
+            .cart-table tbody,
+            .cart-table tr,
+            .cart-table td {
+                display: block;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            .cart-table thead {
+                display: none !important;
+            }
+
+            .cart-item {
+                position: relative;
+                padding: 0;
+                border: 1px solid #f0f0f0;
+                border-radius: 15px;
+                background: #fff;
+                margin-bottom: 25px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            }
+
+            .cart-item td {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                align-items: center;
+                border: none !important;
+                padding: 12px 10px;
+                background: transparent !important;
+                width: 100%;
+                border-bottom: 1px solid #f9f9f9 !important;
+            }
+
+            .cart-item td:first-child {
+                display: block;
+                padding: 20px 15px;
+                background: #fcfcfc !important;
+                border-bottom: 1px solid #f0f0f0 !important;
+            }
+
+            .cart-item td:first-child .d-flex {
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 10px !important;
+                flex-wrap: nowrap !important;
+                width: calc(100% - 30px);
+            }
+
+            .cart-item td:first-child .d-flex>div {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .cart-item td:not(:first-child):not(.remove-item-cell)::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #888;
+                font-size: 13px;
+                flex-shrink: 0;
+            }
+
+            .product-img {
+                width: 70px;
+                height: 70px;
+                min-width: 70px;
+                background: #fff;
+                padding: 5px;
+                border: 1px solid #eee;
+            }
+
+            .product-name {
+                font-size: 14px;
+                margin-bottom: 3px;
+                line-height: 1.2;
+                white-space: normal;
+                word-wrap: break-word;
+                overflow-wrap: anywhere;
+                font-weight: 600;
+                max-width: 100%;
+            }
+
+            .qty-selector {
+                margin: 0;
+                transform: scale(0.85);
+                transform-origin: right;
+                flex-shrink: 0;
+                max-width: 140px;
+            }
+
+            .remove-item-cell {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                padding: 0 !important;
+                width: auto !important;
+                z-index: 10;
+            }
+
+            .remove-item {
+                font-size: 16px;
+                background: #fff;
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                color: #ff4444;
+            }
+
+            .price-unit,
+            .subtotal-item {
+                font-size: 15px;
+            }
+
+            .qty-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+
+            .qty-input {
+                width: 45px;
+                font-size: 15px;
+            }
+
+            .qty-selector {
+                padding: 3px;
+            }
+
+            .cart-right .cart-card {
+                margin-top: 10px;
+            }
+
+            .summary-item {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+
+            .summary-total {
+                font-size: 18px;
+            }
+
+            .checkout-btn {
+                padding: 12px;
+                font-size: 15px;
             }
         }
 
@@ -224,76 +417,7 @@
             color: var(--primary-color);
         }
 
-        .coupon-section {
-            margin-top: 25px;
-        }
 
-        .coupon-input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .coupon-input {
-            flex: 1;
-            padding: 12px 20px;
-            border: 1px solid #eee;
-            border-radius: 50px;
-            outline: none;
-        }
-
-        .apply-btn {
-            background: var(--secondary-color);
-            color: var(--white);
-            border: none;
-            padding: 0 25px;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .available-coupons {
-            margin-top: 20px;
-            max-height: 250px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-
-        .coupon-chip {
-            background: #fff8f0;
-            border: 1px dashed var(--primary-color);
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .coupon-chip:hover {
-            background: #fff0df;
-            border-style: solid;
-        }
-
-        .coupon-info h4 {
-            margin: 0;
-            font-size: 14px;
-            color: var(--secondary-color);
-            font-weight: 700;
-        }
-
-        .coupon-info p {
-            margin: 0;
-            font-size: 12px;
-            color: #777;
-        }
-
-        .apply-coupon-link {
-            color: var(--primary-color);
-            font-weight: 600;
-            font-size: 13px;
-        }
 
         .stock-badge {
             font-size: 11px;
@@ -386,8 +510,9 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td><span class="price-unit">₹<%= item.productId.salePrice %></span></td>
-                                            <td>
+                                            <td data-label="Price"><span class="price-unit">₹<%=
+                                                        item.productId.salePrice %></span></td>
+                                            <td data-label="Quantity">
                                                 <div class="qty-selector">
                                                     <button class="qty-btn"
                                                         onclick="updateQty('<%= item.productId._id %>', -1)"
@@ -400,8 +525,9 @@
                                                         'disabled' : '' %>>+</button>
                                                 </div>
                                             </td>
-                                            <td><span class="subtotal-item">₹<%= item.totalPrice %></span></td>
-                                            <td>
+                                            <td data-label="Subtotal"><span class="subtotal-item">₹<%= item.totalPrice
+                                                        %></span></td>
+                                            <td class="remove-item-cell">
                                                 <a href="#" onclick="confirmRemove('<%= item.productId._id %>')">
                                                     <i class="fas fa-trash remove-item"></i>
                                                 </a>
@@ -425,10 +551,6 @@
                                 <span>Shipping</span>
                                 <span id="summary-shipping">₹<%= shipping %></span>
                             </div>
-                            <div class="summary-item" id="discount-row" style="display: none;">
-                                <span>Discount</span>
-                                <span id="summary-discount" class="text-success">-₹0</span>
-                            </div>
                             <div class="summary-total">
                                 <span>Total</span>
                                 <span id="summary-total">₹<%= total %></span>
@@ -444,30 +566,6 @@
                                     <a href="/shop" class="continue-shopping">Continue Shopping</a>
                         </div>
 
-                        <div class="cart-card" id="couponBox">
-                            <h3 class="cart-title"><i class="fas fa-tag"></i> Coupons</h3>
-                            <div class="coupon-section">
-                                <div id="appliedCouponInfo"
-                                    style="display: none; background: #e8f5e9; padding: 10px; border-radius: 10px; margin-bottom: 15px;">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span style="color: var(--success); font-weight: 700;"
-                                            id="appliedCouponCode"></span>
-                                        <button class="btn btn-sm text-danger" onclick="handleClearCoupon()"><i
-                                                class="fas fa-times-circle"></i> Remove</button>
-                                    </div>
-                                </div>
-                                <div class="coupon-input-group" id="couponInputGroup">
-                                    <input type="text" id="couponInput" class="coupon-input" placeholder="Enter code">
-                                    <button class="apply-btn" onclick="handleApplyCoupon()">Apply</button>
-                                </div>
-                                <div id="couponMessage" class="mt-2" style="font-size: 13px; font-weight: 600;"></div>
-
-                                <div class="available-coupons" id="availableCouponsList">
-                                    <p class="text-muted small mb-2">Available Coupons:</p>
-                                    <!-- Will be populated by JS -->
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 <% } else { %>
@@ -494,107 +592,12 @@
                 stagger: 0.2,
                 ease: "power3.out"
             });
-
-            // Load available coupons
-            loadCoupons();
         });
-
-        async function loadCoupons() {
-            try {
-                const response = await fetch('/getAvailableCoupons');
-                const coupons = await response.json();
-                const list = document.getElementById('availableCouponsList');
-
-                if (coupons && coupons.length > 0) {
-                    list.innerHTML = '<p class="text-muted small mb-2">Available Coupons:</p>';
-                    coupons.forEach(coupon => {
-                        list.innerHTML += `
-                        <div class="coupon-chip" onclick="selectCoupon('${coupon.couponCode}')">
-                            <div class="coupon-info">
-                                <h4>${coupon.couponCode}</h4>
-                                <p>${coupon.offerPrice}% OFF (Min: ₹${coupon.minPrice})</p>
-                            </div>
-                            <span class="apply-coupon-link">Apply</span>
-                        </div>
-                    `;
-                    });
-                } else {
-                    list.innerHTML = '<p class="text-muted small">No coupons available</p>';
-                }
-            } catch (error) {
-                console.error('Error loading coupons:', error);
-            }
-        }
-
-        function selectCoupon(code) {
-            document.getElementById('couponInput').value = code;
-            handleApplyCoupon();
-        }
 
         function handleCheckout() {
             window.location.href = '/checkout';
         }
 
-        async function handleClearCoupon() {
-            try {
-                const response = await fetch('/clearCoupon', { method: 'POST' });
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('appliedCouponInfo').style.display = 'none';
-                    document.getElementById('couponInputGroup').style.display = 'flex';
-                    document.getElementById('discount-row').style.display = 'none';
-                    document.getElementById('couponInput').value = '';
-                    document.getElementById('couponMessage').innerText = '';
-
-                    // Recalculate based on current subtotal (simpler to just reload or refetch cart data)
-                    window.location.reload();
-                }
-            } catch (error) {
-                console.error('Error clearing coupon:', error);
-            }
-        }
-
-        async function handleApplyCoupon() {
-            const code = document.getElementById('couponInput').value.trim();
-            const messageDiv = document.getElementById('couponMessage');
-
-            if (!code) return;
-
-            try {
-                const response = await fetch('/applycoupon', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ couponCode: code })
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    messageDiv.style.color = 'var(--success)';
-                    messageDiv.innerText = `Coupon applied! You saved ₹${data.discountAmount}`;
-
-                    document.getElementById('appliedCouponInfo').style.display = 'block';
-                    document.getElementById('appliedCouponCode').innerText = code;
-                    document.getElementById('couponInputGroup').style.display = 'none';
-
-                    document.getElementById('discount-row').style.display = 'flex';
-                    document.getElementById('summary-discount').innerText = `-₹${data.discountAmount}`;
-                    document.getElementById('summary-total').innerText = `₹${data.totalAmount}`;
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Coupon Applied!',
-                        text: `You saved ₹${data.discountAmount}`,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                } else {
-                    messageDiv.style.color = 'var(--danger)';
-                    messageDiv.innerText = data.message;
-                }
-            } catch (error) {
-                console.error('Error applying coupon:', error);
-            }
-        }
 
         async function updateQty(productId, change) {
             const row = document.querySelector(`.cart-item[data-id="${productId}"]`);
@@ -625,13 +628,6 @@
                     const btns = row.querySelectorAll('.qty-btn');
                     btns[0].disabled = newQty <= 1;
                     btns[1].disabled = newQty >= 5;
-
-                    // Re-validate checkout button (Wait for a sec to let UI update or just check locally)
-                    // If any coupon was applied, it might be invalidated or need recalculation
-                    // For simplicity, we can reload or show a message that coupon has been removed 
-                    if (document.getElementById('appliedCouponInfo').style.display === 'block') {
-                        handleClearCoupon();
-                    }
 
                     gsap.to(row, { scale: 1.02, duration: 0.1, yoyo: true, repeat: 1 });
                 } else {
