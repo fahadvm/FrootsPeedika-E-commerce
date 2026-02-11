@@ -386,7 +386,17 @@
 
                 <!-- Main Content -->
                 <main class="col-md-9 p-4">
-                    <h2 class="mb-4">Your Orders</h2>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">Your Orders</h2>
+                        <form action="/orders" method="GET" class="d-flex gap-2">
+                            <input type="text" name="search" class="form-control"
+                                placeholder="Search by Order ID or Product..."
+                                value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
+                            <button type="submit" class="btn btn-orange">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
 
                     <% if (orders && orders.length> 0) { %>
                         <% orders.forEach(order=> { %>
@@ -462,14 +472,14 @@
                                         <% if (currentPage> 1) { %>
                                             <li class="page-item">
                                                 <a class="page-item btn btn-primary m-1"
-                                                    href="/orders?page=<%= currentPage - 1 %>">Previous</a>
+                                                    href="/orders?page=<%= currentPage - 1 %><%= searchQuery ? '&search=' + searchQuery : '' %>">Previous</a>
                                             </li>
                                             <% } %>
 
                                                 <% for(let i=1; i <=totalPages; i++) { %>
                                                     <li class="page-item <%= i === currentPage ? 'active' : '' %>">
                                                         <a class="page-item btn <%= i === currentPage ? 'btn-orange' : 'btn-primary' %> m-1"
-                                                            href="/orders?page=<%= i %>">
+                                                            href="/orders?page=<%= i %><%= searchQuery ? '&search=' + searchQuery : '' %>">
                                                             <%= i %>
                                                         </a>
                                                     </li>
@@ -478,7 +488,7 @@
                                                         <% if (currentPage < totalPages) { %>
                                                             <li class="page-item">
                                                                 <a class="page-item btn btn-primary m-1"
-                                                                    href="/orders?page=<%= currentPage + 1 %>">Next</a>
+                                                                    href="/orders?page=<%= currentPage + 1 %><%= searchQuery ? '&search=' + searchQuery : '' %>">Next</a>
                                                             </li>
                                                             <% } %>
                                     </ul>

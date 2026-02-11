@@ -1,232 +1,244 @@
 <%- include("../../views/partials/admin/header") %>
 
-<style>
-  :root {
-    --primary-color: #3498db;
-    --secondary-color: #2c3e50;
-    --success-color: #2ecc71;
-    --danger-color: #e74c3c;
-    --info-color: #3498db;
-    --light-gray: #ecf0f1;
-  }
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2c3e50;
+      --success-color: #2ecc71;
+      --danger-color: #e74c3c;
+      --info-color: #3498db;
+      --light-gray: #ecf0f1;
+    }
 
-  body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #f8f9fa;
-  }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+    }
 
-  .content-main {
-    padding: 2rem;
-  }
+    .content-main {
+      padding: 2rem;
+    }
 
-  .card {
-    border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-  }
+    .card {
+      border: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
 
-  .card-header {
-    background-color: var(--secondary-color);
-    color: white;
-    border-radius: 8px 8px 0 0;
-  }
+    .card-header {
+      background-color: var(--secondary-color);
+      color: white;
+      border-radius: 8px 8px 0 0;
+    }
 
-  .form-control {
-    border-radius: 20px;
-  }
+    .form-control {
+      border-radius: 20px;
+    }
 
-  .btn {
-    border-radius: 20px;
-    padding: 0.5rem 1.5rem;
-  }
+    .btn {
+      border-radius: 20px;
+      padding: 0.5rem 1.5rem;
+    }
 
-  .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-  }
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
 
-  .btn-success {
-    background-color: var(--success-color);
-    border-color: var(--success-color);
-  }
+    .btn-success {
+      background-color: var(--success-color);
+      border-color: var(--success-color);
+    }
 
-  .btn-danger {
-    background-color: var(--danger-color);
-    border-color: var(--danger-color);
-  }
+    .btn-danger {
+      background-color: var(--danger-color);
+      border-color: var(--danger-color);
+    }
 
-  .table {
-    background-color: white;
-  }
+    .table {
+      background-color: white;
+    }
 
-  .table th {
-    background-color: var(--secondary-color);
-    color: white;
-  }
+    .table th {
+      background-color: var(--secondary-color);
+      color: white;
+    }
 
-  .pagination {
-    justify-content: center;
-    margin-top: 2rem;
-  }
+    .pagination {
+      justify-content: center;
+      margin-top: 2rem;
+    }
 
-  .pagination .page-link {
-    color: var(--secondary-color);
-    border-radius: 20px;
-    margin: 0 5px;
-  }
+    .pagination .page-link {
+      color: var(--secondary-color);
+      border-radius: 20px;
+      margin: 0 5px;
+    }
 
-  .pagination .page-item.active .page-link {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-  }
-</style>
+    .pagination .page-item.active .page-link {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+  </style>
 
-<section class="content-main">
-  <div class="content-header">
-    <div class="d-flex justify-content-between align-items-center">
-      <h2 class="content-title">Customers Management</h2>
-    </div>
-  </div>
-
-  <div class="card mb-4">
-    <div class="card-header">
-      <h4 class="card-title mb-0">Search Customers</h4>
-    </div>
-    <div class="card-body">
-      <div class="input-group">
-        <input type="text" class="form-control" id="searchInput" placeholder="Search customers...">
+  <section class="content-main">
+    <div class="content-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="content-title">Customers Management</h2>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="card-header">
-      <h4 class="card-title mb-0">Customer List</h4>
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4 class="card-title mb-0">Search Customers</h4>
+      </div>
+      <div class="card-body">
+        <div class="input-group">
+          <input type="text" class="form-control" id="searchInput" placeholder="Search customers..."
+            value="<%= locals.search || '' %>">
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone No</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% for(let i = 0; i < data.length; i++) { %>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title mb-0">Customer List</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
               <tr>
-                <td><%= data[i].username %></td>
-                <td><%= data[i].email %></td>
-                <td><%= data[i].phone %></td>
-                <td>
-                  <% if(data[i].isBlocked == false || data[i].isBlocked === "false") { %>
-                    <a href="#" onclick="confirmBlock(event, '<%= data[i]._id %>')" class="btn btn-sm btn-danger">Block</a>
-                  <% } else { %>
-                    <a href="#" onclick="confirmUnblock(event, '<%= data[i]._id %>')" class="btn btn-sm btn-success">Unblock</a>
-                  <% } %>
-                </td>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone No</th>
+                <th>Action</th>
               </tr>
-            <% } %>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <% for(let i=0; i < data.length; i++) { %>
+                <tr>
+                  <td>
+                    <%= data[i].username %>
+                  </td>
+                  <td>
+                    <%= data[i].email %>
+                  </td>
+                  <td>
+                    <%= data[i].phone %>
+                  </td>
+                  <td>
+                    <% if(data[i].isBlocked==false || data[i].isBlocked==="false" ) { %>
+                      <a href="#" onclick="confirmBlock(event, '<%= data[i]._id %>')"
+                        class="btn btn-sm btn-danger">Block</a>
+                      <% } else { %>
+                        <a href="#" onclick="confirmUnblock(event, '<%= data[i]._id %>')"
+                          class="btn btn-sm btn-success">Unblock</a>
+                        <% } %>
+                  </td>
+                </tr>
+                <% } %>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
 
-  <nav aria-label="Page navigation" class="mt-4">
-    <ul class="pagination justify-content-center">
-      <% for(let i=1; i <= totalPages; i++) { %>
-        <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
-          <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-        </li>
-      <% } %>
-    </ul>
-  </nav>
-</section>
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center">
+        <% for(let i=1; i <=totalPages; i++) { %>
+          <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
+            <a class="page-link" href="?page=<%= i %><%= locals.search ? '&search=' + search : '' %>">
+              <%= i %>
+            </a>
+          </li>
+          <% } %>
+      </ul>
+    </nav>
+  </section>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-function confirmBlock(event, userId) {
-  event.preventDefault();
-  Swal.fire({
-    title: "Are you sure?",
-    text: "You are about to block this user!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, Block!",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      fetch(`/admin/customers/${userId}/block`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isBlocked: true })
-      })
-      .then(response => {
-        if (response.ok) {
-          Swal.fire('Blocked!', 'The user has been blocked.', 'success')
-            .then(() => window.location.reload()); // Reload to reflect changes
-        } else {
-          Swal.fire('Error!', 'Failed to block user.', 'error');
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    function confirmBlock(event, userId) {
+      event.preventDefault();
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to block this user!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, Block!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/customers/${userId}/block`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ isBlocked: true })
+          })
+            .then(response => {
+              if (response.ok) {
+                Swal.fire('Blocked!', 'The user has been blocked.', 'success')
+                  .then(() => window.location.reload()); // Reload to reflect changes
+              } else {
+                Swal.fire('Error!', 'Failed to block user.', 'error');
+              }
+            });
         }
       });
     }
-  });
-}
 
-function confirmUnblock(event, userId) {
-  event.preventDefault();
-  Swal.fire({
-    title: "Are you sure?",
-    text: "You are about to unblock this user!",
-    icon: "info",
-    showCancelButton: true,
-    confirmButtonColor: "#28a745",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, Unblock!",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      fetch(`/admin/customers/${userId}/unblock`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isBlocked: false })
-      })
-      .then(response => {
-        if (response.ok) {
-          Swal.fire('Unblocked!', 'The user has been unblocked.', 'success')
-            .then(() => window.location.reload());
-        } else {
-          Swal.fire('Error!', 'Failed to unblock user.', 'error');
+    function confirmUnblock(event, userId) {
+      event.preventDefault();
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to unblock this user!",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, Unblock!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/customers/${userId}/unblock`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ isBlocked: false })
+          })
+            .then(response => {
+              if (response.ok) {
+                Swal.fire('Unblocked!', 'The user has been unblocked.', 'success')
+                  .then(() => window.location.reload());
+              } else {
+                Swal.fire('Error!', 'Failed to unblock user.', 'error');
+              }
+            });
         }
       });
     }
-  });
-}
-</script>
-<script>
-  const searchInput = document.getElementById('searchInput');
-  const tableBody = document.querySelector('tbody');
+  </script>
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const tableBody = document.querySelector('tbody');
 
-  let debounceTimer;
-  searchInput.addEventListener('input', () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-      const query = searchInput.value.trim();
-      const res = await fetch(`/admin/users?q=${query}`);
-      const data = await res.json();
+    let debounceTimer;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        const query = searchInput.value.trim();
+        const res = await fetch(`/admin/users?json=true&q=${query}`);
+        const result = await res.json();
+        const users = result.data;
 
-      tableBody.innerHTML = data.map(user => `
+        tableBody.innerHTML = users.map(user => `
         <tr>
           <td>${user.username}</td>
           <td>${user.email}</td>
-          <td>${user.phone}</td>
+          <td>${user.phone || 'N/A'}</td>
           <td>
             ${user.isBlocked ? `
               <a href="#" onclick="confirmUnblock(event, '${user._id}')" class="btn btn-sm btn-success">Unblock</a>
@@ -236,9 +248,9 @@ function confirmUnblock(event, userId) {
           </td>
         </tr>
       `).join('');
-    }, 300);
-  });
-</script>
+      }, 300);
+    });
+  </script>
 
 
-<%- include("../../views/partials/admin/footer") %>
+  <%- include("../../views/partials/admin/footer") %>

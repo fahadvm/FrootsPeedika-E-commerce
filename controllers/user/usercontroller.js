@@ -96,8 +96,8 @@ const login = async (req, res) => {
 
         if (!passwordMatch) {
             return res.render('user/login', { message: 'Incorrect password' });
-        }  
-        
+        }
+
         req.session.user = findUser._id;
         console.log('in login session.user:', req.session.user)
         return res.redirect('/');
@@ -110,10 +110,10 @@ const login = async (req, res) => {
 const loadlogin = async (req, res) => {
     try {
         if (!req.session.user) {
-            return res.render("user/login", { message: "" });
+            const message = req.flash('error');
+            return res.render("user/login", { message: message.length > 0 ? message[0] : "" });
         } else {
             res.redirect('/')
-
         }
     } catch (error) {
         return res.redirect("/pageNotFound")
@@ -139,9 +139,9 @@ const loadHomepage = async (req, res) => {
             return res.render("user/home", { user: null, products: productData, req: req })
         }
     } catch (error) {
-        console.log("not found",error)
-        res.status(404).send("not found",error)
-    } 
+        console.log("not found", error)
+        res.status(404).send("not found", error)
+    }
 }
 
 const pageNotFound = async (req, res) => {
@@ -349,12 +349,12 @@ const loadShoppingPage = async (req, res) => {
 };
 const loadShoppingPage1 = async (req, res) => {
     try {
-        
-            res.render('user/shop1');
-        
+
+        res.render('user/shop1');
+
     } catch (error) {
         console.error('Error loading shop page:', error);
-       
+
     }
 };
 const loadAboutpage = async (req, res) => {

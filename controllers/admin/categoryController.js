@@ -2,7 +2,7 @@ const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
 
 const addCategory = async (req, res) => {
-  try { 
+  try {
     const { name, description } = req.body;
     console.log(" req.body:", req.body)
     const trimmedName = name.trim();
@@ -38,11 +38,21 @@ const addCategoryOffer = async (req, res) => {
       return res.status(404).json({ status: false, message: "Category not found" });
     }
 
-    if (isNaN(percentage) || percentage < 0 || percentage > 99) {
+    const offerPercentage = parseInt(percentage);
+    if (isNaN(offerPercentage) || offerPercentage < 0 || offerPercentage > 99) {
       return res.json({ status: false, message: "Invalid percentage value" });
     }
 
-    await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
+    await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: offerPercentage } });
+
+    // Update all products in this category
+    const products = await Product.find({ category: categoryId });
+    for (const product of products) {
+      const bestOffer = Math.max(product.productOffer || 0, offerPercentage);
+      product.salePrice = Math.round(product.regularPrice * (1 - bestOffer / 100));
+      await product.save();
+    }
+
     res.json({ status: true, message: "Offer added successfully" });
   } catch (error) {
     console.error("Error in addCategoryOffer:", error);
@@ -105,12 +115,13 @@ const removeCategoryOffer = async (req, res) => {
       return res.status(404).json({ status: false, message: "Category not found" });
     }
 
-    await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: null } });
+    await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: 0 } });
     const products = await Product.find({ category: category._id });
 
     for (const product of products) {
-      product.productOffer = 0;
-      product.salePrice = product.regularPrice;
+      // Recalculate based only on product offer as category offer is now 0
+      const bestOffer = product.productOffer || 0;
+      product.salePrice = Math.round(product.regularPrice * (1 - bestOffer / 100));
       await product.save();
     }
 
@@ -163,7 +174,26 @@ const editCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
     const { name, description } = req.body;
-    const updatedCategory = await Category.findByIdAndUpdate(categoryId, { name, description }, { new: true });
+
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({ success: false, message: "Category name cannot be empty" });
+    }
+
+    if (!description || description.trim().length === 0) {
+      return res.status(400).json({ success: false, message: "Description is required" });
+    }
+
+    const trimmedName = name.trim();
+    const existingCategory = await Category.findOne({
+      name: new RegExp(`^${trimmedName}$`, "i"),
+      _id: { $ne: categoryId }
+    });
+
+    if (existingCategory) {
+      return res.status(400).json({ success: false, message: "Category with this name already exists" });
+    }
+
+    const updatedCategory = await Category.findByIdAndUpdate(categoryId, { name: trimmedName, description }, { new: true });
 
     if (!updatedCategory) {
       return res.status(404).json({ success: false, message: "Category not found" });
@@ -190,18 +220,12 @@ const editCategoryOffer = async (req, res) => {
       return res.status(404).json({ status: false, message: "Category not found" });
     }
 
-    const products = await Product.find({ category: category._id });
-    const hasProductOffer = products.some((product) => product.productOffer > percentage);
-
-    if (hasProductOffer) {
-      return res.json({ status: false, message: "Some products have a higher offer already" });
-    }
-
     await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
 
+    const products = await Product.find({ category: category._id });
     for (const product of products) {
-      product.productOffer = 0;
-      product.salePrice = product.regularPrice - product.regularPrice * (percentage / 100);
+      const bestOffer = Math.max(product.productOffer || 0, percentage);
+      product.salePrice = Math.round(product.regularPrice * (1 - bestOffer / 100));
       await product.save();
     }
 

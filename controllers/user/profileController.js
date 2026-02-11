@@ -85,34 +85,40 @@ const getForgotPassPage = async (req, res) => {
 
 const forgotEmailValid = async (req, res) => {
     try {
-
         const { email } = req.body;
         const findUser = await User.findOne({ email: email });
-        if (findUser) {
-            const otp = generateOtp();
-            const emailSent = await sendVerificationEmail(email, otp);
-            if (emailSent) {
-                req.session.userOtp = otp;
-                req.session.email = email;
-                res.render("user/forgotPass-otp");
 
-                console.log("OTP: ", otp)
-            } else {
-                res.json({ success: false, message: "Failed to send OTP. PLease try again" })
-            }
-
-        } else {
-            res.render("forgot-password", {
-                message: "User with this email does not exist"
-            })
+        if (!findUser) {
+            return res.render("user/forgot-password", {
+                message: "No account found with this email address"
+            });
         }
 
+        // If user is Google-only, they don't have a local password to reset
+        if (findUser.googleId && !findUser.password) {
+            return res.render("user/forgot-password", {
+                message: "This account is linked with Google. Please use 'Login with Google'"
+            });
+        }
+
+        const otp = generateOtp();
+        const emailSent = await sendVerificationEmail(email, otp);
+
+        if (emailSent) {
+            req.session.userOtp = otp;
+            req.session.email = email;
+            res.render("user/forgotPass-otp");
+            console.log("OTP Sent Successfully:", otp);
+        } else {
+            res.render("user/forgot-password", {
+                message: "Unable to send verification code. Please check your connection"
+            });
+        }
     } catch (error) {
-
-        res.redirec("/pageNotFound")
-
+        console.error("Forgot email validation error:", error);
+        res.redirect("/pageNotFound");
     }
-}
+};
 
 const verifyForgotPassOtp = async (req, res) => {
     try {
@@ -146,56 +152,63 @@ const getResetPassPage = async (req, res) => {
 
 const resendOtp = async (req, res) => {
     try {
+        const email = req.session.email;
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Session expired. Please restart the process" });
+        }
 
         const otp = generateOtp();
         req.session.userOtp = otp;
-        const email = req.session.email;
-        console.log("Resending otp to email", email);
+
+        console.log("Resending OTP for password reset to:", email);
         const emailSent = await sendVerificationEmail(email, otp);
+
         if (emailSent) {
-            console.log("Resend Otp: ", otp);
-            res.status(200).json({ success: true, message: "Resend OTP Successful" })
-
-
+            console.log("Resent Reset OTP:", otp);
+            res.status(200).json({ success: true, message: "A new code has been sent to your email" });
+        } else {
+            res.status(500).json({ success: false, message: "Failed to resend code. Please try again" });
         }
-
     } catch (error) {
-
-        console.error("Error in rend otp", error);
-        res.status(500).json({ success: false, message: "Internal server errro" })
-
+        console.error("Error resending reset OTP:", error);
+        res.status(500).json({ success: false, message: "An unexpected error occurred" });
     }
-}
+};
 
 const postNewPassword = async (req, res) => {
     try {
-
         const { newPass1, newPass2 } = req.body;
         const email = req.session.email;
 
-        if (newPass1 === newPass2) {
-            const passwordHash = await securePassword(newPass1);
-            await User.updateOne(
-                { email: email },
-                { $set: { password: passwordHash } }
-            );
-
-
-            req.session.userOtp = null;
-            req.session.email = null;
-            req.session.resetAllowed = null;
-
-            res.redirect("/login")
-        } else {
-            res.render("reset-password", { message: "Password do not match" })
+        if (!req.session.resetAllowed) {
+            return res.render("user/reset-password", { message: "Unauthorized access. Please verify your OTP again" });
         }
 
+        if (newPass1 !== newPass2) {
+            return res.render("user/reset-password", { message: "Passwords do not match" });
+        }
+
+        if (newPass1.length < 6) {
+            return res.render("user/reset-password", { message: "Password must be at least 6 characters long" });
+        }
+
+        const passwordHash = await securePassword(newPass1);
+        await User.updateOne(
+            { email: email },
+            { $set: { password: passwordHash } }
+        );
+
+        // Clear only relevant session data
+        req.session.userOtp = null;
+        req.session.email = null;
+        req.session.resetAllowed = null;
+
+        res.redirect("/login");
     } catch (error) {
-
-        res.redirect("/pageNotFound")
-
+        console.error("Error updating password:", error);
+        res.redirect("/pageNotFound");
     }
-}
+};
 
 
 
@@ -211,12 +224,12 @@ const userProfile = async (req, res) => {
         const orders = await Order.find({ userId: userId }).sort({ createdAt: -1 })
         const totalOrders = orders.length;
         const totalSpending = orders.reduce((acc, order) => acc + order.totalPrice, 0);
-        const limitedorders = orders.slice(0,2)
+        const limitedorders = orders.slice(0, 2)
 
         const addressData = await Address.findOne({ userId: userId });
-      
+
         res.render("user/profile", {
-            user: userData, addresses: addressData,orders:limitedorders,totalOrders,totalSpending
+            user: userData, addresses: addressData, orders: limitedorders, totalOrders, totalSpending
         })
 
     } catch (error) {
@@ -477,8 +490,8 @@ const NewPassword = async (req, res) => {
 
 
 const editprofile = async (req, res) => {
-    const { username, phone, email, firstName,lastName,gender } = req.body;
-    console.log('req.body:',req.body)
+    const { username, phone, email, firstName, lastName, gender } = req.body;
+    console.log('req.body:', req.body)
 
     const userId = req.session.user; // Assuming user ID is stored in session
 
@@ -527,7 +540,7 @@ const editprofile = async (req, res) => {
         user.firstName = firstName;
         user.secondName = lastName;
         user.gender = gender;
-        
+
 
 
         // Save user
@@ -576,5 +589,5 @@ module.exports = {
     NewPassword,
     editprofile,
     addProfile,
- 
+
 }

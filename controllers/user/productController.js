@@ -23,12 +23,12 @@ const productDetails = async (req, res) => {
 
     const products = await Product.find({
       isBlocked: false,
-      category: { $in: categoryIds },
+      category: findCategory?._id,
+      _id: { $ne: productId },
       stock: { $gt: 0 },
     })
       .sort({ createdOn: -1 })
-      .skip(0)
-      .limit(9);
+      .limit(4);
 
     res.render("user/product-details", {
       user: userData,

@@ -135,9 +135,27 @@ const updateOrderStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
-        // Don't allow status change if order is cancelled
-        if (order.status === 'cancelled') {
-            return res.status(400).json({ success: false, message: "Cannot update cancelled order" });
+        const currentStatus = order.status;
+        const statusHierarchy = ['pending', 'confirmed', 'shipped', 'delivered'];
+        const restrictedStatuses = ['cancelled', 'return request', 'returned'];
+
+        // Prevent updates if order is in a final or restricted state
+        if (restrictedStatuses.includes(currentStatus)) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot update order status while it is ${currentStatus.replace(/ /g, '_')}.`
+            });
+        }
+
+        // Enforce one-way status flow
+        const currentIndex = statusHierarchy.indexOf(currentStatus);
+        const newIndex = statusHierarchy.indexOf(status);
+
+        if (currentIndex !== -1 && newIndex !== -1 && newIndex < currentIndex) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot revert order status from ${currentStatus} back to ${status}.`
+            });
         }
 
         if (status === 'delivered') {

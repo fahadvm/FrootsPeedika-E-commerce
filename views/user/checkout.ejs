@@ -45,10 +45,17 @@
                                                         <div class="address-card mb-3">
                                                             <label class="address-label">
                                                                 <input type="radio" name="selected_address"
-                                                                    value="<%= address.id %>" class="address-input">
+                                                                    value="<%= address.id %>" class="address-input"
+                                                                    <%=(address.isPrimary || address.isDefault)
+                                                                    ? 'checked' : '' %>>
                                                                 <div class="address-details">
                                                                     <h5 class="address-name">
                                                                         <%= address.name %> (<%= address.addressType %>)
+                                                                                <% if (address.isPrimary ||
+                                                                                    address.isDefault) { %>
+                                                                                    <span class="badge badge-warning"
+                                                                                        style="font-size: 10px; vertical-align: middle;">PRIMARY</span>
+                                                                                    <% } %>
                                                                     </h5>
                                                                     <p class="address-landmark">
                                                                         <%= address.landMark %><br>
@@ -86,32 +93,33 @@
                                     data-parent="#accordionExample">
                                     <div class="card-body">
                                         <div class="payment-methods">
-                                            <% const availableMethods = [
-                                                ...(totalAmount <= 1000 ? ["cod"] : []),
-                                                "razorpay",
-                                                ...(wallet?.balance >= totalAmount ? ["wallet"] : [])
-                                            ]; %>
-                                        
-                                            <% availableMethods.forEach(method => { %>
-                                                <div class="payment-method">
-                                                    <label class="payment-method-label">
-                                                        <input type="radio" name="payment_method" value="<%= method %>" class="payment-method-input">
-                                                        <div class="method-label">
-                                                            <%= method.charAt(0).toUpperCase() + method.slice(1).replace("_", " ") %>
-                                                        </div>
-                                                        <% if (method === "cod") { %>
-                                                            <div class="method-description">Cash on Delivery</div>
-                                                        <% } %>
-                                                        <% if (method === "wallet" && wallet) { %>
-                                                            <div class="method-description">
-                                                                Balance: ₹<%= wallet.balance?.toFixed(2) || 0 %>
+                                            <% const availableMethods=[ ...(totalAmount <=1000 ? ["cod"] :
+                                                []), "razorpay" , ...(wallet?.balance>= totalAmount ? ["wallet"] : [])
+                                                ]; %>
+
+                                                <% availableMethods.forEach(method=> { %>
+                                                    <div class="payment-method">
+                                                        <label class="payment-method-label">
+                                                            <input type="radio" name="payment_method"
+                                                                value="<%= method %>" class="payment-method-input">
+                                                            <div class="method-label">
+                                                                <%= method.charAt(0).toUpperCase() +
+                                                                    method.slice(1).replace("_", " " ) %>
                                                             </div>
-                                                        <% } %>
-                                                    </label>
-                                                </div>
-                                            <% }); %>
+                                                            <% if (method==="cod" ) { %>
+                                                                <div class="method-description">Cash on Delivery</div>
+                                                                <% } %>
+                                                                    <% if (method==="wallet" && wallet) { %>
+                                                                        <div class="method-description">
+                                                                            Balance: ₹<%= wallet.balance?.toFixed(2) ||
+                                                                                0 %>
+                                                                        </div>
+                                                                        <% } %>
+                                                        </label>
+                                                    </div>
+                                                    <% }); %>
                                         </div>
-                                        
+
                                     </div>
                                 </div>
                             </div>
@@ -132,10 +140,11 @@
                                     <div class="card-body">
                                         <div class="card-details">
                                             <%if(wallet) {%>
-                                                <h5>Wallet Balance: ₹<%= wallet.balance %></h5>
+                                                <h5>Wallet Balance: ₹<%= wallet.balance %>
+                                                </h5>
                                                 <%}else{%>
-                                                <h5>Wallet Balance: ₹0.00</h5>
-                                             <%}%>
+                                                    <h5>Wallet Balance: ₹0.00</h5>
+                                                    <%}%>
 
                                         </div>
                                     </div>

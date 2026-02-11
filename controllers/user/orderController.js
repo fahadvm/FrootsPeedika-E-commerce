@@ -66,19 +66,32 @@ const placeOrder = async (req, res) => {
             return sum + (item.productId.salePrice * item.quantity);
         }, 0);
 
+        // Validate all products and categories before proceeding
+        for (const item of cartData.items) {
+            if (!item.productId) {
+                req.flash('error', 'One or more products in your cart are no longer available.');
+                return res.redirect('/cart');
+            }
+            if (item.productId.isBlocked) {
+                req.flash('error', `Product "${item.productId.productName}" is currently unavailable.`);
+                return res.redirect('/cart');
+            }
+            if (!item.productId.category || !item.productId.category.isListed) {
+                req.flash('error', `Category for "${item.productId.productName}" is currently unavailable.`);
+                return res.redirect('/cart');
+            }
+            if (item.productId.stock < item.quantity) {
+                req.flash('error', `Insufficient stock for "${item.productId.productName}". Available: ${item.productId.stock}`);
+                return res.redirect('/cart');
+            }
+        }
+
         const shippingCharge = cartTotalBeforeDiscount < 100 ? 10 : 0;
         let totalAmount = shippingCharge;
         const orderItems = [];
-        const orderIds = [];
-
         const orders = [];
+
         for (const item of cartData.items) {
-            if (item.productId.stock < item.quantity) {
-                req.flash('error', `Insufficient stock for ${item.productId.productName}`);
-                return res.redirect('/checkout');
-
-            }
-
             const subtotal = item.productId.salePrice * item.quantity;
             const itemDiscount = discountAmount
                 ? (subtotal / cartTotalBeforeDiscount) * discountAmount
@@ -101,9 +114,8 @@ const placeOrder = async (req, res) => {
                 couponCode: couponCode || null,
                 productName: item.productId.productName,
                 productImages: item.productId.productImages[0],
+                status: (paymentMethod === 'cod') ? 'confirmed' : 'pending' // Online payments stay pending until verified
             });
-
-            await Product.findByIdAndUpdate(item.productId._id, { $inc: { stock: -item.quantity } });
 
             orderItems.push({
                 name: item.productId.productName,
@@ -118,16 +130,24 @@ const placeOrder = async (req, res) => {
             orders.push(order);
         }
 
+        // Final check for wallet balance if chosen
+        let wallet;
         if (paymentMethod === 'wallet') {
-            const wallet = await Wallet.findOne({ userId });
-
+            wallet = await Wallet.findOne({ userId });
             if (!wallet || wallet.balance < totalAmountInput) {
                 req.flash('error', 'Insufficient wallet balance');
                 return res.redirect('/checkout');
             }
+        }
 
-            const savedOrders = await Promise.all(orders.map(order => order.save()));
+        // Process stock update and save orders
+        for (const item of cartData.items) {
+            await Product.findByIdAndUpdate(item.productId._id, { $inc: { stock: -item.quantity } });
+        }
 
+        const savedOrders = await Promise.all(orders.map(order => order.save()));
+
+        if (paymentMethod === 'wallet') {
             wallet.balance -= totalAmountInput;
             wallet.totalDebited += totalAmountInput;
             wallet.transactions.push({
@@ -160,7 +180,6 @@ const placeOrder = async (req, res) => {
 
         // Handle COD Payment
         if (paymentMethod === 'cod') {
-            const savedOrders = await Promise.all(orders.map(order => order.save()));
 
             await Transaction.create({
                 userId,
@@ -182,7 +201,6 @@ const placeOrder = async (req, res) => {
 
         // Handle Online Payment (like Net Banking)
         if (paymentMethod !== 'wallet' && paymentMethod !== 'cod') {
-            const savedOrders = await Promise.all(orders.map(order => order.save()));
 
             await Transaction.create({
                 userId,
@@ -264,11 +282,20 @@ const getOrder = async (req, res) => {
     try {
         const userId = req.session.user;
         const page = parseInt(req.query.page) || 1;
+        const search = req.query.search || "";
         const limit = 5;
         const skip = (page - 1) * limit;
 
-        const totalOrders = await Order.countDocuments({ userId: userId });
-        const orders = await Order.find({ userId: userId })
+        const query = { userId: userId };
+        if (search) {
+            query.$or = [
+                { orderId: { $regex: search, $options: "i" } },
+                { productName: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        const totalOrders = await Order.countDocuments(query);
+        const orders = await Order.find(query)
             .populate({
                 path: 'product',
                 select: 'productName productImages salePrice'
@@ -284,7 +311,8 @@ const getOrder = async (req, res) => {
             user: user,
             currentPage: page,
             totalPages: Math.ceil(totalOrders / limit),
-            totalOrders: totalOrders
+            totalOrders: totalOrders,
+            searchQuery: search
         });
     } catch (error) {
         console.error("Error in getOrders:", error);

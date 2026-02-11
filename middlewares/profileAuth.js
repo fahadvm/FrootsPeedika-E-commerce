@@ -27,7 +27,8 @@ const checkBlockedUser = async (req, res, next) => {
             // If user is found and is blocked, destroy the session and redirect
             if (user && user.isBlocked) {
                 delete req.session.user;
-                return res.redirect('/login'); 
+                req.flash('error', 'Your account has been blocked');
+                return res.redirect('/login');
             }
         }
 
@@ -46,7 +47,7 @@ const checkBlockedUser = async (req, res, next) => {
 //             res.redirect("/")
 //         }
 //         next()
-        
+
 //     } catch (error) {
 //         res.redirect("/pageNotFound")
 //     }

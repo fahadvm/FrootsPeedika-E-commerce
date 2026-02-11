@@ -31,10 +31,10 @@ const multer = require("multer");
 const path = require('path')
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads/"); 
+        cb(null, "uploads/");
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); 
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 
@@ -78,25 +78,7 @@ router.get('/address', userAuth, addressController.loadAddress)
 router.post('/add-address', addressController.postAddress)
 router.post('/editAddress', addressController.editAddress)
 router.post('/delete-address/:id', addressController.deleteAddress)
-router.post('/set-default-address', async (req, res) => {
-    const { addressId } = req.body;
-    const userId = req.session.user; 
-    try {
-        await Address.updateMany(
-            { userId, "address.isDefault": true },
-            { $set: { "address.$.isDefault": false } }
-        );
-
-        await Address.updateOne(
-            { userId, "address._id": addressId },
-            { $set: { "address.$.isDefault": true } }
-        );
-
-        console.log("Default address set successfully");
-    } catch (error) {
-        console.error("Error setting default address:", error);
-    }
-});
+router.post('/set-default-address', addressController.setPrimaryAddress)
 
 
 // whishlist management
@@ -119,7 +101,7 @@ router.post("/placeOrder", userAuth, orderController.placeOrder);
 
 
 //coupon mangement
-router.get("/coupons", userAuth,  couponController.loadcoupon)
+router.get("/coupons", userAuth, couponController.loadcoupon)
 router.post('/applycoupon', userAuth, couponController.applyCoupon)
 router.get('/getAvailableCoupons', userAuth, couponController.getAvailableCoupons);
 router.post('/clearCoupon', userAuth, couponController.clearCoupon);
@@ -133,17 +115,17 @@ router.get("/download-invoice", userAuth, orderController.generateInvoice);
 
 
 router.post("/razorpay/create-order", orderController.createRazorpay)
-router.post("/create-subscription",orderController.Razorpaysubscription)
+router.post("/create-subscription", orderController.Razorpaysubscription)
 
 
 
 
 
 router.get('/wallet', userAuth, walletController.getWallet)
-router.post('/add-money',userAuth,walletController.addTowallet)
-router.post("/wallet/create-order",userAuth,walletController.createRazorpayOrder)
-router.post("/wallet/payment-success",userAuth,walletController.razorpayPaymentSuccess)
-    
+router.post('/add-money', userAuth, walletController.addTowallet)
+router.post("/wallet/create-order", userAuth, walletController.createRazorpayOrder)
+router.post("/wallet/payment-success", userAuth, walletController.razorpayPaymentSuccess)
+
 
 
 
@@ -152,6 +134,13 @@ router.post("/wallet/payment-success",userAuth,walletController.razorpayPaymentS
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/signup' }), async (req, res) => {
     try {
+        if (req.user.isBlocked) {
+            req.logout((err) => {
+                if (err) console.log("Logout error:", err);
+                return res.render('user/login', { message: 'User is blocked by admin' });
+            });
+            return;
+        }
         req.session.user = req.user._id;
         res.redirect('/');
     } catch (error) {

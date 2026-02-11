@@ -66,14 +66,18 @@ const getAllProducts = async (req, res) => {
 const addProductOffer = async (req, res) => {
   try {
     const { productId, percentage } = req.body;
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId).populate('category');
 
     if (!product) {
       return res.status(404).json({ status: false, message: "Product not found" });
     }
 
-    product.productOffer = parseInt(percentage);
-    product.salePrice = Math.round(product.regularPrice * (1 - percentage / 100));
+    const productOffer = parseInt(percentage);
+    const categoryOffer = product.category ? product.category.categoryOffer : 0;
+    const bestOffer = Math.max(productOffer, categoryOffer);
+
+    product.productOffer = productOffer;
+    product.salePrice = Math.round(product.regularPrice * (1 - bestOffer / 100));
     await product.save();
 
     res.json({ status: true, message: "Offer added successfully" });
@@ -87,14 +91,16 @@ const addProductOffer = async (req, res) => {
 const removeProductOffer = async (req, res) => {
   try {
     const { productId } = req.body;
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId).populate('category');
 
     if (!product) {
       return res.status(404).json({ status: false, message: "Product not found" });
     }
 
+    const categoryOffer = product.category ? product.category.categoryOffer : 0;
+
     product.productOffer = 0;
-    product.salePrice = product.regularPrice;
+    product.salePrice = Math.round(product.regularPrice * (1 - categoryOffer / 100));
     await product.save();
 
     res.json({ status: true, message: "Offer removed successfully" });

@@ -1,4 +1,4 @@
-<%-include(".. /../views/partials/user/header")%>
+<%-include("../../views/partials/user/header")%>
 
     <title>Frootspeedika - Manage Addresses</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -192,6 +192,18 @@
             display: flex;
             gap: 15px;
         }
+
+        .primary-badge {
+            background-color: #ffffff;
+            color: #ff8c42;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
     </style>
     </head>
 
@@ -236,40 +248,45 @@
                         <%if(addresses){%>
                             <% addresses.address.forEach(address=> { %>
                                 <div class="address-card">
-                                    <h3>
-                                        <%= address.name %>
-                                    </h3>
-                                    <p>
-                                        <%= address.landMark %>
-                                    </p>
-                                    <p>
-                                        <%= address.city %>, <%= address.state %> - <%= address.pincode %>
-                                    </p>
-                                    <p>phone: <%= address.phone %>
-                                    </p>
-                                    <p>Address Type: <%= address.addressType %>
-                                    </p>
+                                    <% if (address.isPrimary || address.isDefault) { %>
+                                        <div class="primary-badge">
+                                            <i class="fas fa-check-circle"></i> Primary Address
+                                        </div>
+                                        <% } %>
+                                            <h3>
+                                                <%= address.name %>
+                                            </h3>
+                                            <p>
+                                                <%= address.landMark %>
+                                            </p>
+                                            <p>
+                                                <%= address.city %>, <%= address.state %> - <%= address.pincode %>
+                                            </p>
+                                            <p>phone: <%= address.phone %>
+                                            </p>
+                                            <p>Address Type: <%= address.addressType %>
+                                            </p>
 
-                                    <div class="address-actions">
-                                        <button class="btn btn-primary"
-                                            onclick="showEditForm('<%= address.id %>', '<%= address.name %>', '<%= address.phone %>', '<%= address.altPhone %>', '<%= address.pincode %>', '<%= address.landMark %>', '<%= address.city %>', '<%= address.state %>', '<%= address.addressType %>')">
-                                            <i class="fas fa-edit"></i>edit
-                                        </button>
+                                            <div class="address-actions">
+                                                <button class="btn btn-primary"
+                                                    onclick="showEditForm('<%= address.id %>', '<%= address.name %>', '<%= address.phone %>', '<%= address.altPhone %>', '<%= address.pincode %>', '<%= address.landMark %>', '<%= address.city %>', '<%= address.state %>', '<%= address.addressType %>', '<%= address.isPrimary || address.isDefault %>')">
+                                                    <i class="fas fa-edit"></i>edit
+                                                </button>
 
-                                        <form action="/delete-address/<%= address.id %>" method="POST"
-                                            style="display: inline;">
-                                            <button type="submit" class="btn btn-danger"
-                                                onclick="return confirm('Are you sure you want to delete this address?')">
-                                                <i class="fas fa-trash"></i>delete
-                                            </button>
-                                        </form>
-                                        <%if(address.isDefault){%>
-                                            <button class="btn btn-primary"
-                                                onclick="setDefault('<%= address.id %>', '<%= address.name %>', '<%= address.phone %>', '<%= address.altPhone %>', '<%= address.pincode %>', '<%= address.landMark %>', '<%= address.city %>', '<%= address.state %>', '<%= address.addressType %>')">
-                                                <i class="fa-solid fa-map-pin"></i>
-                                            </button>
-                                            <%}%>
-                                    </div>
+                                                <form action="/delete-address/<%= address.id %>" method="POST"
+                                                    style="display: inline;">
+                                                    <button type="submit" class="btn btn-danger"
+                                                        onclick="return confirm('Are you sure you want to delete this address?')">
+                                                        <i class="fas fa-trash"></i>delete
+                                                    </button>
+                                                </form>
+                                                <% if (!address.isPrimary && !address.isDefault) { %>
+                                                    <button class="btn btn-primary" title="Set as Primary"
+                                                        onclick="setDefault('<%= address.id %>')">
+                                                        <i class="fa-solid fa-map-pin"></i> Set Primary
+                                                    </button>
+                                                    <% } %>
+                                            </div>
                                 </div>
                                 <% }); %>
                                     <%}else{%>
@@ -326,12 +343,20 @@
                                     <label>Address Type:</label>
                                     <div class="address-type">
                                         <label>
-                                            <input type="radio" name="addressType" value="home" required> Home
+                                            <input type="radio" name="addressType" id="typeHome" value="home" required>
+                                            Home
                                         </label>
                                         <label>
-                                            <input type="radio" name="addressType" value="work"> Work
+                                            <input type="radio" name="addressType" id="typeWork" value="work"> Work
                                         </label>
                                     </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" name="isPrimary" id="isPrimary" value="true"> Set as
+                                        Primary Address
+                                    </label>
                                 </div>
 
                                 <div class="form-group">
@@ -344,7 +369,7 @@
                 </main>
             </div>
         </div>
-        <%-include(".. /../views/partials/user/footer")%>
+        <%-include("../../views/partials/user/footer")%>
 
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
@@ -352,36 +377,47 @@
                     document.getElementById('modalTitle').textContent = 'Add New Address';
                     document.getElementById('addressForm').action = '/add-address';
                     document.getElementById('addressId').value = '';
+                    document.getElementById('addressForm').reset();
+                    document.getElementById('isPrimary').checked = false;
                     document.getElementById('addressModal').style.display = 'block';
                 }
 
-                function setDefault(id, name, phone, altPhone, pincode, landMark, city, state, addressType) {
-                    if (!confirm('Are you sure you want to set this as your default address?')) {
-                        return;
-                    }
-
-                    fetch('/set-default-address', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ addressId: id })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                location.reload();
-                            } else {
-                                alert('Failed to set default address: ' + (data.message || 'Unknown error'));
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while setting the default address.');
-                        });
+                function setDefault(id) {
+                    Swal.fire({
+                        title: 'Set as Primary?',
+                        text: "This will be your main shipping address.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ff8c42',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, set as primary'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch('/set-default-address', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ addressId: id })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire('Success', 'Primary address updated', 'success')
+                                            .then(() => location.reload());
+                                    } else {
+                                        Swal.fire('Error', data.message || 'Failed to update', 'error');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    Swal.fire('Error', 'An unexpected error occurred', 'error');
+                                });
+                        }
+                    });
                 }
 
-                function showEditForm(id, name, phone, altPhone, pincode, landMark, city, state, type) {
+                function showEditForm(id, name, phone, altPhone, pincode, landMark, city, state, type, isPrimary) {
                     document.getElementById('modalTitle').textContent = 'Edit Address';
                     document.getElementById('addressForm').action = '/editAddress';
                     document.getElementById('addressId').value = id;

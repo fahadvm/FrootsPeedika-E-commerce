@@ -6,7 +6,7 @@ const Cart = require("../../models/cartSchema");
 const Wallet = require("../../models/walletSchema")
 
 function calculateShipping(subtotal) {
-    return subtotal > 100 ? 0 : 10; 
+    return subtotal > 100 ? 0 : 10;
 }
 
 // const loadCheckoutPage = async (req, res) => {
@@ -66,46 +66,57 @@ function calculateShipping(subtotal) {
 // };
 
 const loadCheckoutPage = async (req, res) => {
-  try {
-      const userId = req.session.user;
-      const user = await User.findById(userId);
-      const cart = await Cart.findOne({ userId }).populate('items.productId');
-      const wallet = await Wallet.findOne({ userId });
+    try {
+        const userId = req.session.user;
+        const user = await User.findById(userId);
+        const cart = await Cart.findOne({ userId }).populate({
+            path: 'items.productId',
+            populate: { path: 'category' }
+        });
+        const wallet = await Wallet.findOne({ userId });
 
-      if (!cart || cart.items.length === 0) {
-          return res.redirect('/shop');
-      }
+        if (!cart || cart.items.length === 0) {
+            return res.redirect('/shop');
+        }
 
-      const validItems = cart.items.filter(item => 
-          item.productId && !item.productId.isBlocked && item.productId.stock > 0
-      );
+        const validItems = cart.items.filter(item =>
+            item.productId &&
+            !item.productId.isBlocked &&
+            item.productId.stock >= item.quantity &&
+            item.productId.category &&
+            item.productId.category.isListed
+        );
 
-      if (validItems.length !== cart.items.length) {
-          cart.items = validItems;
-          await cart.save(); 
-      }
+        if (validItems.length !== cart.items.length) {
+            cart.items = validItems;
+            await cart.save();
+            if (validItems.length === 0) {
+                req.flash('error', 'Some items in your cart became unavailable.');
+                return res.redirect('/cart');
+            }
+        }
 
-      let subTotal = validItems.reduce((sum, item) => sum + item.totalPrice, 0);
-      let shipping = calculateShipping(subTotal);
-      let totalAmount = subTotal + shipping;
+        let subTotal = validItems.reduce((sum, item) => sum + item.totalPrice, 0);
+        let shipping = calculateShipping(subTotal);
+        let totalAmount = subTotal + shipping;
 
-      const addressData = await Address.findOne({ userId });
-      const addresses = addressData ? addressData : [];
+        const addressData = await Address.findOne({ userId });
+        const addresses = addressData ? addressData : [];
 
-      res.render('user/checkout', {
-          user,
-          cartItems: validItems,
-          subTotal,
-          shipping,
-          addresses,
-          totalAmount,
-          discount: 0,
-          wallet
-      });
-  } catch (error) {
-      console.error('Error occurred while loading checkout:', error);
-      return res.redirect('/pageNotFound');
-  }
+        res.render('user/checkout', {
+            user,
+            cartItems: validItems,
+            subTotal,
+            shipping,
+            addresses,
+            totalAmount,
+            discount: 0,
+            wallet
+        });
+    } catch (error) {
+        console.error('Error occurred while loading checkout:', error);
+        return res.redirect('/pageNotFound');
+    }
 };
 
 

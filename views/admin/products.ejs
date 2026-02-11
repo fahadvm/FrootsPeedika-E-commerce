@@ -274,23 +274,39 @@
                                 <%= data[i].regularPrice %>
                             </td>
                             <td>
-                                <% if(data[i].productOffer) { %>
-                                    <%= data[i].productOffer %>%
-                                        <button class="btn btn-sm btn-warning"
-                                            onclick="editOffer('<%= data[i]._id %>', '<%= data[i].productOffer %>')">
-                                            Edit
-                                        </button>
-                                        <button class="btn btn-sm btn-danger"
-                                            onclick="removeOffer('<%= data[i]._id %>')">
-                                            Remove
-                                        </button>
-                                        <% } else { %>
-                                            0%
-                                            <button class="btn btn-sm btn-info"
-                                                onclick="addOffer('<%= data[i]._id %>')">
-                                                Add Offer
-                                            </button>
-                                            <% } %>
+                                <% let catOffer=data[i].category ? (data[i].category.categoryOffer || 0) : 0; let
+                                    prodOffer=data[i].productOffer || 0; let bestOffer=Math.max(catOffer, prodOffer); %>
+                                    <div class="offer-details">
+                                        <div
+                                            class="<%= (prodOffer >= catOffer && prodOffer > 0) ? 'text-success font-weight-bold' : '' %>">
+                                            <strong>Product:</strong>
+                                            <%= prodOffer %>%
+                                                <% if(prodOffer>= catOffer && prodOffer > 0) { %> <span
+                                                        class="badge bg-success text-white">BEST</span>
+                                                    <% } %>
+                                        </div>
+                                        <div
+                                            class="<%= (catOffer > prodOffer) ? 'text-success font-weight-bold' : '' %>">
+                                            <strong>Category:</strong>
+                                            <%= catOffer %>%
+                                                <% if(catOffer> prodOffer) { %> <span
+                                                        class="badge bg-success text-white">BEST</span>
+                                                    <% } %>
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <% if(prodOffer> 0) { %>
+                                                <button class="btn btn-xs btn-warning"
+                                                    onclick="editOffer('<%= data[i]._id %>', '<%= prodOffer %>')">Edit</button>
+                                                <button class="btn btn-xs btn-danger"
+                                                    onclick="removeOffer('<%= data[i]._id %>')">Remove</button>
+                                                <% } else { %>
+                                                    <button class="btn btn-xs btn-info"
+                                                        onclick="addOffer('<%= data[i]._id %>')">Add Product
+                                                        Offer</button>
+                                                    <% } %>
+                                        </div>
+                                    </div>
                             </td>
                             <td>
                                 <%= data[i].stock %>
