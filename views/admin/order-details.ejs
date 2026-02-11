@@ -143,7 +143,7 @@
                         <% if (order.status==="return request" ) { %>
                             <div class="mb-4">
                                 <h6>Return Request Reason</h6>
-                                <p>
+                                <p class="text-muted p-2 bg-light border rounded">
                                     <%=order.returnReason%>
                                 </p>
                                 <h6>Return Request Actions</h6>
@@ -155,18 +155,29 @@
                                     Reject Return
                                 </button>
                             </div>
-                        <% } else if (order.status !=='cancelled' && order.status !=='delivered' && order.status !=='returned') { %>
-                                <div class="mt-4">
-                                    <button onclick="updateStatus('<%= order._id %>')" class="btn btn-primary me-2">
-                                        Update Status
-                                    </button>
-                                    <button onclick="cancelOrder('<%= order._id %>')" class="btn btn- danger">
-                                        Cancel Order
-                                    </button>
+                            <% } else if (order.status==="return request rejected" ) { %>
+                                <div class="mb-4">
+                                    <h6>Return Request Reason</h6>
+                                    <p class="text-muted p-2 bg-light border rounded">
+                                        <%=order.returnReason%>
+                                    </p>
+                                    <div class="alert alert-danger">
+                                        <strong>Return Request Rejected</strong><br>
+                                        <strong>Reason:</strong>
+                                        <%= order.returnRejectionReason %>
+                                    </div>
                                 </div>
-                        <% } else if(order.status==='cancelled' && order.status==='delivered' &&
-                                    order.status==='returned' ){ %>
-                        <%}%>
+                                <% } else if (order.status !=='cancelled' && order.status !=='delivered' && order.status
+                                    !=='returned' ) { %>
+                                    <div class="mt-4">
+                                        <button onclick="updateStatus('<%= order._id %>')" class="btn btn-primary me-2">
+                                            Update Status
+                                        </button>
+                                        <button onclick="cancelOrder('<%= order._id %>')" class="btn btn- danger">
+                                            Cancel Order
+                                        </button>
+                                    </div>
+                                    <% } %>
                     </div>
                 </div>
             </div>
@@ -228,7 +239,8 @@
                                     order.paymentMethod === 'wallet' ? 'bg-info' :
                                     'bg-warning'
                                 %>">
-                                <%=order.paymentMethod%>                              </span>
+                                                <%=order.paymentMethod%>
+                                            </span>
                                         </div>
                             </div>
                         </div>
@@ -304,159 +316,155 @@
         }
 
         async function cancelOrder(orderId) {
-    // Initial confirmation
-    const result = await Swal.fire({
-        title: 'Cancel Order',
-        text: 'Are you sure you want to cancel this order?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, cancel it!'
-    });
-
-    if (result.isConfirmed) {
-        // Vendor-specific reason selection
-        const { value: reason } = await Swal.fire({
-            title: 'Cancel Order',
-            input: 'select',
-            inputLabel: 'Reason for cancellation (Vendor)',
-            inputPlaceholder: 'Select a reason...',
-            showCancelButton: true,
-            inputOptions: {
-                'outOfStock': 'Out of Stock',
-                'vendorDelay': 'Vendor Shipping Delay',
-                'qualityIssue': 'Vendor Quality Issue',
-                'vendorError': 'Vendor Processing Error',
-                'discontinued': 'Product Discontinued by Vendor',
-                'other': 'Other (Please specify)'
-            },
-            inputValidator: (value) => !value && 'Please select a reason!'
-        });
-
-        if (reason) {
-            let finalReason = reason;
-
-            // If "other" is selected, show textarea for additional details
-            if (reason === 'other') {
-                const { value: otherReason } = await Swal.fire({
-                    title: 'Please Specify Reason',
-                    input: 'textarea',
-                    inputLabel: 'Describe the vendor-related reason for cancellation',
-                    inputPlaceholder: 'Type the vendor-related reason here...',
-                    showCancelButton: true,
-                    inputValidator: (value) => !value && 'Please provide a description!'
-                });
-
-                if (!otherReason) {
-                    return; // Exit if user cancels the textarea input
-                }
-
-                finalReason = `Other: ${otherReason}`;
-            }
-
-            // Show loading state
-            Swal.fire({
-                title: 'Cancelling Order...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
+            // Initial confirmation
+            const result = await Swal.fire({
+                title: 'Cancel Order',
+                text: 'Are you sure you want to cancel this order?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, cancel it!'
             });
 
-            try {
-                const response = await fetch('/admin/orders/cancel', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
+            if (result.isConfirmed) {
+                // Vendor-specific reason selection
+                const { value: reason } = await Swal.fire({
+                    title: 'Cancel Order',
+                    input: 'select',
+                    inputLabel: 'Reason for cancellation (Vendor)',
+                    inputPlaceholder: 'Select a reason...',
+                    showCancelButton: true,
+                    inputOptions: {
+                        'outOfStock': 'Out of Stock',
+                        'vendorDelay': 'Vendor Shipping Delay',
+                        'qualityIssue': 'Vendor Quality Issue',
+                        'vendorError': 'Vendor Processing Error',
+                        'discontinued': 'Product Discontinued by Vendor',
+                        'other': 'Other (Please specify)'
                     },
-                    body: JSON.stringify({ orderId, reason: finalReason }), // Include reason in payload
+                    inputValidator: (value) => !value && 'Please select a reason!'
                 });
 
-                const data = await response.json();
+                if (reason) {
+                    let finalReason = reason;
 
-                if (data.success) {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Order cancelled successfully',
-                        timer: 1500,
-                        showConfirmButton: false
+                    // If "other" is selected, show textarea for additional details
+                    if (reason === 'other') {
+                        const { value: otherReason } = await Swal.fire({
+                            title: 'Please Specify Reason',
+                            input: 'textarea',
+                            inputLabel: 'Describe the vendor-related reason for cancellation',
+                            inputPlaceholder: 'Type the vendor-related reason here...',
+                            showCancelButton: true,
+                            inputValidator: (value) => !value && 'Please provide a description!'
+                        });
+
+                        if (!otherReason) {
+                            return; // Exit if user cancels the textarea input
+                        }
+
+                        finalReason = `Other: ${otherReason}`;
+                    }
+
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Cancelling Order...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
                     });
-                    location.reload();
-                } else {
-                    throw new Error(data.message || 'Unknown error occurred');
+
+                    try {
+                        const response = await fetch('/admin/orders/cancel', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ orderId, reason: finalReason }), // Include reason in payload
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'Order cancelled successfully',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            location.reload();
+                        } else {
+                            throw new Error(data.message || 'Unknown error occurred');
+                        }
+                    } catch (error) {
+                        console.error('Error cancelling order:', error);
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to cancel order. Please try again.',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
                 }
-            } catch (error) {
-                console.error('Error cancelling order:', error);
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Failed to cancel order. Please try again.',
-                    confirmButtonColor: '#3085d6'
-                });
             }
         }
-    }
-}
         async function handleReturn(action, orderId) {
-            currentOrderId = orderId;
-
-            // if (action === 'reject') {
-            //     const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
-            //     modal.show();
-            //     return;
-            // }
             if (action === 'reject') {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You are about to reject this return request!",
-                    icon: 'warning',
+                const { value: reason } = await Swal.fire({
+                    title: 'Reject Return Request',
+                    input: 'textarea',
+                    inputLabel: 'Reason for rejection',
+                    inputPlaceholder: 'Type your reason here...',
+                    inputAttributes: {
+                        'aria-label': 'Type your reason here'
+                    },
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, reject it!'
-                }).then(async (result) => {
-                    if (result.isConfirmed) {
-                        try {
-                            const response = await fetch('/admin/orders/handle-return', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    orderId: orderId,
-                                    action: action
-                                })
-                            })
-
-
-                            const data = await response.json();
-                            console.log('data:', data)
-
-                            if (data.success) {
-                                Swal.fire(
-                                    'Rejected!',
-                                    'Return request has been rejected.',
-                                    'success'
-                                ).then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                throw new Error(data.message);
-                            }
-                        } catch (error) {
-                            console.error('Error:', error);
-                            Swal.fire(
-                                'Error!',
-                                error.message || 'Failed to approve return request',
-                                'error'
-                            );
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'You need to provide a reason for rejection!'
                         }
                     }
                 });
-            }
 
-            if (action === 'approve') {
+                if (reason) {
+                    try {
+                        const response = await fetch('/admin/orders/handle-return', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                orderId: orderId,
+                                action: action,
+                                reason: reason
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            Swal.fire(
+                                'Rejected!',
+                                'Return request has been rejected.',
+                                'success'
+                            ).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire(
+                            'Error!',
+                            error.message || 'Failed to reject return request',
+                            'error'
+                        );
+                    }
+                }
+            } else if (action === 'approve') {
                 Swal.fire({
                     title: 'Are you sure?',
                     text: "You are about to approve this return request!",
@@ -477,11 +485,9 @@
                                     orderId: orderId,
                                     action: action
                                 })
-                            })
-
+                            });
 
                             const data = await response.json();
-                            console.log('data:', data)
 
                             if (data.success) {
                                 Swal.fire(

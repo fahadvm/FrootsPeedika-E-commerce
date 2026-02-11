@@ -92,6 +92,7 @@ const orderSchema = new Schema(
         'delivered',
         'cancelled',
         'return request',
+        'return request rejected',
         'returned',
         'failed',
       ],
@@ -104,7 +105,13 @@ const orderSchema = new Schema(
     },
     returnReason: {
       type: String,
-      required: function () { return this.status === 'return request' || this.status === 'returned'; },
+      required: function () {
+        return ['return request', 'return request rejected', 'returned'].includes(this.status);
+      },
+    },
+    returnRejectionReason: {
+      type: String,
+      required: function () { return this.status === 'return request rejected'; },
     },
     paymentMethod: {
       type: String,

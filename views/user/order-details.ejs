@@ -153,7 +153,7 @@
                                                 <p class="mb-0">Status:
                                                     <span class="badge <%= 
                                                 order.status === 'delivered' ? 'bg-success' :
-                                                order.status === 'cancelled' ? 'bg-danger' :
+                                                ['cancelled', 'returned', 'return request rejected'].includes(order.status) ? 'bg-danger' :
                                                 order.status === 'shipped' ? 'bg-info' :
                                                 'bg-warning'
                                             %>">
@@ -208,18 +208,28 @@
                                                     Return Order
                                                 </button>
                                                 <% } else if (order.status==='return request' ||
-                                                    order.status==='returned' ) { %>
-                                                    <div class="badge bg-warning text-dark mt-2 w-100 p-2">
-                                                        <%= order.status==='return request' ? 'Return Requested'
+                                                    order.status==='returned' ||
+                                                    order.status==='return request rejected' ) { %>
+                                                    <div
+                                                        class="badge <%= order.status === 'return request rejected' ? 'bg-danger' : 'bg-warning' %> text-dark mt-2 w-100 p-2 text-uppercase">
+                                                        <%= order.status==='return request' ? 'Return Requested' :
+                                                            order.status==='return request rejected' ? 'Return Rejected'
                                                             : 'Returned' %>
                                                     </div>
                                                     <% if (order.returnReason) { %>
                                                         <div class="mt-2 small text-muted">
-                                                            <strong>Reason:</strong>
+                                                            <strong>Your Return Reason:</strong>
                                                             <%= order.returnReason %>
                                                         </div>
                                                         <% } %>
-                                                            <% } %>
+                                                            <% if (order.status==='return request rejected' &&
+                                                                order.returnRejectionReason) { %>
+                                                                <div class="mt-2 alert alert-danger py-2 px-3 small">
+                                                                    <strong>Rejection Reason:</strong>
+                                                                    <%= order.returnRejectionReason %>
+                                                                </div>
+                                                                <% } %>
+                                                                    <% } %>
                             </div>
                         </div>
 

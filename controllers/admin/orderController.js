@@ -137,7 +137,7 @@ const updateOrderStatus = async (req, res) => {
 
         const currentStatus = order.status;
         const statusHierarchy = ['pending', 'confirmed', 'shipped', 'delivered'];
-        const restrictedStatuses = ['cancelled', 'return request', 'returned'];
+        const restrictedStatuses = ['cancelled', 'return request', 'returned', 'return request rejected'];
 
         // Prevent updates if order is in a final or restricted state
         if (restrictedStatuses.includes(currentStatus)) {
@@ -255,12 +255,20 @@ const handleOrderReturn = async (req, res) => {
             await transaction.save();
 
             orderData.status = 'returned';
+            orderData.returnRejectionReason = null;
+        } else if (action === 'reject') {
+            const { reason } = req.body;
+            if (!reason || reason.trim() === '') {
+                return res.status(400).json({ success: false, message: 'Rejection reason is mandatory' });
+            }
+            orderData.status = 'return request rejected';
+            orderData.returnRejectionReason = reason;
         } else {
             orderData.status = 'delivered';
         }
         await orderData.save();
 
-        return res.json({ success: true });
+        return res.json({ success: true, message: `Return request ${action}ed successfully` });
     } catch (error) {
         console.error('Error occurred while processing order return:', error);
         return res.status(500).json({ success: false, message: 'Internal Server Error' });
