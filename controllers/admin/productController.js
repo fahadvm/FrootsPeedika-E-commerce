@@ -20,7 +20,7 @@ const getProductAddPage = async (req, res) => {
 const getAllProducts = async (req, res) => {
   try {
     const search = req.query.search || "";
-    const page = req.query.page || 1;
+    const page = parseInt(req.query.page) || 1;
     const limit = 4;
 
     const productData = await Product.find({
@@ -49,6 +49,7 @@ const getAllProducts = async (req, res) => {
         currentPage: page,
         totalPages: Math.ceil(count / limit),
         cat: category,
+        search: search,
       });
     } else {
       res.render("admin-error");
@@ -265,12 +266,12 @@ const editProduct = async (req, res) => {
     // Handle image updates with cropped data
     for (let i = 1; i <= 4; i++) {
       const croppedImageData = req.body[`croppedImage${i}`];
-      
+
       if (croppedImageData && croppedImageData.startsWith('data:image')) {
         // Extract base64 data from the data URL
         const base64Data = croppedImageData.replace(/^data:image\/\w+;base64,/, '');
         const imageBuffer = Buffer.from(base64Data, 'base64');
-        
+
         // Generate filename
         const filename = Date.now() + "-" + `cropped-image-${i}` + ".webp";
         const filepath = path.join(__dirname, "../../public/uploads/product-images", filename);

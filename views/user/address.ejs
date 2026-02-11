@@ -1,4 +1,4 @@
-<%-include("../../views/partials/user/header")%>
+<%-include(".. /../views/partials/user/header")%>
 
     <title>Frootspeedika - Manage Addresses</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -344,7 +344,7 @@
                 </main>
             </div>
         </div>
-        <%-include("../../views/partials/user/footer")%>
+        <%-include(".. /../views/partials/user/footer")%>
 
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
@@ -407,25 +407,96 @@
                 function closeModal() {
                     document.getElementById('addressModal').style.display = 'none';
                 }
+
+                document.getElementById('addressForm').addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    const name = document.getElementById('name').value.trim();
+                    const phone = document.getElementById('phone').value.trim();
+                    const altPhone = document.getElementById('altPhone').value.trim();
+                    const pincode = document.getElementById('pincode').value.trim();
+                    const landMark = document.getElementById('landMark').value.trim();
+                    const city = document.getElementById('city').value.trim();
+                    const state = document.getElementById('state').value.trim();
+
+                    if (!name || !phone || !altPhone || !pincode || !landMark || !city || !state) {
+                        Swal.fire('Error', 'All fields are required', 'error');
+                        return;
+                    }
+
+                    if (!/^\d{10}$/.test(phone)) {
+                        Swal.fire('Error', 'Please enter a valid 10-digit phone number', 'error');
+                        return;
+                    }
+
+                    if (!/^\d{10}$/.test(altPhone)) {
+                        Swal.fire('Error', 'Please enter a valid 10-digit alternate phone number', 'error');
+                        return;
+                    }
+
+                    if (!/^\d{6}$/.test(pincode)) {
+                        Swal.fire('Error', 'Please enter a valid 6-digit pincode', 'error');
+                        return;
+                    }
+
+                    if (city.length === 0 || /^\s+$/.test(city)) {
+                        Swal.fire('Error', 'City cannot be empty or just spaces', 'error');
+                        return;
+                    }
+
+                    if (phone === altPhone) {
+                        Swal.fire('Error', 'Phone number and alternate phone number must be different', 'error');
+                        return;
+                    }
+
+                    const formData = new FormData(this);
+                    const data = Object.fromEntries(formData.entries());
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: data.message || 'Address saved successfully',
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', data.message || 'Failed to save address', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire('Error', 'An unexpected error occurred', 'error');
+                        });
+                });
             </script>
             <script>
                 function confirmAdminLogout(event) {
-                event.preventDefault();
-                Swal.fire({
-                title: "Are you sure?",
-                text: "You will be logged out!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, Logout"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "/logout"; // Redirect only if confirmed
+                    event.preventDefault();
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "You will be logged out!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, Logout"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "/logout"; // Redirect only if confirmed
+                        }
+                    });
+
                 }
-            });
-                
-            }
             </script>
 
     </body>

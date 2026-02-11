@@ -105,10 +105,9 @@
                     icon: 'fas fa-list' , text: 'Category' }, { link: '/admin/addProducts' , icon: 'fas fa-plus-square'
                     , text: 'Add product' }, { link: '/admin/products' , icon: 'fas fa-box' , text: 'Products' }, {
                     link: '/admin/coupon' , icon: 'fas fa-ticket-alt' , text: 'Coupon' }, { link: '/admin/transactions'
-                    , icon: 'fa-solid fa-wallet' , text: 'transactions' }, { link: '/admin//salesReport' ,
-                    icon: 'fas fa-image' , text: 'sales' }, { link: '/admin/orders' , icon: 'fas fa-shopping-cart' ,
-                    text: 'Orders' } <!-- { link: '/admin/sales' , icon: 'fas fa-image' , text: 'Sales Report' }, -->
-                    ]; %>
+                    , icon: 'fa-solid fa-wallet' , text: 'Transactions' }, { link: '/admin/salesReport' ,
+                    icon: 'fas fa-image' , text: 'Sales' }, { link: '/admin/orders' , icon: 'fas fa-shopping-cart' ,
+                    text: 'Orders' } ]; %>
 
                     <% menuItems.forEach(item=> { %>
                         <li class="menu-item">
@@ -123,13 +122,32 @@
             </ul>
         </nav>
     </aside>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentPath = window.location.pathname;
+            const menuLinks = document.querySelectorAll(".menu-link");
+
+            menuLinks.forEach(link => {
+                const href = link.getAttribute("href");
+
+                // Highlight exact matches, or subpaths for non-dashboard items
+                if (currentPath === href || (href !== '/admin' && currentPath.startsWith(href))) {
+                    link.classList.add("active");
+                    // Also expand parent if needed (for more complex menus)
+                    const menuItem = link.closest('.menu-item');
+                    if (menuItem) menuItem.classList.add('active');
+                }
+            });
+        });
+    </script>
     <main class="main-wrap">
         <header class="main-header navbar">
             <div class="col-search">
                 <!-- Add search functionality if needed -->
             </div>
             <div class="col-nav">
-             
+
                 <ul class="nav">
                     <li class="dropdown nav-item">
                         <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount"

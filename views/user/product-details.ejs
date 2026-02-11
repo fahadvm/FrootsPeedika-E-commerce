@@ -290,6 +290,17 @@
             color: white;
         }
 
+        .btn-wishlist.in-wishlist {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .btn-wishlist.in-wishlist:hover {
+            background: #b52b3a;
+            border-color: #b52b3a;
+        }
+
         .reviews-section {
             margin-top: 40px;
             border-top: 2px dashed var(--border);
@@ -437,9 +448,14 @@
                             ? 'disabled' : '' %>>
                             <i class="fas fa-shopping-cart"></i> Add to Cart
                         </button>
-                        <button class="btn-wishlist" onclick="addToWishlist('<%= product._id %>')">
-                            <i class="far fa-heart"></i>
-                        </button>
+                        <% let isInWishlist=false; if (user && user.wishlist) { isInWishlist=user.wishlist.some(id=>
+                            id.toString() === product._id.toString());
+                            }
+                            %>
+                            <button id="wishlistBtn" class="btn-wishlist <%= isInWishlist ? 'in-wishlist' : '' %>"
+                                onclick="addToWishlist('<%= product._id %>')">
+                                <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart"></i>
+                            </button>
                     </div>
 
 
@@ -613,6 +629,10 @@
                 data: JSON.stringify({ productId }),
                 success: (response) => {
                     if (response.status) {
+                        const btn = document.getElementById('wishlistBtn');
+                        btn.classList.add('in-wishlist');
+                        btn.querySelector('i').classList.replace('far', 'fas');
+
                         Swal.fire({
                             title: 'Added to Wishlist',
                             text: 'The product has been added to your wishlist!',
@@ -623,15 +643,20 @@
                         });
                     } else if (response.message === "Product already in wishlist") {
                         Swal.fire({
-                            title: 'Already in Wishlist',
-                            text: 'This product is already in your wishlist.',
+                            title: 'In Wishlist',
+                            text: 'This product is already in your wishlist. Would you like to view it or remove it?',
                             icon: 'info',
                             showCancelButton: true,
-                            confirmButtonText: 'Go to Wishlist',
-                            cancelButtonText: 'Continue Shopping'
+                            confirmButtonText: 'View Wishlist',
+                            cancelButtonText: 'Remove Item',
+                            showDenyButton: true,
+                            denyButtonText: 'Continue Shopping'
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 window.location.href = '/wishlist';
+                            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                // Optional: Implement direct remove from here if desired
+                                removeFromWishlist(productId);
                             }
                         });
                     } else {
@@ -650,6 +675,28 @@
                 error: (xhr) => {
                     const errorMessage = xhr.responseJSON?.message || "There was an error adding to wishlist.";
                     Swal.fire({ title: 'Error', text: errorMessage, icon: 'error' });
+                }
+            });
+        }
+
+        function removeFromWishlist(productId) {
+            $.ajax({
+                url: `/removeFromWishList?productId=${productId}`,
+                method: 'DELETE',
+                success: (response) => {
+                    if (response.success) {
+                        const btn = document.getElementById('wishlistBtn');
+                        btn.classList.remove('in-wishlist');
+                        btn.querySelector('i').classList.replace('fas', 'far');
+
+                        Swal.fire({
+                            title: 'Removed!',
+                            text: 'Item removed from wishlist',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
                 }
             });
         }
