@@ -324,8 +324,8 @@
             }
 
             function validatePhone(phone) {
-                const re = /^\d{10}$/;
-                return re.test(phone);
+                const re = /^[6-9]\d{9}$/;
+                return re.test(phone) && !/^0+$/.test(phone);
             }
 
             nameInput.addEventListener('input', function () {

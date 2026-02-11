@@ -605,7 +605,7 @@
             const currentQty = parseInt(input.value);
             const newQty = currentQty + change;
 
-            // Frontend validation
+            // Frontend validation for min/max limits
             if (newQty < 1 || newQty > 5) return;
 
             try {
@@ -624,21 +624,35 @@
                     document.getElementById('summary-shipping').innerText = `₹${data.shipping}`;
                     document.getElementById('summary-total').innerText = `₹${data.total}`;
 
-                    // Update row buttons
+                    // Update row buttons state if needed
                     const btns = row.querySelectorAll('.qty-btn');
+                    // Enable/disable based on limits
                     btns[0].disabled = newQty <= 1;
                     btns[1].disabled = newQty >= 5;
 
                     gsap.to(row, { scale: 1.02, duration: 0.1, yoyo: true, repeat: 1 });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Cannot update quantity'
-                    });
+                    // Handle errors (e.g., out of stock)
+                    if (data.message && data.message.includes('stock')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Stock Limit Reached',
+                            text: data.message, // Shows "Only X items available in stock"
+                            confirmButtonColor: '#F28123'
+                        });
+                        // Revert input to previous value (optional, but input is readonly/controlled by buttons here)
+                        input.value = currentQty;
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Cannot update quantity'
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error updating quantity:', error);
+                Swal.fire('Error', 'Something went wrong', 'error');
             }
         }
 

@@ -493,6 +493,11 @@ const editprofile = async (req, res) => {
     const { username, phone, email, firstName, lastName, gender } = req.body;
     console.log('req.body:', req.body)
 
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
+        return res.status(400).json({ success: false, message: "Invalid phone number. Must be a valid 10-digit number starting with 6-9." });
+    }
+
     const userId = req.session.user; // Assuming user ID is stored in session
 
     try {

@@ -1,574 +1,593 @@
 <%- include("../../views/partials/user/header") %>
 
-<title>User Profile - Frootspeedika</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz@6..96&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>User Profile - Frootspeedika</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz@6..96&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
 
-<style>
-    /* Root Variables */
-:root {
-    --dark-bg: #ffffff;
-    --accent-orange: #ff8c42;
-    --secondary-bg: #0A2E36;
-    --text-primary: #ffffff;
-    --text-secondary: #cccccc;
-}
+    <style>
+        /* Root Variables */
+        :root {
+            --dark-bg: #ffffff;
+            --accent-orange: #ff8c42;
+            --secondary-bg: #0A2E36;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+        }
 
-/* General Styling */
-body {
-    background-color: var(--dark-bg);
-    color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        /* General Styling */
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-h1, h2, h3, h4, h5 {
-    font-family: 'Bodoni Moda', serif;
-    color: var(--accent-orange);
-}
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Bodoni Moda', serif;
+            color: var(--accent-orange);
+        }
 
-/* Links */
-a {
-    text-decoration: none;
-    color: inherit;
-}
+        /* Links */
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
 
-/* Sidebar */
-.sidebar {
-    height: 100vh;
-    background: var(--secondary-bg);
-    padding: 2rem 1.5rem;
-    border-right: 1px solid rgba(255, 140, 66, 0.1);
-    overflow-y: auto;
-}
+        /* Sidebar */
+        .sidebar {
+            height: 100vh;
+            background: var(--secondary-bg);
+            padding: 2rem 1.5rem;
+            border-right: 1px solid rgba(255, 140, 66, 0.1);
+            overflow-y: auto;
+        }
 
-.sidebar h3 {
-    color: var(--accent-orange);
-    margin-bottom: 2rem;
-}
+        .sidebar h3 {
+            color: var(--accent-orange);
+            margin-bottom: 2rem;
+        }
 
-/* Cropper Modal */
-#cropModal .modal-dialog {
-    max-width: 900px; /* Increased width */
-}
+        /* Cropper Modal */
+        #cropModal .modal-dialog {
+            max-width: 900px;
+            /* Increased width */
+        }
 
-.img-container {
-    width: 100%; 
-    height: 500px; /* Increased height */
-    max-height: 500px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px dashed rgba(255, 140, 66, 0.5);
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    overflow: hidden;
-}
+        .img-container {
+            width: 100%;
+            height: 500px;
+            /* Increased height */
+            max-height: 500px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed rgba(255, 140, 66, 0.5);
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
 
-.img-container img {
-    max-width: 100%;
-    max-height: 100%; /* Ensure the image fills the container */
-    object-fit: contain;
-}
-
-
-.sidebar a {
-    color: var(--text-primary);
-    padding: 1rem;
-    margin: 0.5rem 0;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.sidebar a:hover,
-.sidebar .active {
-    background: rgba(255, 140, 66, 0.1);
-    transform: translateX(5px);
-}
-
-/* Profile Container */
-.profile-container {
-    padding: 3rem;
-    background: var(--dark-bg);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 140, 66, 0.1);
-    margin-bottom: 2rem;
-}
-
-/* Profile Image */
-.profile-image-container {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    margin-bottom: 2rem;
-}
-
-.profile-image {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--accent-orange);
-}
-
-.camera-button {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: var(--accent-orange);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.camera-button:hover {
-    background: #ff9f5e;
-}
-
-/* Form Styling */
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: black;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid rgba(255, 140, 66, 0.3);
-    border-radius: 8px;
-    background: var(--dark-bg);
-    color: black;
-    font-size: 1rem;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: var(--accent-orange);
-}
-
-/* Buttons */
-.button-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-.btn-primary {
-    background: var(--accent-orange);
-    color: var(--dark-bg);
-    padding: 10px 20px;
-    border-radius: 15px;
-    border: 1px solid var(--accent-orange);
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    background: #000000;
-    color: #ff9f5e;
-}
-
-.btn-secondary {
-    background: #000000;
-    color: #ff9f5e;
-    border: 1px solid var(--accent-orange);
-    padding: 10px 20px;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-    background: var(--accent-orange);
-    color: var(--dark-bg);
-}
-
-/* Toast Notification */
-.toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--accent-orange);
-    color: var(--dark-bg);
-    padding: 1rem;
-    border-radius: 8px;
-    display: none;
-    z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Modal Styling */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.7); /* Darker backdrop */
-}
-
-.modal-content {
-    background-color: var(--dark-bg);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 140, 66, 0.2);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    transition: transform 0.3s ease;
-}
-
-.modal-header {
-    background-color: var(--secondary-bg);
-    color: var(--text-primary);
-    padding: 1.25rem;
-    border-bottom: 1px solid rgba(255, 140, 66, 0.2);
-}
-
-.modal-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.btn-close {
-    color: var(--text-secondary);
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
-}
-
-.btn-close:hover {
-    opacity: 1;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
+        .img-container img {
+            max-width: 100%;
+            max-height: 100%;
+            /* Ensure the image fills the container */
+            object-fit: contain;
+        }
 
 
-   
+        .sidebar a {
+            color: var(--text-primary);
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sidebar a:hover,
+        .sidebar .active {
+            background: rgba(255, 140, 66, 0.1);
+            transform: translateX(5px);
+        }
+
+        /* Profile Container */
+        .profile-container {
+            padding: 3rem;
+            background: var(--dark-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 140, 66, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        /* Profile Image */
+        .profile-image-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin-bottom: 2rem;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent-orange);
+        }
+
+        .camera-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: var(--accent-orange);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-button:hover {
+            background: #ff9f5e;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: black;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 140, 66, 0.3);
+            border-radius: 8px;
+            background: var(--dark-bg);
+            color: black;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-orange);
+            color: var(--dark-bg);
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 1px solid var(--accent-orange);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #000000;
+            color: #ff9f5e;
+        }
+
+        .btn-secondary {
+            background: #000000;
+            color: #ff9f5e;
+            border: 1px solid var(--accent-orange);
+            padding: 10px 20px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-orange);
+            color: var(--dark-bg);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent-orange);
+            color: var(--dark-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modal Styling */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Darker backdrop */
+        }
+
+        .modal-content {
+            background-color: var(--dark-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 140, 66, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .modal-header {
+            background-color: var(--secondary-bg);
+            color: var(--text-primary);
+            padding: 1.25rem;
+            border-bottom: 1px solid rgba(255, 140, 66, 0.2);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .btn-close {
+            color: var(--text-secondary);
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-close:hover {
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
 
 
 
-.modal-footer {
-    padding: 1rem;
-    background-color: var(--secondary-bg);
-    border-top: 1px solid rgba(255, 140, 66, 0.2);
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-}
 
-/* Modal Animation */
-.modal.show .modal-dialog {
-    transform: translateY(0);
-    transition: transform 0.3s ease;
-}
 
-.modal.fade .modal-dialog {
-    transform: translateY(-50px);
-}
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .sidebar {
-        height: auto;
-        padding: 1rem;
-    }
+        .modal-footer {
+            padding: 1rem;
+            background-color: var(--secondary-bg);
+            border-top: 1px solid rgba(255, 140, 66, 0.2);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
 
-    .profile-container {
-        padding: 1.5rem;
-    }
+        /* Modal Animation */
+        .modal.show .modal-dialog {
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
 
-    .form-group input,
-    .form-group select {
-        font-size: 0.9rem;
-    }
+        .modal.fade .modal-dialog {
+            transform: translateY(-50px);
+        }
 
-    .modal-content {
-        width: 100%;
-    }
-}
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                padding: 1rem;
+            }
 
-</style>
+            .profile-container {
+                padding: 1.5rem;
+            }
 
-<body>
-    <div class="breadcrumb-section breadcrumb-bg">
-        <div class="container">
+            .form-group input,
+            .form-group select {
+                font-size: 0.9rem;
+            }
+
+            .modal-content {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <body>
+        <div class="breadcrumb-section breadcrumb-bg">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 offset-lg-2 text-center">
+                        <div class="breadcrumb-text">
+                            <p>Fresh and Organic</p>
+                            <h1>Profile</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-8 offset-lg-2 text-center">
-                    <div class="breadcrumb-text">
-                        <p>Fresh and Organic</p>
-                        <h1>Profile</h1>
+                <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+                    <h3 class="mb-4">Frootspeedika</h3>
+                    <a href="/userProfile"><i class="fas fa-user"></i> Dashboard</a>
+                    <a href="/orders"><i class="fas fa-history"></i> Order History</a>
+                    <a href="/address"><i class="fas fa-map-marker-alt"></i> Address Book</a>
+                    <a href="/editProfile" class="active"><i class="fas fa-cog"></i> Account Settings</a>
+                    <a href="/wallet"><i class="fa-solid fa-wallet"></i> Wallet</a>
+                    <a href="/coupons"><i class="fa-duotone fa-solid fa-ticket"></i> Coupons</a>
+                    <a href="#" onclick="confirmAdminLogout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </nav>
+
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                    <form method="POST" action="/editProfile" enctype="multipart/form-data">
+                        <div class="profile-container">
+                            <div class="form-row">
+                                <div class="profile-image-container">
+                                    <input type="file" id="fileInput" name="image" accept="image/*"
+                                        style="display: none;">
+
+                                    <img src="<%= user.image && user.image.length ? user.image[0] : 'assets/img/default dp.jpg' %>"
+                                        alt="User Profile" class="profile-image" id="profileImage">
+                                    <button type="button" class="camera-button"
+                                        onclick="document.getElementById('fileInput').click()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path
+                                                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                            <circle cx="12" cy="13" r="4" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>"
+                                        required minlength="2" maxlength="30">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" id="lastName" name="lastName" value="<%= user.secondName %>"
+                                        required minlength="2" maxlength="30">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="username">Username</label>
+                                    <input type="text" id="username" name="username" value="<%= user.username %>"
+                                        required minlength="3" maxlength="30">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="phone">Phone</label>
+                                    <input type="tel" id="phone" name="phone" value="<%= user.phone %>" required
+                                        pattern="[0-9]{10}" title="10-digit phone number">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" value="<%= user.email %>" readonly>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="gender">Gender</label>
+                                    <select id="gender" name="gender" required>
+                                        <option value="male" <%=user.gender==='male' ? 'selected' : '' %>>Male</option>
+                                        <option value="female" <%=user.gender==='female' ? 'selected' : '' %>>Female
+                                        </option>
+                                        <option value="other" <%=user.gender==='other' ? 'selected' : '' %>>Other
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="button-group">
+                                <button type="submit" class="btn-primary">Save Changes</button>
+                                <%if(user.password) {%>
+                                    <a href="/change-email" class="btn-secondary">Change Email</a>
+                                    <a href="/change-password" class="btn-secondary">Change Password</a>
+                                    <%}%>
+                            </div>
+                        </div>
+                    </form>
+                </main>
+            </div>
+        </div>
+
+        <div class="modal fade" id="cropModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Crop Image</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="img-container">
+                            <img id="imageToCrop" src="">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="cropButton">Crop & Save</button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <h3 class="mb-4">Frootspeedika</h3>
-                <a href="/userProfile"><i class="fas fa-user"></i> Dashboard</a>
-                <a href="/orders"><i class="fas fa-history"></i> Order History</a>
-                <a href="/address"><i class="fas fa-map-marker-alt"></i> Address Book</a>
-                <a href="/editProfile" class="active"><i class="fas fa-cog"></i> Account Settings</a>
-                <a href="/wallet"><i class="fa-solid fa-wallet"></i> Wallet</a>
-                <a href="/coupons"><i class="fa-duotone fa-solid fa-ticket"></i> Coupons</a>
-                <a href="#" onclick="confirmAdminLogout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </nav>
-
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <form method="POST" action="/editProfile" enctype="multipart/form-data">
-                    <div class="profile-container">
-                        <div class="form-row">
-                            <div class="profile-image-container">
-                                <input type="file" id="fileInput" name="image" accept="image/*" style="display: none;">
-
-                                <img src="<%= user.image && user.image.length ? user.image[0] : 'assets/img/default dp.jpg' %>" alt="User Profile" class="profile-image" id="profileImage">
-                                <button type="button" class="camera-button" onclick="document.getElementById('fileInput').click()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                        <circle cx="12" cy="13" r="4" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="firstName">First Name</label>
-                                <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>" required minlength="2" maxlength="30">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="lastName">Last Name</label>
-                                <input type="text" id="lastName" name="lastName" value="<%= user.secondName %>" required minlength="2" maxlength="30">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="username">Username</label>
-                                <input type="text" id="username" name="username" value="<%= user.username %>" required minlength="3" maxlength="30">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="phone">Phone</label>
-                                <input type="tel" id="phone" name="phone" value="<%= user.phone %>" required pattern="[0-9]{10}" title="10-digit phone number">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" name="email" value="<%= user.email %>" readonly>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="gender">Gender</label>
-                                <select id="gender" name="gender" required>
-                                    <option value="male" <%=user.gender==='male' ? 'selected' : '' %>>Male</option>
-                                    <option value="female" <%=user.gender==='female' ? 'selected' : '' %>>Female</option>
-                                    <option value="other" <%=user.gender==='other' ? 'selected' : '' %>>Other</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="button-group">
-                            <button type="submit" class="btn-primary">Save Changes</button>
-                            <%if(user.password) {%>
-                            <a href="/change-email" class="btn-secondary">Change Email</a>
-                            <a href="/change-password" class="btn-secondary">Change Password</a>
-                            <%}%>
-                        </div>
-                    </div>
-                </form>
-            </main>
+        <div id="toast" class="toast">
+            <span id="toast-message"></span>
         </div>
-    </div>
 
-    <div class="modal fade" id="cropModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Crop Image</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="img-container">
-                        <img id="imageToCrop" src="">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="cropButton">Crop & Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        <%- include("../../views/partials/user/footer") %>
 
-    <div id="toast" class="toast">
-        <span id="toast-message"></span>
-    </div>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <%- include("../../views/partials/user/footer") %>
+            <script>
+                let cropper;
+                const fileInput = document.getElementById('fileInput');
+                const profileImage = document.getElementById('profileImage');
+                const imageToCrop = document.getElementById('imageToCrop');
+                const cropButton = document.getElementById('cropButton');
+                let croppedBlob = null;
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                fileInput.addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            imageToCrop.src = e.target.result;
 
-    <script>
-        let cropper;
-        const fileInput = document.getElementById('fileInput');
-        const profileImage = document.getElementById('profileImage');
-        const imageToCrop = document.getElementById('imageToCrop');
-        const cropButton = document.getElementById('cropButton');
-        let croppedBlob = null;
+                            if (cropper) {
+                                cropper.destroy();
+                            }
 
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imageToCrop.src = e.target.result;
-                    
+                            cropper = new Cropper(imageToCrop, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                autoCropArea: 0.8,
+                                responsive: true,
+                                cropBoxResizable: true,
+                                cropBoxMovable: true,
+                            });
+
+                            const modal = new bootstrap.Modal(document.getElementById('cropModal'));
+                            modal.show();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                cropButton.addEventListener('click', function () {
+                    if (cropper) {
+                        cropper.getCroppedCanvas({
+                            width: 150,
+                            height: 150,
+                        }).toBlob(function (blob) {
+                            croppedBlob = blob;
+                            const url = URL.createObjectURL(blob);
+                            profileImage.src = url;
+
+                            const file = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            fileInput.files = dataTransfer.files;
+
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('cropModal'));
+                            modal.hide();
+                        }, 'image/jpeg');
+                    }
+                });
+
+                document.getElementById('cropModal').addEventListener('hidden.bs.modal', function () {
                     if (cropper) {
                         cropper.destroy();
+                        cropper = null;
                     }
-                    
-                    cropper = new Cropper(imageToCrop, {
-                        aspectRatio: 1,
-                        viewMode: 1,
-                        autoCropArea: 0.8,
-                        responsive: true,
-                        cropBoxResizable: true,
-                        cropBoxMovable: true,
-                    });
+                });
 
-                    const modal = new bootstrap.Modal(document.getElementById('cropModal'));
-                    modal.show();
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+                document.querySelector('form').addEventListener('submit', function (e) {
+                    e.preventDefault();
 
-        cropButton.addEventListener('click', function() {
-            if (cropper) {
-                cropper.getCroppedCanvas({
-                    width: 150,
-                    height: 150,
-                }).toBlob(function(blob) {
-                    croppedBlob = blob;
-                    const url = URL.createObjectURL(blob);
-                    profileImage.src = url;
-                    
-                    const file = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    fileInput.files = dataTransfer.files;
+                    const phoneRegex = /^[6-9]\d{9}$/;
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    const phone = document.getElementById('phone').value;
+                    const email = document.getElementById('email').value;
 
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('cropModal'));
-                    modal.hide();
-                }, 'image/jpeg');
-            }
-        });
+                    if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
+                        showAlert('Invalid Phone Number', 'Please enter a valid 10-digit phone number (starts with 6-9)', 'error');
+                        return;
+                    }
 
-        document.getElementById('cropModal').addEventListener('hidden.bs.modal', function() {
-            if (cropper) {
-                cropper.destroy();
-                cropper = null;
-            }
-        });
+                    if (!emailRegex.test(email)) {
+                        showAlert('Invalid Email', 'Please enter a valid email address', 'error');
+                        return;
+                    }
 
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const phoneRegex = /^[0-9]{10}$/;
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const phone = document.getElementById('phone').value;
-            const email = document.getElementById('email').value;
-
-            if (!phoneRegex.test(phone)) {
-                showAlert('Invalid Phone Number', 'Please enter a valid 10-digit phone number', 'error');
-                return;
-            }
-
-            if (!emailRegex.test(email)) {
-                showAlert('Invalid Email', 'Please enter a valid email address', 'error');
-                return;
-            }
-
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Do you want to save the changes?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes, save it!",
-                cancelButtonText: "Cancel"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const formData = new FormData(this);
-                    fetch('/editProfile', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire("Saved!", "Your profile has been updated successfully.", "success")
-                                .then(() => location.reload());
-                        } else {
-                            Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "Do you want to save the changes?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, save it!",
+                        cancelButtonText: "Cancel"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const formData = new FormData(this);
+                            fetch('/editProfile', {
+                                method: 'POST',
+                                body: formData
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire("Saved!", "Your profile has been updated successfully.", "success")
+                                            .then(() => location.reload());
+                                    } else {
+                                        Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+                                    }
+                                })
+                                .catch(() => {
+                                    Swal.fire("Error!", "Could not connect to the server. Try again later.", "error");
+                                });
                         }
-                    })
-                    .catch(() => {
-                        Swal.fire("Error!", "Could not connect to the server. Try again later.", "error");
+                    });
+                });
+
+                function showAlert(title, text, icon) {
+                    Swal.fire({
+                        title: title,
+                        text: text,
+                        icon: icon,
+                        confirmButtonText: 'OK'
                     });
                 }
-            });
-        });
 
-        function showAlert(title, text, icon) {
-            Swal.fire({
-                title: title,
-                text: text,
-                icon: icon,
-                confirmButtonText: 'OK'
-            });
-        }
+                const currentPath = window.location.pathname;
+                document.querySelectorAll('.sidebar a').forEach(link => {
+                    if (link.getAttribute('href') === currentPath) {
+                        link.classList.add('active');
+                    }
+                });
+            </script>
+            <script>
+                function confirmAdminLogout(event) {
+                    event.preventDefault();
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "You will be logged out!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, Logout"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "/logout"; // Redirect only if confirmed
+                        }
+                    });
 
-        const currentPath = window.location.pathname;
-        document.querySelectorAll('.sidebar a').forEach(link => {
-            if (link.getAttribute('href') === currentPath) {
-                link.classList.add('active');
-            }
-        });
-    </script>
-    <script>
-        function confirmAdminLogout(event) {
-        event.preventDefault();
-        Swal.fire({
-        title: "Are you sure?",
-        text: "You will be logged out!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, Logout"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = "/logout"; // Redirect only if confirmed
-        }
-    });
-        
-    }
-    </script>
-</body>
+                }
+            </script>
+    </body>

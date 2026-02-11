@@ -16,6 +16,11 @@ const signup = async (req, res) => {
         const { username, phone, email, password, cPassword, referCode } = req.body;
         console.log(username)
 
+        const phoneRegex = /^[6-9]\d{9}$/;
+        if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
+            return res.render("user/signup", { message: "Invalid phone number. Must be a valid 10-digit number starting with 6-9." });
+        }
+
         // if (password !== cPassword) {
         //     return res.render("user/signup", { message: "Passwords don not match" });
         // }

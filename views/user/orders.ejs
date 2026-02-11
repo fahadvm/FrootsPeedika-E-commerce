@@ -450,7 +450,7 @@
                                                 View Details
                                             </a>
                                             <% if (order.status !=='cancelled' && order.status !=='delivered' &&
-                                                order.status !=='returned' && order.status !=='return request' ) { %>
+                                                order.status !=='returned' && order.status !=='return request' && order.status !=='return request rejected') { %>
                                                 <button onclick="cancelOrder('<%= order._id %>')"
                                                     class="btn btn-outline-danger btn-sm mt-2">
                                                     Cancel Order

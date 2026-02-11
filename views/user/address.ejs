@@ -1,4 +1,4 @@
-<%-include("../../views/partials/user/header")%>
+<%-include(".. /../views/partials/user/header")%>
 
     <title>Frootspeedika - Manage Addresses</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -369,7 +369,7 @@
                 </main>
             </div>
         </div>
-        <%-include("../../views/partials/user/footer")%>
+        <%-include(".. /../views/partials/user/footer")%>
 
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
@@ -460,18 +460,22 @@
                         return;
                     }
 
-                    if (!/^\d{10}$/.test(phone)) {
-                        Swal.fire('Error', 'Please enter a valid 10-digit phone number', 'error');
+                    // Phone validation: 10 digits, starts with 6-9, not all zeros
+                    const phoneRegex = /^[6-9]\d{9}$/;
+                    if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
+                        Swal.fire('Error', 'Please enter a valid 10-digit phone number (starts with 6-9)', 'error');
                         return;
                     }
 
-                    if (!/^\d{10}$/.test(altPhone)) {
+                    if (!phoneRegex.test(altPhone) || /^0+$/.test(altPhone)) {
                         Swal.fire('Error', 'Please enter a valid 10-digit alternate phone number', 'error');
                         return;
                     }
 
-                    if (!/^\d{6}$/.test(pincode)) {
-                        Swal.fire('Error', 'Please enter a valid 6-digit pincode', 'error');
+                    // Pincode validation: 6 digits, cannot start with 0
+                    const pincodeRegex = /^[1-9]\d{5}$/;
+                    if (!pincodeRegex.test(pincode) || /^0+$/.test(pincode)) {
+                        Swal.fire('Error', 'Please enter a valid 6-digit pincode (cannot start with 0)', 'error');
                         return;
                     }
 

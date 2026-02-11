@@ -32,12 +32,17 @@ const postAddress = async (req, res) => {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        if (!/^\d{10}$/.test(phone) || !/^\d{10}$/.test(altPhone)) {
-            return res.status(400).json({ success: false, message: "Invalid phone numbers. Must be 10 digits." });
+        const phoneRegex = /^[6-9]\d{9}$/;
+        if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
+            return res.status(400).json({ success: false, message: "Invalid phone numbers. Must be a valid 10-digit number starting with 6-9." });
+        }
+        if (!phoneRegex.test(altPhone) || /^0+$/.test(altPhone)) {
+            return res.status(400).json({ success: false, message: "Invalid alternate phone numbers. Must be a valid 10-digit number starting with 6-9." });
         }
 
-        if (!/^\d{6}$/.test(pincode)) {
-            return res.status(400).json({ success: false, message: "Invalid pincode. Must be 6 digits." });
+        const pincodeRegex = /^[1-9]\d{5}$/;
+        if (!pincodeRegex.test(pincode) || /^0+$/.test(pincode)) {
+            return res.status(400).json({ success: false, message: "Invalid pincode. Must be a valid 6-digit number not starting with 0." });
         }
 
         const userAddress = await Address.findOne({ userId: userData._id });
@@ -126,12 +131,17 @@ const editAddress = async (req, res) => {
         return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    if (!/^\d{10}$/.test(phone) || !/^\d{10}$/.test(altPhone)) {
-        return res.status(400).json({ success: false, message: "Invalid phone numbers. Must be 10 digits." });
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
+        return res.status(400).json({ success: false, message: "Invalid phone numbers. Must be a valid 10-digit number starting with 6-9." });
+    }
+    if (!phoneRegex.test(altPhone) || /^0+$/.test(altPhone)) {
+        return res.status(400).json({ success: false, message: "Invalid alternate phone numbers. Must be a valid 10-digit number starting with 6-9." });
     }
 
-    if (!/^\d{6}$/.test(pincode)) {
-        return res.status(400).json({ success: false, message: "Invalid pincode. Must be 6 digits." });
+    const pincodeRegex = /^[1-9]\d{5}$/;
+    if (!pincodeRegex.test(pincode) || /^0+$/.test(pincode)) {
+        return res.status(400).json({ success: false, message: "Invalid pincode. Must be a valid 6-digit number not starting with 0." });
     }
 
     try {
