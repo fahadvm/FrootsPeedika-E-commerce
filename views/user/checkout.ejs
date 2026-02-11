@@ -185,6 +185,11 @@
                                                     <tr>
                                                         <td>
                                                             <%= item.productId.productName %>
+                                                                <strong class="product-quantity"> × <%= item.quantity %>
+                                                                        </strong>
+                                                                <div class="product-rate">₹<%= item.productId.salePrice
+                                                                        %>
+                                                                </div>
                                                         </td>
                                                         <td>₹<%= item.totalPrice.toFixed(2) %>
                                                         </td>

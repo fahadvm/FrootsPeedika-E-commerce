@@ -93,8 +93,8 @@ const login = async (req, res) => {
             return res.render('user/login', { message: 'User not found' });
         }
 
-        if (findUser.isBlocked == true) {
-            return res.render('user/login', { message: 'User is blocked by admin' });
+        if (findUser.isBlocked) {
+            return res.render('user/login', { message: 'User blocked by admin' });
         }
 
         const passwordMatch = await bcrypt.compare(password, findUser.password);

@@ -592,6 +592,15 @@
                 stagger: 0.2,
                 ease: "power3.out"
             });
+
+            <% if (locals.warningMessage) { %>
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Items Removed',
+                    text: '<%= warningMessage %>',
+                    confirmButtonColor: '#F28123'
+                });
+            <% } %>
         });
 
         function handleCheckout() {

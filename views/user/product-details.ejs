@@ -444,18 +444,26 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn-add-cart" onclick="addToCart('<%= product._id %>')" <%=product.stock <=0
-                            ? 'disabled' : '' %>>
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
-                        <% let isInWishlist=false; if (user && user.wishlist) { isInWishlist=user.wishlist.some(id=>
-                            id.toString() === product._id.toString());
-                            }
-                            %>
-                            <button id="wishlistBtn" class="btn-wishlist <%= isInWishlist ? 'in-wishlist' : '' %>"
-                                onclick="addToWishlist('<%= product._id %>')">
-                                <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart"></i>
+                        <% if (locals.isInCart) { %>
+                            <button class="btn-add-cart" onclick="window.location.href='/cart'">
+                                <i class="fas fa-shopping-cart"></i> Go to Cart
                             </button>
+                            <% } else { %>
+                                <button class="btn-add-cart" onclick="addToCart('<%= product._id %>')" <%=product.stock
+                                    <=0 ? 'disabled' : '' %>>
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </button>
+                                <% } %>
+                                    <% let isInWishlist=false; if (user && user.wishlist) {
+                                        isInWishlist=user.wishlist.some(id=>
+                                        id.toString() === product._id.toString());
+                                        }
+                                        %>
+                                        <button id="wishlistBtn"
+                                            class="btn-wishlist <%= isInWishlist ? 'in-wishlist' : '' %>"
+                                            onclick="addToWishlist('<%= product._id %>')">
+                                            <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart"></i>
+                                        </button>
                     </div>
 
 

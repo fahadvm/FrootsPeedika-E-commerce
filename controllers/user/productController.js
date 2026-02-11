@@ -4,6 +4,8 @@ const User = require("../../models/userSchema");
 
 
 
+const Cart = require("../../models/cartSchema");
+
 const productDetails = async (req, res) => {
 
   try {
@@ -19,7 +21,15 @@ const productDetails = async (req, res) => {
     const totalOffer = categoryOffer + productOffer;
 
     const categories = await Category.find({ isListed: true });
-    const categoryIds = categories.map(category => category._id.toString());
+
+    // Check if product is in cart
+    let isInCart = false;
+    if (userId) {
+      const cart = await Cart.findOne({ userId });
+      if (cart) {
+        isInCart = cart.items.some(item => item.productId.toString() === productId);
+      }
+    }
 
     const products = await Product.find({
       isBlocked: false,
@@ -36,7 +46,8 @@ const productDetails = async (req, res) => {
       products: products,
       quantity: product.quantity,
       totalOffer: totalOffer,
-      category: findCategory
+      category: findCategory,
+      isInCart: isInCart
     })
   } catch (error) {
     console.error("Error fetching product details:", error);

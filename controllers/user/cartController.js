@@ -29,16 +29,29 @@ const loadCart = async (req, res) => {
                 select: 'isListed'
             }
         });
+        let warningMessage = null;
+
         if (cartData) {
-            cartData.items = cartData.items.filter(item => {
+            const originalItemCount = cartData.items.length;
+            const validItems = [];
+            const removedItems = [];
+
+            cartData.items.forEach(item => {
                 const product = item.productId;
-                return (
-                    product &&
-                    !product.isBlocked &&
-                    product.stock > 0 &&
-                    product.category?.isListed
-                );
+                if (product && !product.isBlocked && product.stock > 0 && product.category?.isListed) {
+                    validItems.push(item);
+                } else {
+                    if (product) {
+                        removedItems.push(product.productName);
+                    }
+                }
             });
+
+            if (removedItems.length > 0) {
+                cartData.items = validItems;
+                await cartData.save(); // Persist the removal
+                warningMessage = `Some items were removed from your cart because they are no longer available: ${removedItems.join(', ')}`;
+            }
         }
 
 
@@ -55,7 +68,14 @@ const loadCart = async (req, res) => {
 
 
 
-        return res.render("user/cart", { user: userData, cartItems: cartData, subtotal: subtotal, shipping: shipping, total: total })
+        return res.render("user/cart", {
+            user: userData,
+            cartItems: cartData,
+            subtotal: subtotal,
+            shipping: shipping,
+            total: total,
+            warningMessage: warningMessage
+        });
 
     } catch (error) {
         return res.redirect("/pageNotFound")
