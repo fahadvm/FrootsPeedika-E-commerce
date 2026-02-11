@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <title>Invoice #<%= order.orderId %></title>
+    <title>Invoice #<%= order.orderId %>
+    </title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -10,11 +12,13 @@
             padding: 0;
             color: #333;
         }
+
         .invoice-container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
+
         .invoice-header {
             display: flex;
             justify-content: space-between;
@@ -22,26 +26,33 @@
             padding-bottom: 20px;
             border-bottom: 1px solid #ddd;
         }
+
         .company-details {
             text-align: right;
         }
+
         .invoice-title {
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 5px;
             color: #333;
         }
+
         .invoice-details {
             margin-bottom: 20px;
         }
+
         .invoice-details-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
         }
-        .customer-details, .shipping-details {
+
+        .customer-details,
+        .shipping-details {
             width: 48%;
         }
+
         .section-title {
             font-size: 16px;
             font-weight: bold;
@@ -49,54 +60,66 @@
             padding-bottom: 5px;
             border-bottom: 1px solid #ddd;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        th, td {
+
+        th,
+        td {
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
+
         th {
             background-color: #f8f8f8;
         }
+
         .product-image {
             width: 60px;
             height: 60px;
             object-fit: cover;
         }
+
         .total-section {
             margin-top: 20px;
             text-align: right;
         }
+
         .total-row {
             display: flex;
             justify-content: flex-end;
             margin-bottom: 5px;
         }
+
         .total-label {
             width: 150px;
             text-align: right;
             margin-right: 20px;
         }
+
         .total-value {
             width: 100px;
             text-align: right;
         }
+
         .grand-total {
             font-weight: bold;
             font-size: 16px;
             border-top: 2px solid #333;
             padding-top: 5px;
         }
+
         .footer {
             margin-top: 40px;
             text-align: center;
             font-size: 12px;
             color: #777;
         }
+
         .status-badge {
             display: inline-block;
             padding: 5px 10px;
@@ -109,13 +132,16 @@
         }
     </style>
 </head>
+
 <body>
     <div class="invoice-container">
         <div class="invoice-header">
             <div>
                 <div class="invoice-title">INVOICE</div>
-                <div>Invoice #<%= order.orderId %></div>
-                <div>Date: <%= new Date(order.invoiceDate || order.createdOn).toLocaleDateString() %></div>
+                <div>Invoice #<%= order.orderId %>
+                </div>
+                <div>Date: <%= new Date(order.invoiceDate || order.createdOn).toLocaleDateString() %>
+                </div>
             </div>
             <div class="company-details">
                 <div><strong>Froots peedika</strong></div>
@@ -130,34 +156,47 @@
             <div class="invoice-details-row">
                 <div class="customer-details">
                     <div class="section-title">Bill To</div>
-                    <div><strong><%= order.address.name %></strong></div>
-                    <div><%= order.address.email %></div>
-                    <div><%= order.address.phone %></div>
+                    <div><strong>
+                            <%= order.address.name %>
+                        </strong></div>
+                    <div>
+                        <%= order.address.email %>
+                    </div>
+                    <div>
+                        <%= order.address.phone %>
+                    </div>
                 </div>
                 <div class="shipping-details">
                     <div class="section-title">Ship To</div>
-                    <div><%= order.address.streetAddress %></div>
-                    <div><%= order.address.city %>, <%= order.address.state %> <%= order.address.pincode %></div>
+                    <div>
+                        <%= order.address.streetAddress %>
+                    </div>
+                    <div>
+                        <%= order.address.city %>, <%= order.address.state %>
+                                <%= order.address.pincode %>
+                    </div>
                 </div>
             </div>
             <div class="invoice-details-row">
                 <div>
                     <div class="section-title">Payment Method</div>
                     <div>
-                        <% if (order.paymentMethod === 'cod') { %>
+                        <% if (order.paymentMethod==='cod' ) { %>
                             Cash On Delivery
-                        <% } else if (order.paymentMethod === 'razorpay') { %>
-                            Online Payment
-                        <% } else if (order.paymentMethod === 'wallet') { %>
-                            Wallet Payment
-                        <% } %>
-                        
+                            <% } else if (order.paymentMethod==='razorpay' ) { %>
+                                Online Payment
+                                <% } else if (order.paymentMethod==='wallet' ) { %>
+                                    Wallet Payment
+                                    <% } %>
+
                     </div>
                 </div>
                 <div>
                     <div class="section-title">Order Status</div>
                     <div class="status-badge">DELIVERED</div>
-                    <div class="status-badge"><%= new Date(order.deliveredOn).toLocaleDateString() %></div>
+                    <div class="status-badge">
+                        <%= new Date(order.deliveredOn).toLocaleDateString() %>
+                    </div>
                 </div>
             </div>
         </div>
@@ -166,20 +205,24 @@
         <table>
             <thead>
                 <tr>
-                    <th>productName</th>
-                    <th>Product</th>
+                    <th>Product Name</th>
                     <th>Quantity</th>
-                    <th>Price</th>
+                    <th>Unit Price</th>
                     <th>Total</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><%= order.productName %></td>
-                    <td><%= order.quantity %></td>
-                    <td>₹<%= order.price.toFixed(2) %></td>
-                    <td>₹<%= order.totalPrice.toFixed(2) %></td>
-                    <td><%= order.status %></td>
+                    <td>
+                        <%= order.productName %>
+                    </td>
+                    <td>
+                        <%= order.quantity %>
+                    </td>
+                    <td>Rs. <%= order.price.toFixed(2) %>
+                    </td>
+                    <td>Rs. <%= order.totalPrice.toFixed(2) %>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -187,22 +230,25 @@
         <div class="total-section">
             <div class="total-row">
                 <div class="total-label">Subtotal:</div>
-                <div class="total-value">₹<%= order.totalPrice.toFixed(2) %></div>
+                <div class="total-value">Rs. <%= order.totalPrice.toFixed(2) %>
+                </div>
             </div>
-            <% if (order.discount > 0) { %>
+            <% if (order.discount> 0) { %>
                 <div class="total-row">
                     <div class="total-label">Discount:</div>
-                    <div class="total-value">-₹<%= order.discount.toFixed(2) %></div>
+                    <div class="total-value">-Rs. <%= order.discount.toFixed(2) %>
+                    </div>
                 </div>
-            <% } %>
-            <div class="total-row">
-                <div class="total-label">Delivery Charge:</div>
-                <div class="total-value">₹ 0.00</div>
-            </div>
-            <div class="total-row grand-total">
-                <div class="total-label">Grand Total:</div>
-                <div class="total-value">₹<%= order.finalAmount.toFixed(2) %></div>
-            </div>
+                <% } %>
+                    <div class="total-row">
+                        <div class="total-label">Delivery Charge:</div>
+                        <div class="total-value">Rs. 0.00</div>
+                    </div>
+                    <div class="total-row grand-total">
+                        <div class="total-label">Grand Total:</div>
+                        <div class="total-value">Rs. <%= order.finalAmount.toFixed(2) %>
+                        </div>
+                    </div>
         </div>
 
         <div class="footer">
@@ -211,4 +257,5 @@
         </div>
     </div>
 </body>
+
 </html>
