@@ -1,90 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — Froots Peedika</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/admin-assets/img/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
-    * {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    :root {
+      /* ---- Matching Admin Panel Palette ---- */
+      --primary: #1a237e;
+      --secondary: #283593;
+      --accent: #3949ab;
+      --accent-light: #5c6bc0;
+      --navbar-blue: #3498db;
+      --sidebar-dark: #2c3e50;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+
+      /* ---- Derived Theme Colors ---- */
+      --bg-primary: #0d1b2a;
+      --bg-secondary: #1b2838;
+      --card-bg: rgba(26, 35, 56, 0.85);
+      --card-border: rgba(52, 152, 219, 0.12);
+      --accent-glow: rgba(52, 152, 219, 0.3);
+      --text-primary: #f0f2f5;
+      --text-secondary: #94a3b8;
+      --text-muted: #5a6a7e;
+      --error-bg: rgba(231, 76, 60, 0.12);
+      --error-border: rgba(231, 76, 60, 0.3);
+      --error-text: #e74c3c;
+      --input-bg: rgba(255, 255, 255, 0.05);
+      --input-border: rgba(255, 255, 255, 0.1);
+      --input-focus-border: var(--navbar-blue);
+      --transition: 0.3s ease;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #667eea, #764ba2);
-      height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
+      position: relative;
     }
 
-    .login-wrapper {
-      background-color: #ffffff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+    /* ===== Animated Background ===== */
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse at 15% 50%, rgba(26, 35, 126, 0.2) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(52, 152, 219, 0.1) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 100%, rgba(57, 73, 171, 0.08) 0%, transparent 50%);
+    }
+
+    .floating-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.45;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 320px;
+      height: 320px;
+      background: rgba(26, 35, 126, 0.25);
+      top: -120px;
+      left: -60px;
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      width: 260px;
+      height: 260px;
+      background: rgba(52, 152, 219, 0.15);
+      bottom: -100px;
+      right: -60px;
+      animation-delay: -4s;
+    }
+
+    .orb-3 {
+      width: 180px;
+      height: 180px;
+      background: rgba(57, 73, 171, 0.15);
+      top: 45%;
+      right: 12%;
+      animation-delay: -2s;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-25px) scale(1.04);
+      }
+    }
+
+    /* ===== Grid Pattern Overlay ===== */
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* ===== Login Card ===== */
+    .login-container {
+      position: relative;
+      z-index: 10;
       width: 100%;
-      max-width: 400px;
-      animation: fadeIn 0.8s ease-in-out;
+      max-width: 440px;
+      padding: 0 20px;
     }
 
-    .login-wrapper h2 {
+    .login-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(52, 152, 219, 0.06) inset;
+      animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    @keyframes cardEntry {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ===== Brand Header ===== */
+    .brand-header {
       text-align: center;
-      margin-bottom: 1.5rem;
-      color: #333;
+      margin-bottom: 36px;
+      animation: fadeInDown 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(-10px);
     }
 
-    .form-control {
-      margin-bottom: 1.2rem;
+    @keyframes fadeInDown {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .form-control input {
+    .admin-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary), var(--navbar-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+      box-shadow: 0 8px 28px var(--accent-glow);
+      position: relative;
+    }
+
+    .admin-icon::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--navbar-blue));
+      z-index: -1;
+      opacity: 0.25;
+      filter: blur(14px);
+    }
+
+    .admin-icon i {
+      font-size: 26px;
+      color: #fff;
+    }
+
+    .brand-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-header p {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* ===== Accent Stripe ===== */
+    .accent-stripe {
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--navbar-blue), var(--accent-light));
+      border-radius: 3px;
+      margin: 16px auto 0;
+    }
+
+    /* ===== Alert ===== */
+    .alert-error {
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+    }
+
+    @keyframes shake {
+
+      10%,
+      90% {
+        transform: translateX(-1px);
+      }
+
+      20%,
+      80% {
+        transform: translateX(2px);
+      }
+
+      30%,
+      50%,
+      70% {
+        transform: translateX(-3px);
+      }
+
+      40%,
+      60% {
+        transform: translateX(3px);
+      }
+    }
+
+    .alert-error i {
+      font-size: 15px;
+    }
+
+    /* ===== Form ===== */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper .input-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+      transition: color var(--transition);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .input-wrapper input {
       width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border 0.3s;
-    }
-
-    .form-control input:focus {
-      border-color: #667eea;
+      padding: 14px 16px 14px 44px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 400;
+      transition: all var(--transition);
       outline: none;
     }
 
-    .login-btn {
+    .input-wrapper input::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .input-wrapper input:focus {
+      border-color: var(--input-focus-border);
+      background: rgba(52, 152, 219, 0.05);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.12);
+    }
+
+    .input-wrapper input:focus~.input-icon {
+      color: var(--navbar-blue);
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      transition: color var(--transition);
+      z-index: 2;
+    }
+
+    .password-toggle-btn:hover {
+      color: var(--text-secondary);
+    }
+
+    /* ===== Submit Button ===== */
+    .submit-btn {
       width: 100%;
-      padding: 0.75rem;
-      background-color: #667eea;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--secondary), var(--navbar-blue));
       color: #fff;
       border: none;
-      border-radius: 8px;
-      font-size: 1rem;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+      margin-top: 4px;
+      letter-spacing: 0.3px;
     }
 
-    .login-btn:hover {
-      background-color: #5563c1;
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent);
+      opacity: 0;
+      transition: opacity var(--transition);
     }
 
-    .alert {
-      background-color: #ffe0e0;
-      color: #a33;
-      padding: 0.75rem 1rem;
-      border-radius: 6px;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
+    .submit-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px var(--accent-glow);
+    }
+
+    .submit-btn:hover::before {
+      opacity: 1;
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .submit-btn .btn-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== Security Note ===== */
+    .security-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .security-note i {
+      font-size: 10px;
+      color: var(--success);
+    }
+
+    /* ===== Footer ===== */
+    .login-footer {
       text-align: center;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      animation: fadeInDown 0.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
+    .login-footer p {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .login-footer .brand-name {
+      color: var(--navbar-blue);
+      font-weight: 600;
+    }
+
+    .login-footer .dot {
+      font-size: 6px;
+      color: var(--success);
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 36px 24px;
+        border-radius: 16px;
       }
+
+      .brand-header h1 {
+        font-size: 20px;
+      }
+
+      .admin-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+      }
+
+      .admin-icon i {
+        font-size: 22px;
+      }
+    }
+
+    /* ===== Autofill Fix ===== */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--text-primary);
+      -webkit-box-shadow: 0 0 0px 1000px var(--bg-secondary) inset;
+      border-color: var(--input-border) !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    /* ===== Stagger Animations ===== */
+    .stagger-1 {
+      animation-delay: 0.15s;
+    }
+
+    .stagger-2 {
+      animation-delay: 0.25s;
+    }
+
+    .stagger-3 {
+      animation-delay: 0.35s;
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fadeUp {
       to {
         opacity: 1;
         transform: translateY(0);
@@ -92,25 +512,136 @@
     }
   </style>
 </head>
+
 <body>
-  <div class="login-wrapper">
-    <h2>Admin Login</h2>
 
-    <% if (message) { %>
-      <div class="alert">
-        <%= message %>
-      </div>
-    <% } %>
+  <!-- Background Effects -->
+  <div class="bg-gradient"></div>
+  <div class="grid-overlay"></div>
+  <div class="floating-orb orb-1"></div>
+  <div class="floating-orb orb-2"></div>
+  <div class="floating-orb orb-3"></div>
 
-    <form action="/admin/login" method="POST">
-      <div class="form-control">
-        <input type="text" name="email" placeholder="Email" required />
+  <!-- Login Card -->
+  <div class="login-container">
+    <div class="login-card">
+
+      <!-- Brand Header -->
+      <div class="brand-header">
+        <div class="admin-icon">
+          <i class="fas fa-shield-halved"></i>
+        </div>
+        <h1>Admin Panel</h1>
+        <p>Froots Peedika Management Console</p>
+        <div class="accent-stripe"></div>
       </div>
-      <div class="form-control">
-        <input type="password" name="password" placeholder="Password" required />
-      </div>
-      <button class="login-btn" type="submit">Login</button>
-    </form>
+
+      <!-- Error Message -->
+      <% if (message) { %>
+        <div class="alert-error">
+          <i class="fas fa-circle-exclamation"></i>
+          <span>
+            <%= message %>
+          </span>
+        </div>
+        <% } %>
+
+          <!-- Login Form -->
+          <form action="/admin/login" method="POST" class="login-form" id="adminLoginForm">
+
+            <div class="input-group fade-up stagger-1">
+              <label for="adminEmail">Email Address</label>
+              <div class="input-wrapper">
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" name="email" id="adminEmail" placeholder="admin@frootspeedika.com" required
+                  autocomplete="email" />
+              </div>
+            </div>
+
+            <div class="input-group fade-up stagger-2">
+              <label for="adminPassword">Password</label>
+              <div class="input-wrapper">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" name="password" id="adminPassword" placeholder="Enter your password" required
+                  autocomplete="current-password" />
+                <button type="button" class="password-toggle-btn" id="togglePassword"
+                  aria-label="Toggle password visibility">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="fade-up stagger-3">
+              <button type="submit" class="submit-btn" id="submitBtn">
+                <span class="btn-content">
+                  <i class="fas fa-right-to-bracket"></i>
+                  Sign In
+                </span>
+              </button>
+            </div>
+
+            <div class="security-note fade-up stagger-3">
+              <i class="fas fa-lock"></i>
+              <span>Secured with encrypted session management</span>
+            </div>
+
+          </form>
+
+          <!-- Footer -->
+          <div class="login-footer">
+            <p>
+              <i class="fas fa-circle dot"></i>
+              <span class="brand-name">Froots Peedika</span>
+              &copy; 2025. All rights reserved.
+            </p>
+          </div>
+
+    </div>
   </div>
+
+  <script>
+    // Password Toggle
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('adminPassword');
+
+    toggleBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      toggleBtn.querySelector('i').classList.toggle('fa-eye');
+      toggleBtn.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+
+    // Loading state on submit
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('adminLoginForm');
+
+    form.addEventListener('submit', (e) => {
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value;
+
+      if (!email || !password) {
+        e.preventDefault();
+        return;
+      }
+
+      submitBtn.innerHTML = `
+        <span class="btn-content">
+          <i class="fas fa-spinner fa-spin"></i>
+          Signing In...
+        </span>
+      `;
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.8';
+    });
+
+    // Auto-focus email input after page load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('adminEmail').focus();
+      }, 900);
+    });
+  </script>
+
 </body>
+
 </html>

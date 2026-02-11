@@ -159,72 +159,93 @@
                     </script>
                     <% } %>
 
-                        <!-- Order Summary and Coupon Section -->
-                        <div class="col-lg-4">
-                            <div class="order-details-wrap">
-                                <table class="order-details">
-                                    <thead>
-                                        <tr>
-                                            <th>Your Order Details</th>
-                                            <th>Price</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="order-details-body">
-                                        <% cartItems.forEach(item=> { %>
-                                            <tr>
-                                                <td>
-                                                    <%= item.productId.productName %>
-                                                </td>
-                                                <td>₹<%= item.totalPrice.toFixed(2) %>
-                                                </td>
-                                            </tr>
-                                            <% }); %>
-                                    </tbody>
-                                    <tbody class="checkout-details">
-                                        <tr>
-                                            <td>Subtotal</td>
-                                            <td>₹<span id="subTotal">
-                                                    <%= subTotal.toFixed(2) %>
-                                                </span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Shipping</td>
-                                            <td>₹<span id="shipping">
-                                                    <%= shipping.toFixed(2) %>
-                                                </span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Discount</td>
-                                            <td>-₹<span id="discountAmount">
-                                                    <%= discount ? discount.toFixed(2) : "0.00" %>
-                                                </span></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Total</strong></td>
-                                            <td><strong>₹<span id="totalAmount">
-                                                        <%= totalAmount.toFixed(2) %>
-                                                    </span></strong></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <input type="hidden" id="totalAmountInput" name="totalAmount"
-                                    value="<%= totalAmount.toFixed(2) %>">
-                                <button class="place-order-btn boxed-btn" type="button">Place Order</button>
-                            </div>
-
-                            <!-- Coupon Section -->
-                            <div class="coupon-section">
-                                <h3>Apply Coupon</h3>
-                                <div class="coupon-form-wrap">
-                                    <input type="text" id="couponCodeInput" placeholder="Enter coupon code"
-                                        name="couponCode">
-                                    <button id="applyCouponBtn">Apply</button>
-                                    <button id="clearCouponBtn" style="display: none;">Clear</button>
-                                    <a href="#" data-toggle="modal" data-target="#couponModal">Show available
-                                        coupons</a>
+                        <% if (locals.paymentInProgress) { %>
+                            <div class="col-12 mt-4">
+                                <div class="alert alert-warning text-center">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    <strong>You already have a payment in progress in another tab.</strong>
+                                    <p class="mb-0">Please complete your current transaction or wait a few minutes
+                                        before trying again.</p>
                                 </div>
                             </div>
-                        </div>
+                            <% } %>
+
+                                <!-- Order Summary and Coupon Section -->
+                                <div class="col-lg-4">
+                                    <div class="order-details-wrap">
+                                        <table class="order-details">
+                                            <thead>
+                                                <tr>
+                                                    <th>Your Order Details</th>
+                                                    <th>Price</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="order-details-body">
+                                                <% cartItems.forEach(item=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <%= item.productId.productName %>
+                                                        </td>
+                                                        <td>₹<%= item.totalPrice.toFixed(2) %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }); %>
+                                            </tbody>
+                                            <tbody class="checkout-details">
+                                                <tr>
+                                                    <td>Subtotal</td>
+                                                    <td>₹<span id="subTotal">
+                                                            <%= subTotal.toFixed(2) %>
+                                                        </span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Shipping</td>
+                                                    <td>₹<span id="shipping">
+                                                            <%= shipping.toFixed(2) %>
+                                                        </span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Discount</td>
+                                                    <td>-₹<span id="discountAmount">
+                                                            <%= discount ? discount.toFixed(2) : "0.00" %>
+                                                        </span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Total</strong></td>
+                                                    <td><strong>₹<span id="totalAmount">
+                                                                <%= totalAmount.toFixed(2) %>
+                                                            </span></strong></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <input type="hidden" id="totalAmountInput" name="totalAmount"
+                                            value="<%= totalAmount.toFixed(2) %>">
+                                        <input type="hidden" id="checkoutId" value="<%= locals.checkoutId %>">
+
+                                        <% if (locals.paymentInProgress) { %>
+                                            <button class="place-order-btn boxed-btn" type="button" disabled
+                                                style="opacity: 0.6; cursor: not-allowed;">
+                                                Payment In Progress
+                                            </button>
+                                            <% } else { %>
+                                                <button class="place-order-btn boxed-btn" type="button">Place
+                                                    Order</button>
+                                                <% } %>
+                                    </div>
+
+                                    <!-- Coupon Section -->
+                                    <div class="coupon-section">
+                                        <h3>Apply Coupon</h3>
+                                        <div class="coupon-form-wrap">
+                                            <input type="text" id="couponCodeInput" placeholder="Enter coupon code"
+                                                name="couponCode">
+                                            <button id="applyCouponBtn">Apply</button>
+                                            <button id="clearCouponBtn" style="display: none;">Clear</button>
+                                            <a href="#" data-toggle="modal" data-target="#couponModal">Show available
+                                                coupons</a>
+                                        </div>
+                                    </div>
+                                </div>
             </div>
         </div>
     </div>
@@ -688,16 +709,24 @@
             }
 
             async function handleRazorpayPayment(orderData) {
+                const checkoutId = document.getElementById('checkoutId').value;
                 try {
                     const response = await fetch('/razorpay/create-order', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount: orderData.totalAmountInput })
+                        body: JSON.stringify({
+                            amount: orderData.totalAmountInput,
+                            checkoutId: checkoutId
+                        })
                     });
                     const data = await response.json();
 
                     if (!data.success) {
-                        Swal.fire('Error', 'Failed to initialize Razorpay', 'error');
+                        Swal.fire('Error', data.message || 'Failed to initialize Razorpay', 'error').then(() => {
+                            if (data.message && data.message.includes("in progress")) {
+                                window.location.reload();
+                            }
+                        });
                         return;
                     }
 
@@ -711,6 +740,14 @@
                         handler: response => {
                             orderData.razorpayPaymentId = response.razorpay_payment_id;
                             finalizeOrder(orderData);
+                        },
+                        modal: {
+                            ondismiss: function () {
+                                // Release lock if payment is cancelled
+                                fetch('/razorpay/release-lock', { method: 'POST' })
+                                    .then(() => console.log("Checkout lock released"))
+                                    .catch(err => console.error("Error releasing lock:", err));
+                            }
                         },
                         prefill: {
                             name: '<%= user.name %>',

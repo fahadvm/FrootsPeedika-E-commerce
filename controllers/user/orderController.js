@@ -242,10 +242,28 @@ const placeOrder = async (req, res) => {
 
         await Cart.updateOne({ userId }, { $set: { items: [] } });
 
+        // Release lock
+        if (user.checkoutSession) {
+            user.checkoutSession.status = 'IDLE';
+            await user.save();
+        }
+
         res.render('user/order-success', { order: aggregatedOrder });
 
     } catch (error) {
         console.error('Error in placeOrder:', error);
+
+        // Try to release lock even on error
+        try {
+            const user = await User.findById(req.session.user);
+            if (user && user.checkoutSession) {
+                user.checkoutSession.status = 'IDLE';
+                await user.save();
+            }
+        } catch (releaseErr) {
+            console.error("Error releasing lock on failure:", releaseErr);
+        }
+
         req.flash('error', `${error.message}` || `Failed to place order`);
         return res.redirect('/checkout');
 
@@ -483,20 +501,67 @@ const returnOrder = async (req, res) => {
 
 const createRazorpay = async (req, res) => {
     try {
-        const { amount } = req.body;
+        const userId = req.session.user;
+        const { amount, checkoutId } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const now = new Date();
+        const lockTimeout = 5 * 60 * 1000;
+
+        // Check for existing lock
+        if (user.checkoutSession &&
+            user.checkoutSession.status === 'IN_PROGRESS' &&
+            user.checkoutSession.lastUpdated &&
+            (now - user.checkoutSession.lastUpdated) < lockTimeout) {
+            return res.status(400).json({
+                success: false,
+                message: "A payment is already in progress in another tab. Please complete it or wait a few minutes."
+            });
+        }
+
+        // Validate checkoutId
+        if (checkoutId && user.checkoutSession.checkoutId !== checkoutId) {
+            return res.status(400).json({
+                success: false,
+                message: "Checkout session expired. Please refresh the page."
+            });
+        }
+
+        // Set the lock
+        user.checkoutSession.status = 'IN_PROGRESS';
+        user.checkoutSession.lastUpdated = now;
+        await user.save();
 
         const order = await rzp.orders.create({
             amount: amount * 100, // Convert amount to paise
             currency: "INR",
-            receipt: "receipt#1" + Date.now(),
+            receipt: "receipt#" + (checkoutId || Date.now()),
             payment_capture: 1,
-
-
         });
 
         res.json({ success: true, order });
     } catch (error) {
+        console.error("Razorpay order creation error:", error);
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const releaseCheckoutLock = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const user = await User.findById(userId);
+        if (user && user.checkoutSession) {
+            user.checkoutSession.status = 'IDLE';
+            await user.save();
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error releasing checkout lock:", error);
+        res.status(500).json({ success: false });
     }
 };
 
@@ -669,6 +734,7 @@ module.exports = {
     cancelOrder,
     returnOrder,
     createRazorpay,
+    releaseCheckoutLock,
     Razorpaysubscription,
     removeCoupon,
     generateInvoice

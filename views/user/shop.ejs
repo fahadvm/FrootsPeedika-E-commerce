@@ -1,12 +1,13 @@
 <%- include("../../views/partials/user/header") %>
 
     <style>
+        /* ===== Filter Bar ===== */
         #filter-form {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             background: #f8f9fa;
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             align-items: center;
@@ -15,8 +16,8 @@
 
         #filter-form input[type="text"],
         #filter-form select {
-            padding: 10px;
-            font-size: 16px;
+            padding: 10px 14px;
+            font-size: 15px;
             border: 1px solid #ccc;
             border-radius: 6px;
             width: 200px;
@@ -25,36 +26,79 @@
 
         #filter-form input[type="text"]:focus,
         #filter-form select:focus {
-            border-color: #007bff;
+            border-color: #F28123;
             outline: none;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            box-shadow: 0 0 5px rgba(242, 129, 35, 0.3);
         }
 
         #filter-form button {
-            padding: 10px 15px;
-            font-size: 16px;
+            padding: 10px 18px;
+            font-size: 15px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 600;
         }
 
-        #filter-form button[type="submit"] {
-            background: #007bff;
+        .btn-apply {
+            background: #F28123;
             color: #fff;
         }
 
-        #filter-form button[type="submit"]:hover {
-            background: #0056b3;
+        .btn-apply:hover {
+            background: #d96f1c;
         }
 
-        #filter-form button[type="reset"] {
+        .btn-clear {
             background: #dc3545;
             color: #fff;
         }
 
-        #filter-form button[type="reset"]:hover {
+        .btn-clear:hover {
             background: #b02a37;
+        }
+
+        /* Hidden by default */
+        .filter-btn-hidden {
+            display: none !important;
+        }
+
+        /* Active filters badge */
+        .active-filters-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: #e8f4fd;
+            color: #0c6daa;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .active-filters-badge i {
+            font-size: 11px;
+        }
+
+        /* ===== No Products ===== */
+        .no-products-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .no-products-message i {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .no-products-message h4 {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
         }
 
         /* Make it responsive */
@@ -89,8 +133,8 @@
     <!-- products -->
     <div class="product-section mt-150 mb-150">
         <form id="filter-form">
-            <input type="text" name="search" placeholder="Search Products" value="<%= search || '' %>">
-            <select name="sort">
+            <input type="text" name="search" id="searchInput" placeholder="Search Products" value="<%= search || '' %>">
+            <select name="sort" id="sortSelect">
                 <option value="">Sort By</option>
                 <option value="lowToHigh" <%=sort==="lowToHigh" ? "selected" : "" %>>Price: Low to High</option>
                 <option value="highToLow" <%=sort==="highToLow" ? "selected" : "" %>>Price: High to Low</option>
@@ -98,8 +142,12 @@
                 <option value="zToA" <%=sort==="zToA" ? "selected" : "" %>>Z-A</option>
                 <option value="newArrivals" <%=sort==="newArrivals" ? "selected" : "" %>>New Arrivals</option>
             </select>
-            <button type="submit">Apply</button>
-            <button type="reset" onclick="resetFilters()">Clear</button>
+            <button type="submit" id="applyBtn" class="btn-apply filter-btn-hidden">
+                <i class="fas fa-search"></i> Apply
+            </button>
+            <button type="button" id="clearBtn" class="btn-clear filter-btn-hidden" onclick="resetFilters()">
+                <i class="fas fa-times"></i> Clear
+            </button>
         </form>
         <div class="container">
             <div class="product-filters">
@@ -116,30 +164,38 @@
                 </ul>
             </div>
 
-            <div class="row">
-                <% products.forEach(product=> { %>
-                    <div class="col-lg-4 col-md-6 text-center">
-                        <div class="single-product-item">
-                            <div class="product-image">
-                                <a href="/productDetails?id=<%= product._id %>">
-                                    <img src="<%= product.productImages[0] %>" alt="<%= product.productName %>">
-                                </a>
-                            </div>
-                            <h3>
-                                <%= product.productName %>
-                            </h3>
-                            <p class="product-price">
-                                <span>
-                                    <%= product.category.name==='juice' ? 'Per Ltr' : 'Per Kg' %>
-                                </span>
-                                ₹<%= product.salePrice %>
-                            </p>
-                            <a href="/productDetails?id=<%= product._id %>" class="cart-btn">
-                                <i class="fas fa-shopping-cart"></i> View Details
-                            </a>
-                        </div>
+            <div class="row" id="productGrid">
+                <% if (products.length===0) { %>
+                    <div class="col-12 no-products-message">
+                        <i class="fas fa-box-open"></i>
+                        <h4>No products found</h4>
+                        <p>Try adjusting your search or filter criteria.</p>
                     </div>
-                    <% }); %>
+                    <% } else { %>
+                        <% products.forEach(product=> { %>
+                            <div class="col-lg-4 col-md-6 text-center">
+                                <div class="single-product-item">
+                                    <div class="product-image">
+                                        <a href="/productDetails?id=<%= product._id %>">
+                                            <img src="<%= product.productImages[0] %>" alt="<%= product.productName %>">
+                                        </a>
+                                    </div>
+                                    <h3>
+                                        <%= product.productName %>
+                                    </h3>
+                                    <p class="product-price">
+                                        <span>
+                                            <%= product.category.name==='juice' ? 'Per Ltr' : 'Per Kg' %>
+                                        </span>
+                                        ₹<%= product.salePrice %>
+                                    </p>
+                                    <a href="/productDetails?id=<%= product._id %>" class="cart-btn">
+                                        <i class="fas fa-shopping-cart"></i> View Details
+                                    </a>
+                                </div>
+                            </div>
+                            <% }); %>
+                                <% } %>
             </div>
 
             <div class="row">
@@ -177,17 +233,87 @@
     <%- include("../../views/partials/user/footer") %>
 
         <script>
-            function resetFilters() {
-                window.location.href = "/shop"; // Reset to base shop page
-            }
-
             document.addEventListener("DOMContentLoaded", function () {
+
+                // ===== Element References =====
+                const searchInput = document.getElementById("searchInput");
+                const sortSelect = document.getElementById("sortSelect");
+                const applyBtn = document.getElementById("applyBtn");
+                const clearBtn = document.getElementById("clearBtn");
                 const filterButtons = document.querySelectorAll(".filter-btn");
                 const searchForm = document.getElementById("filter-form");
                 const paginationContainer = document.getElementById("pagination");
-                const productContainer = document.querySelector(".product-section .row"); // Selects the row for products
+                const productContainer = document.getElementById("productGrid");
 
-                // Load Products via AJAX
+                // ===== State: what is currently applied (from the server render) =====
+                let appliedSearch = "<%= search || '' %>";
+                let appliedSort = "<%= sort || '' %>";
+                let appliedCategory = "<%= currentCategory || '' %>";
+
+                // ===== Button Visibility Logic =====
+
+                // Check if there are currently active filters (server-rendered state)
+                function hasActiveFilters() {
+                    return appliedSearch.trim() !== '' || appliedSort !== '' || appliedCategory !== '';
+                }
+
+                // Check if form inputs differ from the blank/default state
+                // (user has typed something or picked a sort option)
+                function hasFormInput() {
+                    return searchInput.value.trim() !== '' || sortSelect.value !== '';
+                }
+
+                // Check if form inputs differ from the currently applied state
+                function formDiffersFromApplied() {
+                    return searchInput.value.trim() !== appliedSearch ||
+                        sortSelect.value !== appliedSort;
+                }
+
+                function updateButtonVisibility() {
+                    // Show Apply if user has entered new input that differs from what's currently applied
+                    // OR if there's form input and nothing is applied yet
+                    const showApply = hasFormInput() && formDiffersFromApplied();
+                    applyBtn.classList.toggle('filter-btn-hidden', !showApply);
+
+                    // Show Clear if there are actively applied filters
+                    const showClear = hasActiveFilters() || hasFormInput();
+                    clearBtn.classList.toggle('filter-btn-hidden', !showClear);
+                }
+
+                // ===== Event Listeners for input changes =====
+                searchInput.addEventListener("input", updateButtonVisibility);
+                sortSelect.addEventListener("change", function () {
+                    updateButtonVisibility();
+                    // Auto-apply sort changes for better UX
+                    const activeCategory = document.querySelector(".filter-btn.active")?.getAttribute("data-category") || "";
+                    loadProducts(activeCategory, 1, searchInput.value.trim(), sortSelect.value);
+                });
+
+                // ===== Reset / Clear =====
+                function resetFilters() {
+                    // Reset form inputs
+                    searchInput.value = '';
+                    sortSelect.value = '';
+
+                    // Reset applied state
+                    appliedSearch = '';
+                    appliedSort = '';
+                    appliedCategory = '';
+
+                    // Reset active category to "All"
+                    filterButtons.forEach(btn => btn.classList.remove("active"));
+                    document.querySelector('.filter-btn[data-category=""]')?.classList.add("active");
+
+                    // Load all products
+                    loadProducts('', 1, '', '');
+
+                    // Update button visibility
+                    updateButtonVisibility();
+                }
+                // Expose resetFilters globally for the onclick handler
+                window.resetFilters = resetFilters;
+
+                // ===== Load Products via AJAX =====
                 function loadProducts(category = "", page = 1, search = "", sort = "") {
                     const params = new URLSearchParams();
                     if (category) params.set("category", category);
@@ -200,32 +326,44 @@
                     })
                         .then(response => response.json())
                         .then(data => {
-                            // Clear existing products
+                            // Update applied state
+                            appliedSearch = search;
+                            appliedSort = sort;
+                            appliedCategory = category;
+
+                            // Render products
                             productContainer.innerHTML = "";
 
-                            if (data.products.length === 0) {
-                                productContainer.innerHTML = "<p>No products found.</p>";
+                            if (!data.products || data.products.length === 0) {
+                                productContainer.innerHTML = `
+                                    <div class="col-12 no-products-message">
+                                        <i class="fas fa-box-open"></i>
+                                        <h4>No products found</h4>
+                                        <p>Try adjusting your search or filter criteria.</p>
+                                    </div>
+                                `;
                             } else {
                                 data.products.forEach(product => {
+                                    const unitLabel = product.category && product.category.name === 'juice' ? 'Per Ltr' : 'Per Kg';
                                     const productHTML = `
-                        <div class="col-lg-4 col-md-6 text-center category-${product.category}">
-                            <div class="single-product-item">
-                                <div class="product-image">
-                                    <a href="/productDetails?id=${product._id}">
-                                        <img src="${product.productImages[0]}" alt="${product.productName}">
-                                    </a>
-                                </div>
-                                <h3>${product.productName}</h3>
-                                <p class="product-price">
-                                    <span>${product.category.name === 'juice' ? 'Per Ltr' : 'Per Kg'}</span>
-                                    ₹${product.salePrice}
-                                </p>
-                                <a href="/productDetails?id=${product._id}" class="cart-btn">
-                                    <i class="fas fa-shopping-cart"></i> View Details
-                                </a>
-                            </div>
-                        </div>
-                    `;
+                                        <div class="col-lg-4 col-md-6 text-center">
+                                            <div class="single-product-item">
+                                                <div class="product-image">
+                                                    <a href="/productDetails?id=${product._id}">
+                                                        <img src="${product.productImages[0]}" alt="${product.productName}">
+                                                    </a>
+                                                </div>
+                                                <h3>${product.productName}</h3>
+                                                <p class="product-price">
+                                                    <span>${unitLabel}</span>
+                                                    ₹${product.salePrice}
+                                                </p>
+                                                <a href="/productDetails?id=${product._id}" class="cart-btn">
+                                                    <i class="fas fa-shopping-cart"></i> View Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    `;
                                     productContainer.innerHTML += productHTML;
                                 });
                             }
@@ -234,51 +372,57 @@
                             updatePagination(data.totalPages, category, page, search, sort);
 
                             // Update URL without reloading
-                            const newUrl = `/shop?${params.toString()}`;
+                            const newUrl = params.toString() ? `/shop?${params.toString()}` : '/shop';
                             window.history.pushState({ category, page, search, sort }, "", newUrl);
+
+                            // Update button visibility after successful load
+                            updateButtonVisibility();
                         })
                         .catch(error => {
                             console.error("Error fetching products:", error);
-                            productContainer.innerHTML = "<p>Error loading products. Please try again.</p>";
+                            productContainer.innerHTML = `
+                                <div class="col-12 no-products-message">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <h4>Error loading products</h4>
+                                    <p>Please try again later.</p>
+                                </div>
+                            `;
                         });
                 }
 
-                // Update Pagination
+                // ===== Pagination =====
                 function updatePagination(totalPages, category, currentPage, search, sort) {
                     paginationContainer.innerHTML = "";
+                    const cp = parseInt(currentPage);
 
-                    // Add Previous button
-                    if (parseInt(currentPage) > 1) {
+                    if (cp > 1) {
                         paginationContainer.innerHTML += `
-                <li>
-                    <a href="#" class="pagination-btn" data-page="${parseInt(currentPage) - 1}" data-category="${category}" data-search="${search}" data-sort="${sort}">Prev</a>
-                </li>
-            `;
+                            <li>
+                                <a href="#" class="pagination-btn" data-page="${cp - 1}" data-category="${category}" data-search="${search}" data-sort="${sort}">Prev</a>
+                            </li>
+                        `;
                     }
 
-                    // Add page numbers
                     for (let i = 1; i <= totalPages; i++) {
-                        const activeClass = i === parseInt(currentPage) ? "active" : "";
+                        const activeClass = i === cp ? "active" : "";
                         paginationContainer.innerHTML += `
-                <li>
-                    <a href="#" class="pagination-btn ${activeClass}" data-page="${i}" data-category="${category}" data-search="${search}" data-sort="${sort}">${i}</a>
-                </li>
-            `;
+                            <li>
+                                <a href="#" class="pagination-btn ${activeClass}" data-page="${i}" data-category="${category}" data-search="${search}" data-sort="${sort}">${i}</a>
+                            </li>
+                        `;
                     }
 
-                    // Add Next button
-                    if (parseInt(currentPage) < totalPages) {
+                    if (cp < totalPages) {
                         paginationContainer.innerHTML += `
-                <li>
-                    <a href="#" class="pagination-btn" data-page="${parseInt(currentPage) + 1}" data-category="${category}" data-search="${search}" data-sort="${sort}">Next</a>
-                </li>
-            `;
+                            <li>
+                                <a href="#" class="pagination-btn" data-page="${cp + 1}" data-category="${category}" data-search="${search}" data-sort="${sort}">Next</a>
+                            </li>
+                        `;
                     }
 
                     attachPaginationEvents();
                 }
 
-                // Attach Pagination Events
                 function attachPaginationEvents() {
                     document.querySelectorAll(".pagination-btn").forEach(button => {
                         button.addEventListener("click", function (event) {
@@ -288,47 +432,53 @@
                             const search = this.getAttribute("data-search") || "";
                             const sort = this.getAttribute("data-sort") || "";
                             loadProducts(category, page, search, sort);
+
+                            // Scroll to top of products
+                            document.querySelector('.product-section').scrollIntoView({ behavior: 'smooth' });
                         });
                     });
                 }
 
-                // Attach Category Filter Events
+                // ===== Category Filter Events =====
                 filterButtons.forEach(button => {
                     button.addEventListener("click", function (event) {
-                        event.preventDefault(); // Prevent default link behavior
+                        event.preventDefault();
 
                         // Update active class
                         filterButtons.forEach(btn => btn.classList.remove("active"));
                         this.classList.add("active");
 
-                        // Get category and current search/sort values
+                        // Get category and current form values
                         const category = this.getAttribute("data-category");
-                        const formData = new FormData(searchForm);
-                        const search = formData.get("search") || "";
-                        const sort = formData.get("sort") || "";
+                        const search = searchInput.value.trim();
+                        const sort = sortSelect.value;
 
                         // Load products for the selected category
                         loadProducts(category, 1, search, sort);
                     });
                 });
 
-                // Handle Search Form Submission
+                // ===== Search Form Submission =====
                 searchForm.addEventListener("submit", function (e) {
                     e.preventDefault();
-                    const formData = new FormData(this);
-                    const search = formData.get("search") || "";
-                    const sort = formData.get("sort") || "";
+                    const search = searchInput.value.trim();
+                    const sort = sortSelect.value;
                     const activeCategory = document.querySelector(".filter-btn.active")?.getAttribute("data-category") || "";
                     loadProducts(activeCategory, 1, search, sort);
                 });
 
-                // Handle browser back/forward navigation
+                // ===== Browser Back/Forward Navigation =====
                 window.addEventListener("popstate", function (event) {
                     const state = event.state || {};
                     const category = state.category || "";
                     const page = state.page || 1;
                     const search = state.search || "";
                     const sort = state.sort || "";
+
+                    // Update applied state
+                    appliedSearch = search;
+                    appliedSort = sort;
+                    appliedCategory = category;
 
                     // Update active category button
                     filterButtons.forEach(btn => {
@@ -339,14 +489,15 @@
                     });
 
                     // Update form inputs
-                    searchForm.querySelector("input[name='search']").value = search;
-                    searchForm.querySelector("select[name='sort']").value = sort;
+                    searchInput.value = search;
+                    sortSelect.value = sort;
 
                     // Load products for the state
                     loadProducts(category, page, search, sort);
                 });
 
-                // Initialize pagination events
+                // ===== Initialize =====
                 attachPaginationEvents();
+                updateButtonVisibility();  // Set initial button state based on server-rendered values
             });
         </script>

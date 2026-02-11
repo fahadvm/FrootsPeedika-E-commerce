@@ -265,8 +265,8 @@ async function sendVerificationEmail(email, otp) {
 
 
 const loadShoppingPage = async (req, res) => {
+    const isAjax = req.get('X-Requested-With') === 'XMLHttpRequest';
     try {
-        const isAjax = req.get('X-Requested-With') === 'XMLHttpRequest';
         const user = req.session.user;
         const userData = user ? await User.findById(user) : null;
 

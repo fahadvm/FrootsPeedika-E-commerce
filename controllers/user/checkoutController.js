@@ -103,6 +103,31 @@ const loadCheckoutPage = async (req, res) => {
         const addressData = await Address.findOne({ userId });
         const addresses = addressData ? addressData : [];
 
+        // Checkout Locking Logic
+        const now = new Date();
+        const lockTimeout = 5 * 60 * 1000; // 5 minutes
+        let paymentInProgress = false;
+
+        if (user.checkoutSession &&
+            user.checkoutSession.status === 'IN_PROGRESS' &&
+            user.checkoutSession.lastUpdated &&
+            (now - user.checkoutSession.lastUpdated) < lockTimeout) {
+            paymentInProgress = true;
+        }
+
+        const { v4: uuidv4 } = require('uuid');
+        const checkoutId = uuidv4();
+
+        // If not in progress or lock expired, update the session with a fresh ID but keep it IDLE
+        if (!paymentInProgress) {
+            user.checkoutSession = {
+                checkoutId: checkoutId,
+                status: 'IDLE',
+                lastUpdated: now
+            };
+            await user.save();
+        }
+
         res.render('user/checkout', {
             user,
             cartItems: validItems,
@@ -111,7 +136,9 @@ const loadCheckoutPage = async (req, res) => {
             addresses,
             totalAmount,
             discount: 0,
-            wallet
+            wallet,
+            checkoutId: user.checkoutSession.checkoutId,
+            paymentInProgress
         });
     } catch (error) {
         console.error('Error occurred while loading checkout:', error);

@@ -115,6 +115,7 @@ router.get("/download-invoice", userAuth, orderController.generateInvoice);
 
 
 router.post("/razorpay/create-order", orderController.createRazorpay)
+router.post("/razorpay/release-lock", orderController.releaseCheckoutLock)
 router.post("/create-subscription", orderController.Razorpaysubscription)
 
 

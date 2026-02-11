@@ -96,7 +96,16 @@ const userSchema = new Schema({
             type: Date,
             default: Date.now
         }
-    }]
+    }],
+    checkoutSession: {
+        checkoutId: { type: String, default: null },
+        status: {
+            type: String,
+            enum: ['IDLE', 'IN_PROGRESS'],
+            default: 'IDLE'
+        },
+        lastUpdated: { type: Date, default: null }
+    }
 })
 
 const User = mongoose.model("User", userSchema)
