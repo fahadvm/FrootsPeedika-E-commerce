@@ -668,7 +668,10 @@ const generateInvoice = async (req, res) => {
         const templatePath = path.join(__dirname, "../../views/user/invoice-template.ejs")
         const html = await ejs.renderFile(templatePath, { order })
 
-        const browser = await puppeteer.launch({ headless: true })
+        const browser = await puppeteer.launch({
+            headless: "new",
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        })
         const page = await browser.newPage()
 
         // Set content and generate PDF
