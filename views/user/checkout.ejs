@@ -186,7 +186,7 @@
                                                         <td>
                                                             <%= item.productId.productName %>
                                                                 <strong class="product-quantity"> × <%= item.quantity %>
-                                                                        </strong>
+                                                                </strong>
                                                                 <div class="product-rate">₹<%= item.productId.salePrice
                                                                         %>
                                                                 </div>
@@ -736,7 +736,7 @@
                     }
 
                     const options = {
-                        key: '<%= process.env.RAZORPAY_KEY_ID %>',
+                        key: '<%= razorpayKey %>',
                         amount: data.order.amount,
                         currency: 'INR',
                         name: 'Froots Peedika',

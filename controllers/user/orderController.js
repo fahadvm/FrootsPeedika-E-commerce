@@ -21,10 +21,7 @@ function calculateShipping(subtotal) {
 }
 
 
-const rzp = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-})
+
 
 
 
@@ -536,17 +533,34 @@ const createRazorpay = async (req, res) => {
         user.checkoutSession.lastUpdated = now;
         await user.save();
 
+
+        // Re-instantiate Razorpay to ensure latest env vars are used
+        const rzp = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+
+        console.log("Creating Razorpay Order with Key:", process.env.RAZORPAY_KEY_ID ? "Date Present" : "Missing");
+
         const order = await rzp.orders.create({
-            amount: amount * 100, // Convert amount to paise
+            amount: Math.round(amount * 100), // Convert to paise and ensure integer
             currency: "INR",
-            receipt: "receipt#" + (checkoutId || Date.now()),
+            receipt: (checkoutId || `rec_${Date.now()}`).toString().slice(0, 40),
             payment_capture: 1,
         });
 
         res.json({ success: true, order });
     } catch (error) {
         console.error("Razorpay order creation error:", error);
-        res.status(500).json({ success: false, message: error.message });
+        let message = "Razorpay initialization failed";
+        if (error.error && error.error.description) {
+            message = error.error.description;
+        } else if (error.message) {
+            message = error.message;
+        } else if (typeof error === 'string') {
+            message = error;
+        }
+        res.status(500).json({ success: false, message });
     }
 };
 

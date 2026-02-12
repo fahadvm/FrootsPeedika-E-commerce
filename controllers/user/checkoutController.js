@@ -138,7 +138,8 @@ const loadCheckoutPage = async (req, res) => {
             discount: 0,
             wallet,
             checkoutId: user.checkoutSession.checkoutId,
-            paymentInProgress
+            paymentInProgress,
+            razorpayKey: process.env.RAZORPAY_KEY_ID
         });
     } catch (error) {
         console.error('Error occurred while loading checkout:', error);
