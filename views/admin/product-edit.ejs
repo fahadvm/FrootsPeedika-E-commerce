@@ -403,6 +403,24 @@
             e.preventDefault();
 
             if (!validateFields()) return;
+
+            let imageMissing = false;
+            for (let i = 0; i < 4; i++) {
+                const input = document.querySelector(`input[name="image${i + 1}"]`);
+                if (input && (!input.files || input.files.length === 0)) {
+                    imageMissing = true;
+                    break;
+                }
+            }
+
+            if (imageMissing) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Images Required',
+                    text: 'Please provide exactly 4 images. Upload images for all empty slots.'
+                });
+                return;
+            }
             for (let i = 0; i < 4; i++) {
                 if (croppers[i]) {
                     // Get the cropped canvas as a data URL
