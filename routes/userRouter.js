@@ -111,6 +111,7 @@ router.get('/orders', userAuth, orderController.getOrder)
 router.get("/order-details", userAuth, orderController.loadOrderDetails);
 router.patch("/orders/cancel", userAuth, orderController.cancelOrder);
 router.patch("/orders/return", userAuth, orderController.returnOrder);
+router.post("/orders/verify-payment", userAuth, orderController.verifyPayment);
 router.get("/download-invoice", userAuth, orderController.generateInvoice);
 
 

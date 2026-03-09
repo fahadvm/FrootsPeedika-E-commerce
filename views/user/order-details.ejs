@@ -140,11 +140,12 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="d-flex">
-                                            <img src="<%= order.product.productImages[0] %>"
-                                                alt="<%= order.product.productName %>" class="product-image me-3">
+                                            <img src="<%= order.product && order.product.productImages && order.product.productImages.length > 0 ? order.product.productImages[0] : order.productImages || '/images/default.png' %>"
+                                                alt="<%= order.product ? order.product.productName : order.productName %>"
+                                                class="product-image me-3">
                                             <div>
                                                 <h6>
-                                                    <%= order.product.productName %>
+                                                    <%= order.product ? order.product.productName : order.productName %>
                                                 </h6>
                                                 <p class="mb-1">Quantity: <%= order.quantity %>
                                                 </p>
@@ -153,11 +154,12 @@
                                                 <p class="mb-0">Status:
                                                     <span class="badge <%= 
                                                 order.status === 'delivered' ? 'bg-success' :
-                                                ['cancelled', 'returned', 'return request rejected'].includes(order.status) ? 'bg-danger' :
+                                                ['cancelled', 'returned', 'return request rejected', 'failed'].includes(order.status) ? 'bg-danger' :
                                                 order.status === 'shipped' ? 'bg-info' :
                                                 'bg-warning'
                                             %>">
-                                                        <%= order.status.toUpperCase() %>
+                                                        <%= order.status==='failed' ? 'PAYMENT FAILED' :
+                                                            order.status.toUpperCase() %>
                                                     </span>
                                                 </p>
                                             </div>
@@ -196,7 +198,8 @@
 
 
                                         <% if (order.status !=='cancelled' && order.status !=='delivered' &&
-                                            order.status !=='returned' && order.status !=='return request' && order.status !=='return request rejected' ) { %>
+                                            order.status !=='returned' && order.status !=='return request' &&
+                                            order.status !=='return request rejected' && order.status !=='failed' ) { %>
                                             <button onclick="cancelOrder('<%= order._id %>')"
                                                 class="btn btn-danger w-100 mt-3">
                                                 Cancel Order
@@ -207,29 +210,36 @@
                                                     class="btn btn-outline-primary btn-sm mt-2 w-100">
                                                     Return Order
                                                 </button>
-                                                <% } else if (order.status==='return request' ||
-                                                    order.status==='returned' ||
-                                                    order.status==='return request rejected' ) { %>
-                                                    <div
-                                                        class="badge <%= order.status === 'return request rejected' ? 'bg-danger' : 'bg-warning' %> text-dark mt-2 w-100 p-2 text-uppercase">
-                                                        <%= order.status==='return request' ? 'Return Requested' :
-                                                            order.status==='return request rejected' ? 'Return Rejected'
-                                                            : 'Returned' %>
-                                                    </div>
-                                                    <% if (order.returnReason) { %>
-                                                        <div class="mt-2 small text-muted">
-                                                            <strong>Your Return Reason:</strong>
-                                                            <%= order.returnReason %>
+                                                <% } else if (order.status==='failed' ) { %>
+                                                    <button
+                                                        onclick="retryPayment('<%= order._id %>', <%= order.finalAmount %>)"
+                                                        class="btn btn-warning w-100 mt-3">
+                                                        Retry Payment
+                                                    </button>
+                                                    <% } else if (order.status==='return request' ||
+                                                        order.status==='returned' ||
+                                                        order.status==='return request rejected' ) { %>
+                                                        <div
+                                                            class="badge <%= order.status === 'return request rejected' ? 'bg-danger' : 'bg-warning' %> text-dark mt-2 w-100 p-2 text-uppercase">
+                                                            <%= order.status==='return request' ? 'Return Requested' :
+                                                                order.status==='return request rejected'
+                                                                ? 'Return Rejected' : 'Returned' %>
                                                         </div>
-                                                        <% } %>
-                                                            <% if (order.status==='return request rejected' &&
-                                                                order.returnRejectionReason) { %>
-                                                                <div class="mt-2 alert alert-danger py-2 px-3 small">
-                                                                    <strong>Rejection Reason:</strong>
-                                                                    <%= order.returnRejectionReason %>
-                                                                </div>
-                                                                <% } %>
+                                                        <% if (order.returnReason) { %>
+                                                            <div class="mt-2 small text-muted">
+                                                                <strong>Your Return Reason:</strong>
+                                                                <%= order.returnReason %>
+                                                            </div>
+                                                            <% } %>
+                                                                <% if (order.status==='return request rejected' &&
+                                                                    order.returnRejectionReason) { %>
+                                                                    <div
+                                                                        class="mt-2 alert alert-danger py-2 px-3 small">
+                                                                        <strong>Rejection Reason:</strong>
+                                                                        <%= order.returnRejectionReason %>
+                                                                    </div>
                                                                     <% } %>
+                                                                        <% } %>
                             </div>
                         </div>
 
@@ -383,6 +393,61 @@
                     }
                 }
             }
+
+            async function retryPayment(orderId, amount) {
+                try {
+                    const response = await fetch('/razorpay/create-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: amount })
+                    });
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error(data.message || 'Failed to initialize payment');
+                    }
+
+                    const options = {
+                        key: '<%= razorpayKey %>',
+                        amount: data.order.amount,
+                        currency: 'INR',
+                        name: 'Froots Peedika',
+                        description: 'Retry Order Payment',
+                        order_id: data.order.id,
+                        handler: async function (response) {
+                            const verifyResponse = await fetch('/orders/verify-payment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    orderId: orderId,
+                                    razorpayPaymentId: response.razorpay_payment_id,
+                                    razorpayOrderId: response.razorpay_order_id,
+                                    razorpaySignature: response.razorpay_signature
+                                })
+                            });
+                            const verifyData = await verifyResponse.json();
+                            if (verifyData.success) {
+                                Swal.fire('Success!', 'Payment successful', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error!', verifyData.message, 'error');
+                            }
+                        },
+                        prefill: {
+                            name: '<%= user.name %>',
+                            email: '<%= user.email %>'
+                        }
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire('Error!', error.message, 'error');
+                }
+            }
         </script>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
         <%- include('../partials/user/footer') %>

@@ -13,6 +13,7 @@ const Razorpay = require("razorpay");
 const path = require("path")
 const ejs = require("ejs")
 const fs = require("fs")
+const crypto = require("crypto")
 
 
 
@@ -28,7 +29,7 @@ function calculateShipping(subtotal) {
 const placeOrder = async (req, res) => {
     try {
         const userId = req.session.user;
-        const { addressId, paymentMethod, totalAmountInput, discountAmount, couponCode } = req.body;
+        const { addressId, paymentMethod, totalAmountInput, discountAmount, couponCode, paymentStatus } = req.body;
 
         const user = await User.findById(userId);
         const cartData = await Cart.findOne({ userId }).populate({
@@ -111,7 +112,7 @@ const placeOrder = async (req, res) => {
                 couponCode: couponCode || null,
                 productName: item.productId.productName,
                 productImages: item.productId.productImages[0],
-                status: (paymentMethod === 'cod') ? 'confirmed' : 'pending' // Online payments stay pending until verified
+                status: (paymentStatus === 'failed') ? 'failed' : (paymentMethod === 'cod' ? 'confirmed' : 'pending') // Online payments stay pending until verified
             });
 
             orderItems.push({
@@ -245,6 +246,10 @@ const placeOrder = async (req, res) => {
             await user.save();
         }
 
+        if (paymentStatus === 'failed') {
+            return res.render('user/payment-failed', { order: aggregatedOrder });
+        }
+
         res.render('user/order-success', { order: aggregatedOrder });
 
     } catch (error) {
@@ -327,7 +332,8 @@ const getOrder = async (req, res) => {
             currentPage: page,
             totalPages: Math.ceil(totalOrders / limit),
             totalOrders: totalOrders,
-            searchQuery: search
+            searchQuery: search,
+            razorpayKey: process.env.RAZORPAY_KEY_ID
         });
     } catch (error) {
         console.error("Error in getOrders:", error);
@@ -364,6 +370,7 @@ const loadOrderDetails = async (req, res) => {
             order: order,
             user: user,
             address: address,
+            razorpayKey: process.env.RAZORPAY_KEY_ID
         });
 
     } catch (error) {
@@ -743,6 +750,53 @@ const generateInvoice = async (req, res) => {
 
 
 
+const verifyPayment = async (req, res) => {
+    try {
+        const { orderId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+
+        const sign = razorpayOrderId + "|" + razorpayPaymentId;
+        const expectedSign = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(sign.toString())
+            .digest("hex");
+
+        if (razorpaySignature === expectedSign) {
+            const order = await Order.findById(orderId);
+            if (order) {
+                order.status = 'confirmed';
+                await order.save();
+
+                await Transaction.create({
+                    userId: req.session.user,
+                    amount: order.finalAmount,
+                    transactionType: 'debit',
+                    paymentMethod: 'upi',
+                    paymentGateway: 'razorpay',
+                    gatewayTransactionId: razorpayPaymentId,
+                    status: 'completed',
+                    purpose: 'purchase',
+                    description: 'Order Payment (Retry)',
+                    orders: [{
+                        name: order.productName,
+                        quantity: order.quantity,
+                        finalPrice: order.finalAmount
+                    }],
+                    orderIds: [{ orderId: order._id }]
+                });
+
+                return res.json({ success: true, message: "Payment verified successfully" });
+            } else {
+                return res.status(404).json({ success: false, message: "Order not found" });
+            }
+        } else {
+            return res.status(400).json({ success: false, message: "Invalid signature" });
+        }
+    } catch (error) {
+        console.error("Error in verifyPayment:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
 
 module.exports = {
     placeOrder,
@@ -754,7 +808,6 @@ module.exports = {
     releaseCheckoutLock,
     Razorpaysubscription,
     removeCoupon,
-    generateInvoice
-
-
+    generateInvoice,
+    verifyPayment
 }

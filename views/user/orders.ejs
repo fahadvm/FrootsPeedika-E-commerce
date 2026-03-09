@@ -420,9 +420,11 @@
                                                 <%= order.status === 'delivered' ? 'bg-success' :
                                                     order.status === 'cancelled' ? 'bg-danger' :
                                                     order.status === 'returned' ? 'bg-danger' :
+                                                    order.status === 'failed' ? 'bg-danger' :
                                                     order.status === 'shipped' ? 'bg-info' :
                                                     'bg-warning' %> text-white">
-                                                <%= order.status.toUpperCase() %>
+                                                <%= order.status==='failed' ? 'PAYMENT FAILED' :
+                                                    order.status.toUpperCase() %>
                                             </span>
                                         </div>
                                     </div>
@@ -431,12 +433,13 @@
                                 <div class="order-body p-3">
                                     <div class="row align-items-center">
                                         <div class="col-md-2 mb-3">
-                                            <img src="<%= order.product.productImages[0] %>"
-                                                alt="<%= order.product.productName %>" class="product-image">
+                                            <img src="<%= order.product && order.product.productImages && order.product.productImages.length > 0 ? order.product.productImages[0] : order.productImages || '/images/default.png' %>"
+                                                alt="<%= order.product ? order.product.productName : order.productName %>"
+                                                class="product-image">
                                         </div>
                                         <div class="col-md-4">
                                             <h5>
-                                                <%= order.product.productName %>
+                                                <%= order.product ? order.product.productName : order.productName %>
                                             </h5>
                                             <p>Quantity: <%= order.quantity %>
                                             </p>
@@ -450,7 +453,9 @@
                                                 View Details
                                             </a>
                                             <% if (order.status !=='cancelled' && order.status !=='delivered' &&
-                                                order.status !=='returned' && order.status !=='return request' && order.status !=='return request rejected') { %>
+                                                order.status !=='returned' && order.status !=='return request' &&
+                                                order.status !=='return request rejected' && order.status !=='failed' )
+                                                { %>
                                                 <button onclick="cancelOrder('<%= order._id %>')"
                                                     class="btn btn-outline-danger btn-sm mt-2">
                                                     Cancel Order
@@ -460,7 +465,13 @@
                                                         class="btn btn-outline-primary btn-sm mt-2">
                                                         Return Order
                                                     </button>
-                                                    <% } %>
+                                                    <% } else if (order.status==='failed' ) { %>
+                                                        <button
+                                                            onclick="retryPayment('<%= order._id %>', <%= order.finalAmount %>)"
+                                                            class="btn btn-warning btn-sm mt-2">
+                                                            Retry Payment
+                                                        </button>
+                                                        <% } %>
                                         </div>
                                     </div>
                                 </div>
@@ -639,7 +650,62 @@
                                                     confirmButtonText: 'Yes, Logout'
                                                 }).then((result) => result.isConfirmed && window.location.assign('/logout'));
                                             }
+                                            // Retry Payment Function
+                                            async function retryPayment(orderId, amount) {
+                                                try {
+                                                    const response = await fetch('/razorpay/create-order', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ amount: amount })
+                                                    });
+                                                    const data = await response.json();
+
+                                                    if (!data.success) {
+                                                        throw new Error(data.message || 'Failed to initialize payment');
+                                                    }
+
+                                                    const options = {
+                                                        key: '<%= razorpayKey %>',
+                                                        amount: data.order.amount,
+                                                        currency: 'INR',
+                                                        name: 'Froots Peedika',
+                                                        description: 'Retry Order Payment',
+                                                        order_id: data.order.id,
+                                                        handler: async function (response) {
+                                                            const verifyResponse = await fetch('/orders/verify-payment', {
+                                                                method: 'POST',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({
+                                                                    orderId: orderId,
+                                                                    razorpayPaymentId: response.razorpay_payment_id,
+                                                                    razorpayOrderId: response.razorpay_order_id,
+                                                                    razorpaySignature: response.razorpay_signature
+                                                                })
+                                                            });
+                                                            const verifyData = await verifyResponse.json();
+                                                            if (verifyData.success) {
+                                                                Swal.fire('Success!', 'Payment successful', 'success').then(() => {
+                                                                    location.reload();
+                                                                });
+                                                            } else {
+                                                                Swal.fire('Error!', verifyData.message, 'error');
+                                                            }
+                                                        },
+                                                        prefill: {
+                                                            name: '<%= user.name %>',
+                                                            email: '<%= user.email %>'
+                                                        }
+                                                    };
+
+                                                    const rzp = new Razorpay(options);
+                                                    rzp.open();
+                                                } catch (error) {
+                                                    console.error('Error:', error);
+                                                    Swal.fire('Error!', error.message, 'error');
+                                                }
+                                            }
                                         </script>
+                                        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
                                         <script>
                                             function confirmAdminLogout(event) {
                                                 event.preventDefault();

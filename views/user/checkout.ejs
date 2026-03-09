@@ -16,159 +16,174 @@
 
     <div class="checkout-section mt-150 mb-150">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="checkout-accordion-wrap">
-                        <div class="accordion" id="accordionExample">
-                            <!-- Shipping Address Section -->
-                            <div class="card single-accordion">
-                                <div class="card-header" id="headingTwo">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                            data-target="#collapseTwo" aria-expanded="false"
-                                            aria-controls="collapseTwo">
-                                            Shipping Address
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo"
-                                    data-parent="#accordionExample">
-                                    <div class="card-body">
-                                        <div class="shipping-address-form">
-                                            <div class="address-container mb-3">
-                                                <a href="/address" class="btn btn-primary">Add New Address</a>
-                                            </div>
-                                            <div id="existingAddresses">
-                                                <% if (addresses && addresses.address && addresses.address.length> 0) {
-                                                    %>
-                                                    <% addresses.address.forEach(address=> { %>
-                                                        <div class="address-card mb-3">
-                                                            <label class="address-label">
-                                                                <input type="radio" name="selected_address"
-                                                                    value="<%= address.id %>" class="address-input"
-                                                                    <%=(address.isPrimary || address.isDefault)
-                                                                    ? 'checked' : '' %>>
-                                                                <div class="address-details">
-                                                                    <h5 class="address-name">
-                                                                        <%= address.name %> (<%= address.addressType %>)
-                                                                                <% if (address.isPrimary ||
-                                                                                    address.isDefault) { %>
-                                                                                    <span class="badge badge-warning"
-                                                                                        style="font-size: 10px; vertical-align: middle;">PRIMARY</span>
-                                                                                    <% } %>
-                                                                    </h5>
-                                                                    <p class="address-landmark">
-                                                                        <%= address.landMark %><br>
-                                                                            <%= address.city %>, <%= address.state %> -
-                                                                                    <%= address.pincode %><br>
-                                                                                        <%= address.phone %>
-                                                                    </p>
-                                                                </div>
-                                                            </label>
-                                                        </div>
-                                                        <% }); %>
-                                                            <% } else { %>
-                                                                <div class="address-card">
-                                                                    <p>No address found. Please add a new address.</p>
-                                                                </div>
-                                                                <% } %>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+            <% if (locals.paymentInProgress) { %>
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="payment-in-progress-alert">
+                            <div class="alert-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
                             </div>
-
-                            <!-- Payment Method Section -->
-                            <div class="card single-accordion">
-                                <div class="card-header" id="headingThree">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                            data-target="#collapseThree" aria-expanded="false"
-                                            aria-controls="collapseThree">
-                                            Payment Method
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div id="collapseThree" class="collapse" aria-labelledby="headingThree"
-                                    data-parent="#accordionExample">
-                                    <div class="card-body">
-                                        <div class="payment-methods">
-                                            <% const availableMethods=[ ...(totalAmount <=1000 ? ["cod"] :
-                                                []), "razorpay" , ...(wallet?.balance>= totalAmount ? ["wallet"] : [])
-                                                ]; %>
-
-                                                <% availableMethods.forEach(method=> { %>
-                                                    <div class="payment-method">
-                                                        <label class="payment-method-label">
-                                                            <input type="radio" name="payment_method"
-                                                                value="<%= method %>" class="payment-method-input">
-                                                            <div class="method-label">
-                                                                <%= method.charAt(0).toUpperCase() +
-                                                                    method.slice(1).replace("_", " " ) %>
-                                                            </div>
-                                                            <% if (method==="cod" ) { %>
-                                                                <div class="method-description">Cash on Delivery</div>
-                                                                <% } %>
-                                                                    <% if (method==="wallet" && wallet) { %>
-                                                                        <div class="method-description">
-                                                                            Balance: ₹<%= wallet.balance?.toFixed(2) ||
-                                                                                0 %>
+                            <div class="alert-message">
+                                <strong>Payment Session Active</strong>
+                                <p>You already have a payment in progress in another tab. Please complete that
+                                    transaction or wait a few minutes before trying again.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="checkout-accordion-wrap">
+                                <div class="accordion" id="accordionExample">
+                                    <!-- Shipping Address Section -->
+                                    <div class="card single-accordion">
+                                        <div class="card-header" id="headingTwo">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link collapsed" type="button"
+                                                    data-toggle="collapse" data-target="#collapseTwo"
+                                                    aria-expanded="false" aria-controls="collapseTwo">
+                                                    Shipping Address
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo"
+                                            data-parent="#accordionExample">
+                                            <div class="card-body">
+                                                <div class="shipping-address-form">
+                                                    <div class="address-container mb-3">
+                                                        <a href="/address" class="btn btn-primary">Add New Address</a>
+                                                    </div>
+                                                    <div id="existingAddresses">
+                                                        <% if (addresses && addresses.address &&
+                                                            addresses.address.length> 0) {
+                                                            %>
+                                                            <% addresses.address.forEach(address=> { %>
+                                                                <div class="address-card mb-3">
+                                                                    <label class="address-label">
+                                                                        <input type="radio" name="selected_address"
+                                                                            value="<%= address.id %>"
+                                                                            class="address-input" <%=(address.isPrimary
+                                                                            || address.isDefault) ? 'checked' : '' %>>
+                                                                        <div class="address-details">
+                                                                            <h5 class="address-name">
+                                                                                <%= address.name %> (<%=
+                                                                                        address.addressType %>)
+                                                                                        <% if (address.isPrimary ||
+                                                                                            address.isDefault) { %>
+                                                                                            <span
+                                                                                                class="badge badge-warning"
+                                                                                                style="font-size: 10px; vertical-align: middle;">PRIMARY</span>
+                                                                                            <% } %>
+                                                                            </h5>
+                                                                            <p class="address-landmark">
+                                                                                <%= address.landMark %><br>
+                                                                                    <%= address.city %>, <%=
+                                                                                            address.state %> -
+                                                                                            <%= address.pincode %><br>
+                                                                                                <%= address.phone %>
+                                                                            </p>
+                                                                        </div>
+                                                                    </label>
+                                                                </div>
+                                                                <% }); %>
+                                                                    <% } else { %>
+                                                                        <div class="address-card">
+                                                                            <p>No address found. Please add a new
+                                                                                address.</p>
                                                                         </div>
                                                                         <% } %>
-                                                        </label>
                                                     </div>
-                                                    <% }); %>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
-                                </div>
-                            </div>
 
-                            <!-- Wallet Section -->
-                            <div class="card single-accordion">
-                                <div class="card-header" id="headingWallet">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                            data-target="#collapseWallet" aria-expanded="false"
-                                            aria-controls="collapseWallet">
-                                            Wallet
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div id="collapseWallet" class="collapse" aria-labelledby="headingWallet"
-                                    data-parent="#accordionExample">
-                                    <div class="card-body">
-                                        <div class="card-details">
-                                            <%if(wallet) {%>
-                                                <h5>Wallet Balance: ₹<%= wallet.balance %>
-                                                </h5>
-                                                <%}else{%>
-                                                    <h5>Wallet Balance: ₹0.00</h5>
-                                                    <%}%>
+                                    <!-- Payment Method Section -->
+                                    <div class="card single-accordion">
+                                        <div class="card-header" id="headingThree">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link collapsed" type="button"
+                                                    data-toggle="collapse" data-target="#collapseThree"
+                                                    aria-expanded="false" aria-controls="collapseThree">
+                                                    Payment Method
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseThree" class="collapse" aria-labelledby="headingThree"
+                                            data-parent="#accordionExample">
+                                            <div class="card-body">
+                                                <div class="payment-methods">
+                                                    <% const availableMethods=[ ...(totalAmount <=1000 ? ["cod"] :
+                                                        []), "razorpay" , ...(wallet?.balance>= totalAmount ? ["wallet"]
+                                                        : [])
+                                                        ]; %>
 
+                                                        <% availableMethods.forEach(method=> { %>
+                                                            <div class="payment-method">
+                                                                <label class="payment-method-label">
+                                                                    <input type="radio" name="payment_method"
+                                                                        value="<%= method %>"
+                                                                        class="payment-method-input">
+                                                                    <div class="method-label">
+                                                                        <%= method.charAt(0).toUpperCase() +
+                                                                            method.slice(1).replace("_", " " ) %>
+                                                                    </div>
+                                                                    <% if (method==="cod" ) { %>
+                                                                        <div class="method-description">Cash on Delivery
+                                                                        </div>
+                                                                        <% } %>
+                                                                            <% if (method==="wallet" && wallet) { %>
+                                                                                <div class="method-description">
+                                                                                    Balance: ₹<%=
+                                                                                        wallet.balance?.toFixed(2) || 0
+                                                                                        %>
+                                                                                </div>
+                                                                                <% } %>
+                                                                </label>
+                                                            </div>
+                                                            <% }); %>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Wallet Section -->
+                                    <div class="card single-accordion">
+                                        <div class="card-header" id="headingWallet">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link collapsed" type="button"
+                                                    data-toggle="collapse" data-target="#collapseWallet"
+                                                    aria-expanded="false" aria-controls="collapseWallet">
+                                                    Wallet
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseWallet" class="collapse" aria-labelledby="headingWallet"
+                                            data-parent="#accordionExample">
+                                            <div class="card-body">
+                                                <div class="card-details">
+                                                    <%if(wallet) {%>
+                                                        <h5>Wallet Balance: ₹<%= wallet.balance %>
+                                                        </h5>
+                                                        <%}else{%>
+                                                            <h5>Wallet Balance: ₹0.00</h5>
+                                                            <%}%>
+
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <% if (messages.error) { %>
-                    <script>
-                        swal.fire('Error', '<%= messages.error %>', 'error');
-                    </script>
-                    <% } %>
-
-                        <% if (locals.paymentInProgress) { %>
-                            <div class="col-12 mt-4">
-                                <div class="alert alert-warning text-center">
-                                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                                    <strong>You already have a payment in progress in another tab.</strong>
-                                    <p class="mb-0">Please complete your current transaction or wait a few minutes
-                                        before trying again.</p>
-                                </div>
-                            </div>
+                        <% if (messages.error) { %>
+                            <script>
+                                swal.fire('Error', '<%= messages.error %>', 'error');
+                            </script>
                             <% } %>
+
 
                                 <!-- Order Summary and Coupon Section -->
                                 <div class="col-lg-4">
@@ -251,7 +266,7 @@
                                         </div>
                                     </div>
                                 </div>
-            </div>
+                    </div>
         </div>
     </div>
 
@@ -581,6 +596,50 @@
                     width: 100%;
                 }
             }
+
+            /* Payment In Progress Alert */
+            .payment-in-progress-alert {
+                display: flex;
+                align-items: center;
+                background-color: #fff9e6;
+                border: 1px solid #fee2b3;
+                border-left: 5px solid #F28123;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                margin-top: 20px;
+            }
+
+            .payment-in-progress-alert .alert-icon {
+                font-size: 24px;
+                color: #F28123;
+                margin-right: 20px;
+            }
+
+            .payment-in-progress-alert .alert-message strong {
+                display: block;
+                color: #856404;
+                font-size: 16px;
+                margin-bottom: 2px;
+            }
+
+            .payment-in-progress-alert .alert-message p {
+                margin: 0;
+                color: #666;
+                font-size: 14px;
+            }
+
+            @media (max-width: 576px) {
+                .payment-in-progress-alert {
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .payment-in-progress-alert .alert-icon {
+                    margin-right: 0;
+                    margin-bottom: 10px;
+                }
+            }
         </style>
 
         <!-- JavaScript -->
@@ -761,6 +820,10 @@
                     };
 
                     const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', function (response) {
+                        orderData.paymentStatus = 'failed';
+                        finalizeOrder(orderData);
+                    });
                     rzp.open();
                 } catch (error) {
                     console.error('Error:', error);
