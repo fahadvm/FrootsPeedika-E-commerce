@@ -351,9 +351,9 @@
                                                 </div>
                                                 <div class="text-right">
                                                     <span class="px-3 py-1 text-sm font-semibold rounded-full 
-                                            <%= order.status === 'delivered' 
+                                            <%= order.status === STATUS.ORDER.DELIVERED 
                                                 ? 'bg-green-100 text-green-700' 
-                                                : order.status === 'returned' || order.status === 'cancelled' 
+                                                : order.status === STATUS.ORDER.RETURNED || order.status === STATUS.ORDER.CANCELLED 
                                                     ? 'bg-red-100 text-red-700' 
                                                     : 'bg-yellow-100 text-yellow-700' %>">
                                                         <%= order.status %>
@@ -367,7 +367,7 @@
                                         <% }); %>
                         </div>
 
-                        
+
                         <!-- Primary Address -->
                         <div class="mt-5">
                             <h3 class="mb-4 text-xl font-semibold" style="color: var(--accent-orange);">Primary Address
@@ -390,7 +390,7 @@
                                         </p>
                                         <button class="btn-orange mt-3" onclick="window.location.href='/address'">Edit
                                             Address</button>
-                                        </div>
+                                    </div>
                                     <% } else { %>
                                         <div class="order-card">
                                             <h3>No address</h3>
@@ -406,7 +406,8 @@
                                 </span>
                             </div>
                             <button onclick="copyReferCode()" class="btn-orange">Copy Refer Code</button>
-                            <p style="color: #949c94; font-size: x-large;">"Share your code with your friends and earn ₹500 for every successful signup! "</p>
+                            <p style="color: #949c94; font-size: x-large;">"Share your code with your friends and earn
+                                ₹500 for every successful signup! "</p>
                         </div>
                     </div>
                 </main>

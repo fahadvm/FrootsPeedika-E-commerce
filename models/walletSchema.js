@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { TransactionType, TransactionStatus } = require('../helpers/constants');
 
 const walletSchema = new mongoose.Schema({
     userId: {
@@ -31,6 +32,7 @@ const walletSchema = new mongoose.Schema({
             },
             type: {
                 type: String,
+                enum: Object.values(TransactionType)
             },
             date: {
                 type: Date,
@@ -42,7 +44,8 @@ const walletSchema = new mongoose.Schema({
             },
             status: {
                 type: String,
-                default: 'COMPLETED'
+                enum: Object.values(TransactionStatus),
+                default: TransactionStatus.COMPLETED
             }
         }
     ]

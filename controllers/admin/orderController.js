@@ -4,6 +4,7 @@ const Product = require("../../models/productSchema");
 const Address = require("../../models/addressSchema")
 const Wallet = require("../../models/walletSchema")
 const Transaction = require("../../models/transactionSchema")
+const { OrderStatus, TransactionStatus, TransactionType, PaymentMethod, PaymentGateway, TransactionPurpose, StatusCodes, Messages } = require('../../helpers/constants');
 
 
 
@@ -89,7 +90,7 @@ const getOrders = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching orders:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -110,7 +111,7 @@ const getOrderDetails = async (req, res) => {
 
 
         if (!order) {
-            return res.status(404).send("Order not found");
+            return res.status(StatusCodes.NOT_FOUND).send(Messages.ORDER_NOT_FOUND);
         }
 
 
@@ -122,7 +123,7 @@ const getOrderDetails = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching order details:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -132,16 +133,16 @@ const updateOrderStatus = async (req, res) => {
         const order = await Order.findById(orderId);
 
         if (!order) {
-            return res.status(404).json({ success: false, message: "Order not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.ORDER_NOT_FOUND });
         }
 
         const currentStatus = order.status;
-        const statusHierarchy = ['pending', 'confirmed', 'shipped', 'delivered'];
-        const restrictedStatuses = ['cancelled', 'return request', 'returned', 'return request rejected'];
+        const statusHierarchy = [OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.SHIPPED, OrderStatus.DELIVERED];
+        const restrictedStatuses = [OrderStatus.CANCELLED, OrderStatus.RETURN_REQUEST, OrderStatus.RETURNED, OrderStatus.RETURN_REQUEST_REJECTED];
 
         // Prevent updates if order is in a final or restricted state
         if (restrictedStatuses.includes(currentStatus)) {
-            return res.status(400).json({
+            return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: `Cannot update order status while it is ${currentStatus.replace(/ /g, '_')}.`
             });
@@ -152,13 +153,13 @@ const updateOrderStatus = async (req, res) => {
         const newIndex = statusHierarchy.indexOf(status);
 
         if (currentIndex !== -1 && newIndex !== -1 && newIndex < currentIndex) {
-            return res.status(400).json({
+            return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: `Cannot revert order status from ${currentStatus} back to ${status}.`
             });
         }
 
-        if (status === 'delivered') {
+        if (status === OrderStatus.DELIVERED) {
             order.deliveredOn = new Date();
         }
 
@@ -169,7 +170,7 @@ const updateOrderStatus = async (req, res) => {
         res.json({ success: true, message: "Order status updated successfully" });
     } catch (error) {
         console.error("Error updating order status:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -179,11 +180,11 @@ const cancelOrder = async (req, res) => {
         const order = await Order.findById(orderId);
 
         if (!order) {
-            return res.status(404).json({ success: false, message: "Order not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.ORDER_NOT_FOUND });
         }
 
-        if (order.status !== 'cancelled' && order.status !== 'delivered') {
-            order.status = 'cancelled';
+        if (order.status !== OrderStatus.CANCELLED && order.status !== OrderStatus.DELIVERED) {
+            order.status = OrderStatus.CANCELLED;
 
             // Return product quantity to stock
             await Product.findByIdAndUpdate(order.product, {
@@ -193,11 +194,11 @@ const cancelOrder = async (req, res) => {
             await order.save();
             res.json({ success: true, message: "Order cancelled successfully" });
         } else {
-            res.status(400).json({ success: false, message: "Order cannot be cancelled" });
+            res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Order cannot be cancelled" });
         }
     } catch (error) {
         console.error("Error cancelling order:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -207,7 +208,7 @@ const handleOrderReturn = async (req, res) => {
 
         const orderData = await Order.findOne({ _id: orderId });
         if (!orderData) {
-            return res.status(404).json({ success: false, message: 'Order not found' });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.ORDER_NOT_FOUND });
         }
 
         if (action === 'approve') {
@@ -227,7 +228,7 @@ const handleOrderReturn = async (req, res) => {
             const refundAmount = orderData.finalAmount;
             wallet.balance += refundAmount;
             wallet.transactions.push({
-                type: 'credit',
+                type: TransactionType.CREDIT,
                 amount: refundAmount,
                 description: `Refund for returned order #${orderData.orderId}`,
             });
@@ -237,11 +238,11 @@ const handleOrderReturn = async (req, res) => {
             const transaction = new Transaction({
                 userId: orderData.userId,
                 amount: refundAmount,
-                transactionType: "credit",
-                paymentMethod: "wallet",
-                paymentGateway: "wallet",
-                status: "completed",
-                purpose: "return",
+                transactionType: TransactionType.CREDIT,
+                paymentMethod: PaymentMethod.WALLET,
+                paymentGateway: PaymentGateway.WALLET,
+                status: TransactionStatus.COMPLETED,
+                purpose: TransactionPurpose.RETURN,
                 description: `Return Order refund to wallet for #${orderData.orderId}`,
                 orders: [{
                     name: orderData.productName,
@@ -254,24 +255,24 @@ const handleOrderReturn = async (req, res) => {
             });
             await transaction.save();
 
-            orderData.status = 'returned';
+            orderData.status = OrderStatus.RETURNED;
             orderData.returnRejectionReason = null;
         } else if (action === 'reject') {
             const { reason } = req.body;
             if (!reason || reason.trim() === '') {
-                return res.status(400).json({ success: false, message: 'Rejection reason is mandatory' });
+                return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Rejection reason is mandatory' });
             }
-            orderData.status = 'return request rejected';
+            orderData.status = OrderStatus.RETURN_REQUEST_REJECTED;
             orderData.returnRejectionReason = reason;
         } else {
-            orderData.status = 'delivered';
+            orderData.status = OrderStatus.DELIVERED;
         }
         await orderData.save();
 
         return res.json({ success: true, message: `Return request ${action}ed successfully` });
     } catch (error) {
         console.error('Error occurred while processing order return:', error);
-        return res.status(500).json({ success: false, message: 'Internal Server Error' });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 

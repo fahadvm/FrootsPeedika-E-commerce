@@ -1,251 +1,181 @@
 <%- include('../partials/admin/header') %>
 
-<style>
-  :root {
-      --primary-color: #3498db;
-      --secondary-color: #2c3e50;
-      --success-color: #2ecc71;
-      --danger-color: #e74c3c;
-      --info-color: #3498db;
-      --light-gray: #ecf0f1;
-    }
-    .order-table th, .order-table td {
-        vertical-align: middle;
-    }
-    .status-badge {
-        padding: 6px 12px;
-        border-radius: 15px;
-        font-weight: 500;
-    }
-    .order-actions .btn {
-        margin: 0 2px;
-    }
-    .pagination {
-        justify-content: center;
-        margin-top: 20px;
-    }
-</style>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-gray: #ecf0f1;
+        }
+
+        .order-table th,
+        .order-table td {
+            vertical-align: middle;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: 500;
+        }
+
+        .order-actions .btn {
+            margin: 0 2px;
+        }
+
+        .pagination {
+            justify-content: center;
+            margin-top: 20px;
+        }
+    </style>
 
 
 
 
 
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Order Management</h1>
-    
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-table me-1"></i>
-            All Orders (<%= totalOrders %> total)
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped order-table">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Customer</th>
-                            <th>Product</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% orders.forEach(order => { %>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Order Management</h1>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-table me-1"></i>
+                All Orders (<%= totalOrders %> total)
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped order-table">
+                        <thead>
                             <tr>
-                                <td>#<%= order.orderId %></td>
-                                <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
-                                <td><%= order.address.name %></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img src="/<%= order.product.productImages[0] %>" 
-                                             alt="Product" 
-                                             style="width: 50px; height: 50px; object-fit: cover;"
-                                             class="me-2">
-                                        <span><%= order.product.productName %></span>
-                                    </div>
-                                </td>
-                                <td>₹<%= Math.round(order.finalAmount) %></td>
-                                <td>
-                                    <span class="status-badge <%= 
-                                        order.status === 'delivered' ? 'bg-success' :
-                                        order.status === 'cancelled' ? 'bg-danger' :
-                                        order.status === 'shipped' ? 'bg-info' :
-                                        order.status === 'returned' ? 'bg-danger' :
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach(order=> { %>
+                                <tr>
+                                    <td>#<%= order.orderId %>
+                                    </td>
+                                    <td>
+                                        <%= new Date(order.createdAt).toLocaleDateString() %>
+                                    </td>
+                                    <td>
+                                        <%= order.address.name %>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="/<%= order.product.productImages[0] %>" alt="Product"
+                                                style="width: 50px; height: 50px; object-fit: cover;" class="me-2">
+                                            <span>
+                                                <%= order.product.productName %>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>₹<%= Math.round(order.finalAmount) %>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge <%= 
+                                        order.status === STATUS.ORDER.DELIVERED ? 'bg-success' :
+                                        order.status === STATUS.ORDER.CANCELLED ? 'bg-danger' :
+                                        order.status === STATUS.ORDER.SHIPPED ? 'bg-info' :
+                                        order.status === STATUS.ORDER.RETURNED ? 'bg-danger' :
                                         'bg-warning'
                                     %>">
-                                        <%= order.status.toUpperCase() %>
-                                    </span>
-                                </td>
-                                <td class="order-actions">
-                                    <a href="/admin/orders/<%= order._id %>" 
-                                       class="btn btn-primary btn-sm">
-                                        View Details
-                                    </a>
-                                    <% if (order.status !== 'cancelled' && order.status !== 'delivered' && order.status !== 'returned') { %>
-                                        <button onclick="updateStatus('<%= order._id %>')" 
+                                            <%= order.status.toUpperCase() %>
+                                        </span>
+                                    </td>
+                                    <td class="order-actions">
+                                        <a href="/admin/orders/<%= order._id %>" class="btn btn-primary btn-sm">
+                                            View Details
+                                        </a>
+                                        <% if (order.status !==STATUS.ORDER.CANCELLED && order.status
+                                            !==STATUS.ORDER.DELIVERED && order.status !==STATUS.ORDER.RETURNED) { %>
+                                            <button onclick="updateStatus('<%= order._id %>')"
                                                 class="btn btn-info btn-sm">
-                                            Update Status
-                                        </button>
-                                        <button onclick="cancelOrder('<%= order._id %>')" 
+                                                Update Status
+                                            </button>
+                                            <button onclick="cancelOrder('<%= order._id %>')"
                                                 class="btn btn-danger btn-sm">
-                                            Cancel
-                                        </button>
-                                    <% } %>
-                                </td>
-                            </tr>
-                        <% }); %>
-                    </tbody>
-                </table>
-            </div>
+                                                Cancel
+                                            </button>
+                                            <% } %>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                        </tbody>
+                    </table>
+                </div>
 
-            <!-- Pagination Controls -->
-            <% if (totalPages > 1) { %>
-                <nav aria-label="Order pagination">
-                    <ul class="pagination">
-                        <!-- Previous Button -->
-                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                            <a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>" aria-label="Previous">
-                                <span aria-hidden="true">«</span>
-                            </a>
-                        </li>
-
-                        <!-- Page Numbers -->
-                        <% for(let i = 1; i <= totalPages; i++) { %>
-                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                <!-- Pagination Controls -->
+                <% if (totalPages> 1) { %>
+                    <nav aria-label="Order pagination">
+                        <ul class="pagination">
+                            <!-- Previous Button -->
+                            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                <a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>"
+                                    aria-label="Previous">
+                                    <span aria-hidden="true">«</span>
+                                </a>
                             </li>
-                        <% } %>
 
-                        <!-- Next Button -->
-                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                            <a class="page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>" aria-label="Next">
-                                <span aria-hidden="true">»</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            <% } %>
+                            <!-- Page Numbers -->
+                            <% for(let i=1; i <=totalPages; i++) { %>
+                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>">
+                                        <%= i %>
+                                    </a>
+                                </li>
+                                <% } %>
+
+                                    <!-- Next Button -->
+                                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                        <a class="page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>"
+                                            aria-label="Next">
+                                            <span aria-hidden="true">»</span>
+                                        </a>
+                                    </li>
+                        </ul>
+                    </nav>
+                    <% } %>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    async function updateStatus(orderId) {
-        const { value: status } = await Swal.fire({
-            title: 'Update Order Status',
-            input: 'select',
-            inputOptions: {
-                'pending': 'Pending',
-                'confirmed': 'Confirmed',
-                'shipped': 'Shipped',
-                'delivered': 'Delivered'
-            },
-            inputPlaceholder: 'Select status',
-            showCancelButton: true,
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'You need to select a status!';
-                }
-            }
-        });
-
-        if (status) {
-            try {
-                const response = await fetch('/admin/orders/update-status', {
-                    method: 'put',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ orderId, status }),
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Order status updated successfully',
-                        timer: 1500
-                    });
-                    location.reload();
-                } else {
-                    throw new Error(data.message);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Failed to update status'
-                });
-            }
-        }
-    }
-
-    async function cancelOrder(orderId) {
-        // Initial confirmation
-        const result = await Swal.fire({
-            title: 'Cancel Order',
-            text: 'Are you sure you want to cancel this order?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, cancel it!'
-        });
-
-        if (result.isConfirmed) {
-            // Reason selection
-            const { value: reason } = await Swal.fire({
-                title: 'Cancel Order',
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        async function updateStatus(orderId) {
+            const { value: status } = await Swal.fire({
+                title: 'Update Order Status',
                 input: 'select',
-                inputLabel: 'Reason for cancellation',
-                inputPlaceholder: 'Select a reason...',
-                showCancelButton: true,
                 inputOptions: {
-                    'outOfStock': 'Out of Stock',
-                    'vendorDelay': 'Vendor Shipping Delay',
-                    'qualityIssue': 'Vendor Quality Issue',
-                    'vendorError': 'Vendor Processing Error',
-                    'discontinued': 'Product Discontinued by Vendor',
-                    'other': 'Other (Please specify)'
+                    '<%= STATUS.ORDER.PENDING %>': 'Pending',
+                    '<%= STATUS.ORDER.CONFIRMED %>': 'Confirmed',
+                    '<%= STATUS.ORDER.SHIPPED %>': 'Shipped',
+                    '<%= STATUS.ORDER.DELIVERED %>': 'Delivered'
                 },
-                inputValidator: (value) => !value && 'Please select a reason!'
+                inputPlaceholder: 'Select status',
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'You need to select a status!';
+                    }
+                }
             });
 
-            if (reason) {
-                let finalReason = reason;
-
-                // If "other" is selected, show textarea for additional details
-                if (reason === 'other') {
-                    const { value: otherReason } = await Swal.fire({
-                        title: 'Please Specify Reason',
-                        input: 'textarea',
-                        inputLabel: 'Describe your reason for cancellation',
-                        inputPlaceholder: 'Type your reason here...',
-                        showCancelButton: true,
-                        inputValidator: (value) => !value && 'Please provide a description!'
-                    });
-
-                    if (!otherReason) {
-                        return; // Exit if user cancels the textarea input
-                    }
-
-                    finalReason = `Other: ${otherReason}`;
-                }
-
+            if (status) {
                 try {
-                    const response = await fetch('/admin/orders/cancel', {
-                        method: 'delete',
+                    const response = await fetch('/admin/orders/update-status', {
+                        method: 'put',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ orderId, reason: finalReason }),
+                        body: JSON.stringify({ orderId, status }),
                     });
 
                     const data = await response.json();
@@ -254,7 +184,7 @@
                         await Swal.fire({
                             icon: 'success',
                             title: 'Success',
-                            text: 'Order cancelled successfully',
+                            text: 'Order status updated successfully',
                             timer: 1500
                         });
                         location.reload();
@@ -266,12 +196,97 @@
                     await Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: error.message || 'Failed to cancel order'
+                        text: error.message || 'Failed to update status'
                     });
                 }
             }
         }
-    }
-</script>
 
-<%- include('../partials/admin/footer') %>
+        async function cancelOrder(orderId) {
+            // Initial confirmation
+            const result = await Swal.fire({
+                title: 'Cancel Order',
+                text: 'Are you sure you want to cancel this order?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, cancel it!'
+            });
+
+            if (result.isConfirmed) {
+                // Reason selection
+                const { value: reason } = await Swal.fire({
+                    title: 'Cancel Order',
+                    input: 'select',
+                    inputLabel: 'Reason for cancellation',
+                    inputPlaceholder: 'Select a reason...',
+                    showCancelButton: true,
+                    inputOptions: {
+                        'outOfStock': 'Out of Stock',
+                        'vendorDelay': 'Vendor Shipping Delay',
+                        'qualityIssue': 'Vendor Quality Issue',
+                        'vendorError': 'Vendor Processing Error',
+                        'discontinued': 'Product Discontinued by Vendor',
+                        'other': 'Other (Please specify)'
+                    },
+                    inputValidator: (value) => !value && 'Please select a reason!'
+                });
+
+                if (reason) {
+                    let finalReason = reason;
+
+                    // If "other" is selected, show textarea for additional details
+                    if (reason === 'other') {
+                        const { value: otherReason } = await Swal.fire({
+                            title: 'Please Specify Reason',
+                            input: 'textarea',
+                            inputLabel: 'Describe your reason for cancellation',
+                            inputPlaceholder: 'Type your reason here...',
+                            showCancelButton: true,
+                            inputValidator: (value) => !value && 'Please provide a description!'
+                        });
+
+                        if (!otherReason) {
+                            return; // Exit if user cancels the textarea input
+                        }
+
+                        finalReason = `Other: ${otherReason}`;
+                    }
+
+                    try {
+                        const response = await fetch('/admin/orders/cancel', {
+                            method: 'delete',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ orderId, reason: finalReason }),
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'Order cancelled successfully',
+                                timer: 1500
+                            });
+                            location.reload();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to cancel order'
+                        });
+                    }
+                }
+            }
+        }
+    </script>
+
+    <%- include('../partials/admin/footer') %>

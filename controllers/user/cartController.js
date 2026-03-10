@@ -1,4 +1,6 @@
 
+const { StatusCodes, Messages } = require('../../helpers/constants');
+
 const User = require("../../models/userSchema");
 const Cart = require("../../models/cartSchema");
 const Product = require("../../models/productSchema")
@@ -93,7 +95,7 @@ const addCart = async (req, res) => {
         const userId = req.session.user;
 
         if (!userId) {
-            return res.status(401).json({ success: false, message: "User not logged in" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: Messages.UNAUTHORIZED });
         }
 
         const userData = await User.findById(userId);
@@ -101,7 +103,7 @@ const addCart = async (req, res) => {
 
 
         if (!productData) {
-            return res.status(404).json({ success: false, message: "Product not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.PRODUCT_NOT_FOUND });
         }
 
         const price = productData.salePrice;
@@ -140,7 +142,7 @@ const addCart = async (req, res) => {
         res.json({ success: true, message: "Product added to cart", cart: userCart });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -153,13 +155,13 @@ const removeCart = async (req, res) => {
         const userId = req.session.user;
 
         if (!userId) {
-            return res.status(401).json({ success: false, message: "User not logged in" }); // Or redirect
+            return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: Messages.UNAUTHORIZED }); // Or redirect
         }
 
         const cart = await Cart.findOne({ userId });
 
         if (!cart) {
-            return res.status(404).json({ success: false, message: "Cart not found" }); // Or redirect
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.NOT_FOUND }); // Or redirect
         }
 
         // Use filter to create a new items array without the product to remove
@@ -173,7 +175,7 @@ const removeCart = async (req, res) => {
 
     } catch (error) {
         console.error("Error removing from cart:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" }); // Or redirect
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR }); // Or redirect
     }
 };
 
@@ -183,39 +185,39 @@ const updatecartquantity = async (req, res) => {
         const userId = req.session.user;
 
         if (!userId) {
-            return res.status(401).json({ success: false, message: "User not logged in" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: Messages.UNAUTHORIZED });
         }
 
         const cart = await Cart.findOne({ userId });
 
         if (!cart) {
-            return res.status(404).json({ success: false, message: "Cart not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.NOT_FOUND });
         }
 
         const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
 
         if (itemIndex === -1) {
-            return res.status(404).json({ success: false, message: "Product not found in cart" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.PRODUCT_NOT_FOUND });
         }
 
         // --- Crucial Updates ---
         const parsedQuantity = parseInt(quantity); // Parse quantity as an integer
 
         if (isNaN(parsedQuantity) || parsedQuantity < 1) {
-            return res.status(400).json({ success: false, message: "Invalid quantity" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid quantity" });
         }
 
         if (parsedQuantity > 5) {
-            return res.status(400).json({ success: false, message: "Maximum quantity is 5 per product" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Maximum quantity is 5 per product" });
         }
 
         const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.PRODUCT_NOT_FOUND });
         }
 
         if (parsedQuantity > product.stock) {
-            return res.status(400).json({ success: false, message: `Only ${product.stock} items available in stock` });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: `Only ${product.stock} items available in stock` });
         }
 
         cart.items[itemIndex].quantity = parsedQuantity; // Update the quantity in the cart item
@@ -237,7 +239,7 @@ const updatecartquantity = async (req, res) => {
 
     } catch (error) {
         console.error("Error updating quantity:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 

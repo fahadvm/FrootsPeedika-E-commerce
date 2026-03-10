@@ -1,4 +1,4 @@
-<%-include("../../views/partials/user/header")%>
+<%-include(".. /../views/partials/user/header")%>
 
     <title>Frootspeedika - Order History</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -416,14 +416,14 @@
                                             #<%= order.orderId %>
                                         </div>
                                         <div class="col-md-3">
-                                            <span class="status-badge 
-                                                <%= order.status === 'delivered' ? 'bg-success' :
-                                                    order.status === 'cancelled' ? 'bg-danger' :
-                                                    order.status === 'returned' ? 'bg-danger' :
-                                                    order.status === 'failed' ? 'bg-danger' :
-                                                    order.status === 'shipped' ? 'bg-info' :
-                                                    'bg-warning' %> text-white">
-                                                <%= order.status==='failed' ? 'PAYMENT FAILED' :
+                                            <span class="status-badge <%= 
+                                                order.status === STATUS.ORDER.DELIVERED ? 'bg-success' :
+                                                order.status === STATUS.ORDER.CANCELLED ? 'bg-danger' :
+                                                order.status === STATUS.ORDER.RETURNED ? 'bg-danger' :
+                                                order.status === STATUS.ORDER.FAILED ? 'bg-danger' :
+                                                order.status === STATUS.ORDER.SHIPPED ? 'bg-info' :
+                                                'bg-warning' %> text-white">
+                                                <%= order.status===STATUS.ORDER.FAILED ? 'PAYMENT FAILED' :
                                                     order.status.toUpperCase() %>
                                             </span>
                                         </div>
@@ -452,20 +452,21 @@
                                                 class="btn btn-outline-primary btn-sm">
                                                 View Details
                                             </a>
-                                            <% if (order.status !=='cancelled' && order.status !=='delivered' &&
-                                                order.status !=='returned' && order.status !=='return request' &&
-                                                order.status !=='return request rejected' && order.status !=='failed' )
-                                                { %>
+                                            <% if (order.status !==STATUS.ORDER.CANCELLED && order.status
+                                                !==STATUS.ORDER.DELIVERED && order.status !==STATUS.ORDER.RETURNED &&
+                                                order.status !==STATUS.ORDER.RETURN_REQUEST && order.status
+                                                !==STATUS.ORDER.RETURN_REQUEST_REJECTED && order.status
+                                                !==STATUS.ORDER.FAILED ) { %>
                                                 <button onclick="cancelOrder('<%= order._id %>')"
                                                     class="btn btn-outline-danger btn-sm mt-2">
                                                     Cancel Order
                                                 </button>
-                                                <% } else if (order.status==='delivered' ) { %>
+                                                <% } else if (order.status===STATUS.ORDER.DELIVERED ) { %>
                                                     <button onclick="returnOrder('<%= order._id %>')"
                                                         class="btn btn-outline-primary btn-sm mt-2">
                                                         Return Order
                                                     </button>
-                                                    <% } else if (order.status==='failed' ) { %>
+                                                    <% } else if (order.status===STATUS.ORDER.FAILED ) { %>
                                                         <button
                                                             onclick="retryPayment('<%= order._id %>', <%= order.finalAmount %>)"
                                                             class="btn btn-warning btn-sm mt-2">

@@ -3,6 +3,7 @@ const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
+const { OrderStatus, StatusCodes, Messages } = require('../../helpers/constants');
 
 
 const loadSalesPage = async (req, res) => {
@@ -33,7 +34,7 @@ const loadSalesPage = async (req, res) => {
         break;
       case 'custom':
         if (!startDate || !endDate || new Date(startDate) > new Date(endDate)) {
-          return res.status(400).render('admin/pageerror', { message: 'Invalid date range' });
+          return res.status(StatusCodes.BAD_REQUEST).render('admin/pageerror', { message: 'Invalid date range' });
         }
         query.createdAt = {
           $gte: new Date(startDate),
@@ -44,7 +45,7 @@ const loadSalesPage = async (req, res) => {
         query.createdAt = { $exists: true }; // All time if no filter
     }
 
-    query.status = { $in: ['delivered', 'return request'] };
+    query.status = { $in: [OrderStatus.DELIVERED, OrderStatus.RETURN_REQUEST] };
 
     const orders = await Order.find(query).sort({ createdAt: 1 });
     let totalRegularPrice = 0;
@@ -85,7 +86,7 @@ const loadSalesPage = async (req, res) => {
     res.render('admin/salesReport', { salesData });
   } catch (error) {
     console.error('Error in loadSalesPage:', error);
-    res.status(500).render('admin/pageerror', {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).render('admin/pageerror', {
       message: 'Error loading sales report',
       error: error.message
     });
@@ -231,7 +232,7 @@ const generateSalesReports = async (req, res) => {
         $gte: new Date(startDate),
         $lte: new Date(endDate),
       },
-      status: { $in: ['delivered', 'return request'] }
+      status: { $in: [OrderStatus.DELIVERED, OrderStatus.RETURN_REQUEST] }
     }).populate('product');
 
     const summary = {
@@ -244,7 +245,7 @@ const generateSalesReports = async (req, res) => {
     res.json({ success: true, orders, summary });
   } catch (error) {
     console.error("Error generating sales report:", error);
-    res.status(500).json({ success: false, message: "Error generating sales report" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
   }
 };
 

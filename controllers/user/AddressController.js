@@ -1,3 +1,5 @@
+const { StatusCodes, Messages } = require('../../helpers/constants');
+
 const User = require("../../models/userSchema");
 const Address = require("../../models/addressSchema")
 
@@ -29,20 +31,20 @@ const postAddress = async (req, res) => {
 
         // Backend Validation
         if (!name || !phone || !altPhone || !pincode || !landMark || !city || !state || !addressType) {
-            return res.status(400).json({ success: false, message: "All fields are required" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "All fields are required" });
         }
 
         const phoneRegex = /^[6-9]\d{9}$/;
         if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
-            return res.status(400).json({ success: false, message: "Invalid phone numbers. Must be a valid 10-digit number starting with 6-9." });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid phone numbers. Must be a valid 10-digit number starting with 6-9." });
         }
         if (!phoneRegex.test(altPhone) || /^0+$/.test(altPhone)) {
-            return res.status(400).json({ success: false, message: "Invalid alternate phone numbers. Must be a valid 10-digit number starting with 6-9." });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid alternate phone numbers. Must be a valid 10-digit number starting with 6-9." });
         }
 
         const pincodeRegex = /^[1-9]\d{5}$/;
         if (!pincodeRegex.test(pincode) || /^0+$/.test(pincode)) {
-            return res.status(400).json({ success: false, message: "Invalid pincode. Must be a valid 6-digit number not starting with 0." });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid pincode. Must be a valid 6-digit number not starting with 0." });
         }
 
         const userAddress = await Address.findOne({ userId: userData._id });
@@ -73,10 +75,10 @@ const postAddress = async (req, res) => {
             userAddress.address.push(newAddressEntry);
             await userAddress.save();
         }
-        return res.status(200).json({ success: true, message: "Address added successfully" });
+        return res.status(StatusCodes.OK).json({ success: true, message: "Address added successfully" });
     } catch (error) {
         console.error("Error in postAddress:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -87,12 +89,12 @@ const deleteAddress = async (req, res) => {
 
         const addressDoc = await Address.findOne({ userId: userId });
         if (!addressDoc) {
-            return res.status(404).json({ success: false, message: "Address record not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: "Address record not found" });
         }
 
         const addressToDelete = addressDoc.address.id(addressId);
         if (!addressToDelete) {
-            return res.status(404).json({ success: false, message: "Specific address not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: "Specific address not found" });
         }
 
         const wasPrimary = addressToDelete.isPrimary || addressToDelete.isDefault;
@@ -118,7 +120,7 @@ const deleteAddress = async (req, res) => {
         return res.redirect('/address');
     } catch (error) {
         console.error("Error in deleteAddress:", error);
-        res.status(500).json({ success: false, message: "Failed to delete Address" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to delete Address" });
     }
 };
 
@@ -128,20 +130,20 @@ const editAddress = async (req, res) => {
 
     // Backend Validation
     if (!name || !phone || !altPhone || !pincode || !landMark || !city || !state || !addressType) {
-        return res.status(400).json({ success: false, message: "All fields are required" });
+        return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "All fields are required" });
     }
 
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
-        return res.status(400).json({ success: false, message: "Invalid phone numbers. Must be a valid 10-digit number starting with 6-9." });
+        return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid phone numbers. Must be a valid 10-digit number starting with 6-9." });
     }
     if (!phoneRegex.test(altPhone) || /^0+$/.test(altPhone)) {
-        return res.status(400).json({ success: false, message: "Invalid alternate phone numbers. Must be a valid 10-digit number starting with 6-9." });
+        return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid alternate phone numbers. Must be a valid 10-digit number starting with 6-9." });
     }
 
     const pincodeRegex = /^[1-9]\d{5}$/;
     if (!pincodeRegex.test(pincode) || /^0+$/.test(pincode)) {
-        return res.status(400).json({ success: false, message: "Invalid pincode. Must be a valid 6-digit number not starting with 0." });
+        return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid pincode. Must be a valid 6-digit number not starting with 0." });
     }
 
     try {
@@ -174,13 +176,13 @@ const editAddress = async (req, res) => {
         );
 
         if (updateResult.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: "Address not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.NOT_FOUND });
         }
 
-        return res.status(200).json({ success: true, message: "Address updated successfully" });
+        return res.status(StatusCodes.OK).json({ success: true, message: "Address updated successfully" });
     } catch (error) {
         console.error("❌ Error updating address:", error);
-        return res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -190,7 +192,7 @@ const setPrimaryAddress = async (req, res) => {
         const userId = req.session.user;
 
         if (!addressId) {
-            return res.status(400).json({ success: false, message: "Address ID is required" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Address ID is required" });
         }
 
         // Unset all previous primary addresses for this user
@@ -206,13 +208,13 @@ const setPrimaryAddress = async (req, res) => {
         );
 
         if (result.modifiedCount > 0) {
-            return res.status(200).json({ success: true, message: "Defined as primary address" });
+            return res.status(StatusCodes.OK).json({ success: true, message: "Defined as primary address" });
         } else {
-            return res.status(404).json({ success: false, message: "Address not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.NOT_FOUND });
         }
     } catch (error) {
         console.error("Error setting primary address:", error);
-        return res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 

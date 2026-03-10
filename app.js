@@ -11,15 +11,15 @@ const adminRouters = require('./routes/adminRouter')
 const flash = require('connect-flash');
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    secret: process.env.SESSION_SECRET, 
-    resave: false, 
-    saveUninitialized: true, 
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
     cookie: {
         secure: false,
-        httpOnly: true, 
-        maxAge: 72 * 60 * 60 * 1000 
+        httpOnly: true,
+        maxAge: 72 * 60 * 60 * 1000
     }
 }));
 
@@ -32,18 +32,30 @@ app.use(passport.session())
 
 app.use(flash());
 
+const { OrderStatus, TransactionStatus, TransactionType, PaymentMethod, PaymentGateway, CheckoutStatus, AddressType, TransactionPurpose } = require('./helpers/constants');
+
 app.use((req, res, next) => {
     res.locals.messages = req.flash();
+    res.locals.STATUS = {
+        ORDER: OrderStatus,
+        TRANSACTION: TransactionStatus,
+        TRANSACTION_TYPE: TransactionType,
+        PAYMENT: PaymentMethod,
+        GATEWAY: PaymentGateway,
+        CHECKOUT: CheckoutStatus,
+        ADDRESS: AddressType,
+        PURPOSE: TransactionPurpose
+    };
     next();
 });
 
-app.use((req,res,next)=>{
-    res.set('cache-control',"no-store")
+app.use((req, res, next) => {
+    res.set('cache-control', "no-store")
     next()
 })
 
 
-app.set('view engine',"ejs") 
+app.set('view engine', "ejs")
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static("public"))
 
@@ -51,12 +63,12 @@ app.use(express.static("public"))
 
 
 
-app.use('/',userRouter);
-app.use('/admin',adminRouters)
+app.use('/', userRouter);
+app.use('/admin', adminRouters)
 
 
 db()
-app.listen(process.env.PORT,()=>{
+app.listen(process.env.PORT, () => {
     console.log(`server running http://localhost:${process.env.PORT}`)
 })
 

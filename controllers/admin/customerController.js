@@ -1,6 +1,7 @@
 const EventEmitter = require("events")
 const userBlockedEmitter = new EventEmitter()
 const User = require("../../models/userSchema");
+const { StatusCodes, Messages } = require('../../helpers/constants');
 
 
 const customerInfo = async (req, res) => {
@@ -50,9 +51,9 @@ const customerBlocked = async (req, res) => {
   try {
     const userId = req.params.id;
     await User.findByIdAndUpdate(userId, { isBlocked: true });
-    res.status(200).json({ message: 'User blocked successfully' });
+    res.status(StatusCodes.OK).json({ message: 'User blocked successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to block user' });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: Messages.INTERNAL_SERVER_ERROR });
   }
 }
 
@@ -60,9 +61,9 @@ const customerUnblocked = async (req, res) => {
   try {
     const userId = req.params.id;
     await User.findByIdAndUpdate(userId, { isBlocked: false });
-    res.status(200).json({ message: 'User unblocked successfully' });
+    res.status(StatusCodes.OK).json({ message: 'User unblocked successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to unblock user' });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: Messages.INTERNAL_SERVER_ERROR });
   }
 }
 

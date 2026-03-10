@@ -1,191 +1,221 @@
 <%- include("../../views/partials/admin/header") %>
 
-<style>
-     :root {
-      --primary-color: #1e90ff;
-      --secondary-color: #2d3436;
-      --success-color: #00b894;
-      --danger-color: #d63031;
-      --info-color: #0984e3;
-      --light-gray: #dfe6e9;
-      --background-color: #f5f6fa;
-      --white: #ffffff;
-      --shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-      --transition: all 0.3s ease;
-    }
+    <style>
+        :root {
+            --primary-color: #1e90ff;
+            --secondary-color: #2d3436;
+            --success-color: #00b894;
+            --danger-color: #d63031;
+            --info-color: #0984e3;
+            --light-gray: #dfe6e9;
+            --background-color: #f5f6fa;
+            --white: #ffffff;
+            --shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+    </style>
 
-</style>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Transaction Details</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
+            <li class=""><a href="/admin/transactions"> > Transactions</a></li>
+            <li class="active"> > Transaction Details</li>
+        </ol>
 
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Transaction Details</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
-        <li class=""><a href="/admin/transactions"> > Transactions</a></li>
-        <li class="active"> > Transaction Details</li>
-    </ol>
-    
-    <div class="row">
-        <div class="col-xl-12">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Transaction Information
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h5>Transaction ID</h5>
-                            <p class="text-muted"><%= transaction.transactionId %></p>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Date & Time</h5>
-                            <p class="text-muted"><%= new Date(transaction.createdAt).toLocaleString() %></p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h5>Amount</h5>
-                            <p class="<%= transaction.transactionType === 'credit' ? 'text-success' : 'text-danger' %> fw-bold fs-4">
-                                <%= transaction.transactionType === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
-                            </p>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Status</h5>
-                            <span class="badge bg-<%= transaction.status === 'completed' ? 'success' : (transaction.status === 'pending' ? 'warning' : 'danger') %> fs-6">
-                                <%= transaction.status %>
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <h5>Transaction Type</h5>
-                            <span class="badge <%= transaction.transactionType === 'credit' ? 'bg-success' : 'bg-danger' %> fs-6">
-                                <%= transaction.transactionType %>
-                            </span>
-                        </div>
-                        <div class="col-md-4">
-                            <h5>Payment Method</h5>
-                            <p class="text-muted"><%= transaction.paymentMethod %></p>
-                        </div>
-                        <div class="col-md-4">
-                            <h5>Payment Gateway</h5>
-                            <p class="text-muted"><%= transaction.paymentGateway %></p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h5>Purpose</h5>
-                            <p class="text-muted"><%= transaction.purpose %></p>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Description</h5>
-                            <p class="text-muted"><%= transaction.description %></p>
-                        </div>
-                    </div>
-                    
-                    <% if (transaction.gatewayTransactionId) { %>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h5>Gateway Transaction ID</h5>
-                            <p class="text-muted"><%= transaction.gatewayTransactionId %></p>
-                        </div>
-                    </div>
-                    <% } %>
-                    
-                    <% if (transaction.walletBalanceAfter !== null && transaction.walletBalanceAfter !== undefined) { %>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h5>Wallet Balance After</h5>
-                            <p class="text-muted">₹<%= transaction.walletBalanceAfter.toFixed(2) %></p>
-                        </div>
-                    </div>
-                    <% } %>
-                </div>
-            </div>
-            
-            <% if (transaction.userId) { %>
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-user me-1"></i>
-                    User Information
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <h5>Name</h5>
-                            <p class="text-muted"><%= transaction.userId.username %></p>
-                        </div>
-                        <div class="col-md-4">
-                            <h5>Email</h5>
-                            <p class="text-muted"><%= transaction.userId.email %></p>
-                        </div>
-                        <div class="col-md-4">
-                            <h5>Phone</h5>
-                            <p class="text-muted"><%= transaction.userId.phone || 'N/A' %></p>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-            <% } %>
-            
-            <% if (transaction.orders && transaction.orders.length > 0) { %>
+        <div class="row">
+            <div class="col-xl-12">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <i class="fas fa-shopping-cart me-1"></i>
-                        Related Orders
+                        <i class="fas fa-info-circle me-1"></i>
+                        Transaction Information
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% orderDetails.forEach(order => { %>
-                                <tr>
-                                    <td><%= order.orderId %></td>
-                                    <td>₹<%= order.finalAmount.toFixed(2) %></td>
-                                    <td>
-                                        <span class="badge bg-<%= 
-                                            order.status === 'delivered' ? 'success' : 
-                                            (order.status === 'cancelled' ? 'danger' : 
-                                            (order.status === 'pending' ? 'warning' : 'info')) 
-                                        %>">
-                                            <%= order.status %>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <%= order.createdAt? new Date(order.createdAt).toLocaleDateString() : 'N/A' %>
-                                    </td>
-                                    <td>
-                                        <a href="/admin/orders/<%= order._id %>" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
-                                    </td>
-                                </tr>
-                                <% }); %>
-                            </tbody>
-                        </table>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5>Transaction ID</h5>
+                                <p class="text-muted">
+                                    <%= transaction.transactionId %>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Date & Time</h5>
+                                <p class="text-muted">
+                                    <%= new Date(transaction.createdAt).toLocaleString() %>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5>Amount</h5>
+                                <p
+                                    class="<%= transaction.transactionType === STATUS.TRANSACTION_TYPE.CREDIT ? 'text-success' : 'text-danger' %> fw-bold fs-4">
+                                    <%= transaction.transactionType===STATUS.TRANSACTION_TYPE.CREDIT ? '+' : '-' %>₹<%=
+                                            transaction.amount.toFixed(2) %>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Status</h5>
+                                <span
+                                    class="badge bg-<%= transaction.status === STATUS.TRANSACTION.COMPLETED ? 'success' : (transaction.status === STATUS.TRANSACTION.PENDING ? 'warning' : 'danger') %> fs-6">
+                                    <%= transaction.status %>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <h5>Transaction Type</h5>
+                                <span
+                                    class="badge <%= transaction.transactionType === STATUS.TRANSACTION_TYPE.CREDIT ? 'bg-success' : 'bg-danger' %> fs-6">
+                                    <%= transaction.transactionType %>
+                                </span>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>Payment Method</h5>
+                                <p class="text-muted">
+                                    <%= transaction.paymentMethod %>
+                                </p>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>Payment Gateway</h5>
+                                <p class="text-muted">
+                                    <%= transaction.paymentGateway %>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5>Purpose</h5>
+                                <p class="text-muted">
+                                    <%= transaction.purpose %>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Description</h5>
+                                <p class="text-muted">
+                                    <%= transaction.description %>
+                                </p>
+                            </div>
+                        </div>
+
+                        <% if (transaction.gatewayTransactionId) { %>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h5>Gateway Transaction ID</h5>
+                                    <p class="text-muted">
+                                        <%= transaction.gatewayTransactionId %>
+                                    </p>
+                                </div>
+                            </div>
+                            <% } %>
+
+                                <% if (transaction.walletBalanceAfter !==null && transaction.walletBalanceAfter
+                                    !==undefined) { %>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <h5>Wallet Balance After</h5>
+                                            <p class="text-muted">₹<%= transaction.walletBalanceAfter.toFixed(2) %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <% } %>
                     </div>
                 </div>
-            <% } %>
-            
-            <div class="mb-4">
-                <a href="/admin/transactions" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Transactions
-                </a>
+
+                <% if (transaction.userId) { %>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-user me-1"></i>
+                            User Information
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h5>Name</h5>
+                                    <p class="text-muted">
+                                        <%= transaction.userId.username %>
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5>Email</h5>
+                                    <p class="text-muted">
+                                        <%= transaction.userId.email %>
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5>Phone</h5>
+                                    <p class="text-muted">
+                                        <%= transaction.userId.phone || 'N/A' %>
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <% } %>
+
+                        <% if (transaction.orders && transaction.orders.length> 0) { %>
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-shopping-cart me-1"></i>
+                                    Related Orders
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% orderDetails.forEach(order=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= order.orderId %>
+                                                    </td>
+                                                    <td>₹<%= order.finalAmount.toFixed(2) %>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-<%= 
+                                            order.status === STATUS.ORDER.DELIVERED ? 'success' : 
+                                            (order.status === STATUS.ORDER.CANCELLED ? 'danger' : 
+                                            (order.status === STATUS.ORDER.PENDING ? 'warning' : 'info')) 
+                                        %>">
+                                                            <%= order.status %>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.createdAt? new
+                                                            Date(order.createdAt).toLocaleDateString() : 'N/A' %>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/admin/orders/<%= order._id %>"
+                                                            class="btn btn-sm btn-primary">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <% } %>
+
+                                <div class="mb-4">
+                                    <a href="/admin/transactions" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-1"></i> Back to Transactions
+                                    </a>
+                                </div>
             </div>
         </div>
     </div>
-</div>
 
-<%- include("../../views/partials/admin/footer") %>
+    <%- include("../../views/partials/admin/footer") %>

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { v4: uuidv4 } = require('uuid');
+const { TransactionStatus, TransactionType, PaymentMethod, PaymentGateway, TransactionPurpose } = require('../helpers/constants');
 
 const transactionSchema = new Schema({
     transactionId: {
@@ -19,18 +20,18 @@ const transactionSchema = new Schema({
     },
     transactionType: {
         type: String,
-        enum: ['credit', 'debit'],
+        enum: Object.values(TransactionType),
         required: true
     },
     paymentMethod: {
         type: String,
-        enum: ['wallet', 'upi','cod',"netbanking"],
+        enum: Object.values(PaymentMethod),
         required: true
     },
     paymentGateway: {
         type: String,
-        enum: ['razorpay', 'wallet', 'none','cod'],
-        default: 'none'
+        enum: Object.values(PaymentGateway),
+        default: PaymentGateway.NONE
     },
     gatewayTransactionId: {
         type: String,
@@ -38,12 +39,12 @@ const transactionSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'completed', 'failed', 'refunded'],
-        default: 'completed'
+        enum: Object.values(TransactionStatus),
+        default: TransactionStatus.COMPLETED
     },
     purpose: {
         type: String,
-        enum: ['purchase', 'refund', 'wallet_add', 'wallet_withdraw', 'cancellation', 'return'],
+        enum: Object.values(TransactionPurpose),
         required: true
     },
     description: {
@@ -52,16 +53,16 @@ const transactionSchema = new Schema({
     },
     orders: [
         {
-            name: { type: String,  },
-            price: { type: Number,  },
-            quantity: { type: Number,  },
+            name: { type: String, },
+            price: { type: Number, },
+            quantity: { type: Number, },
             discount: { type: Number, default: 0 },
-            finalPrice: { type: Number,  },
+            finalPrice: { type: Number, },
         }
     ],
-    orderIds:[
-        {   
-            orderId:{type: String}
+    orderIds: [
+        {
+            orderId: { type: String }
         }
     ],
     walletBalanceAfter: {

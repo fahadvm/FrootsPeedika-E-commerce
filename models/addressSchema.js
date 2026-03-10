@@ -1,6 +1,6 @@
-const mongoose = require("mongoose")
-const { Schema } = mongoose
-
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+const { AddressType } = require('../helpers/constants');
 
 const addressSchema = new Schema({
     userId: {
@@ -11,7 +11,9 @@ const addressSchema = new Schema({
     address: [{
         addressType: {
             type: String,
-            required: true
+            required: true,
+            enum: Object.values(AddressType),
+            default: AddressType.HOME
         },
         name: {
             type: String,

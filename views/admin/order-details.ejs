@@ -77,10 +77,10 @@
                             <h5 class="mb-0">Order #<%= order.orderId %>
                             </h5>
                             <span class="badge bg-<%= 
-                            order.status === 'delivered' ? 'success' :
-                            order.status === 'cancelled' ? 'danger' :
-                            order.status === 'returned' ? 'danger' :
-                            order.status === 'shipped' ? 'info' :
+                            order.status === STATUS.ORDER.DELIVERED ? 'success' :
+                            order.status === STATUS.ORDER.CANCELLED ? 'danger' :
+                            order.status === STATUS.ORDER.RETURNED ? 'danger' :
+                            order.status === STATUS.ORDER.SHIPPED ? 'info' :
                             'warning'
                         %>">
                                 <%= order.status.toUpperCase() %>
@@ -91,7 +91,8 @@
                         <!-- Status Timeline -->
                         <div class="status-timeline">
                             <div class="status-line"></div>
-                            <% const statuses=['pending', 'confirmed' , 'shipped' , 'delivered' ]; %>
+                            <% const statuses=[STATUS.ORDER.PENDING, STATUS.ORDER.CONFIRMED, STATUS.ORDER.SHIPPED,
+                                STATUS.ORDER.DELIVERED]; %>
                                 <% statuses.forEach(status=> { %>
                                     <div class="status-point">
                                         <div
@@ -140,11 +141,11 @@
                         </div>
 
                         <!-- Order Actions -->
-                        <% if (order.status==="return request" ) { %>
+                        <% if (order.status===STATUS.ORDER.RETURN_REQUEST) { %>
                             <div class="mb-4">
                                 <h6>Return Request Reason</h6>
                                 <p class="text-muted p-2 bg-light border rounded">
-                                    <%=order.returnReason%>
+                                    <%= order.returnReason %>
                                 </p>
                                 <h6>Return Request Actions</h6>
                                 <button onclick="handleReturn('approve', '<%= order._id %>')"
@@ -155,11 +156,11 @@
                                     Reject Return
                                 </button>
                             </div>
-                            <% } else if (order.status==="return request rejected" ) { %>
+                            <% } else if (order.status===STATUS.ORDER.RETURN_REQUEST_REJECTED) { %>
                                 <div class="mb-4">
                                     <h6>Return Request Reason</h6>
                                     <p class="text-muted p-2 bg-light border rounded">
-                                        <%=order.returnReason%>
+                                        <%= order.returnReason %>
                                     </p>
                                     <div class="alert alert-danger">
                                         <strong>Return Request Rejected</strong><br>
@@ -167,13 +168,13 @@
                                         <%= order.returnRejectionReason %>
                                     </div>
                                 </div>
-                                <% } else if (order.status !=='cancelled' && order.status !=='delivered' && order.status
-                                    !=='returned' ) { %>
+                                <% } else if (order.status !==STATUS.ORDER.CANCELLED && order.status
+                                    !==STATUS.ORDER.DELIVERED && order.status !==STATUS.ORDER.RETURNED) { %>
                                     <div class="mt-4">
                                         <button onclick="updateStatus('<%= order._id %>')" class="btn btn-primary me-2">
                                             Update Status
                                         </button>
-                                        <button onclick="cancelOrder('<%= order._id %>')" class="btn btn- danger">
+                                        <button onclick="cancelOrder('<%= order._id %>')" class="btn btn-danger">
                                             Cancel Order
                                         </button>
                                     </div>
@@ -234,9 +235,9 @@
                                         <div class="mt-3">
                                             <span class="text-muted">Payment Method:</span>
                                             <span class="badge <%= 
-                                    order.paymentMethod === 'razorpay' ? 'bg-success' :
-                                    order.paymentMethod === 'online' ? 'bg-success' :
-                                    order.paymentMethod === 'wallet' ? 'bg-info' :
+                                    order.paymentMethod === STATUS.GATEWAY.RAZORPAY ? 'bg-success' :
+                                    order.paymentMethod === STATUS.PAYMENT.NETBANKING ? 'bg-success' :
+                                    order.paymentMethod === STATUS.PAYMENT.WALLET ? 'bg-info' :
                                     'bg-warning'
                                 %>">
                                                 <%=order.paymentMethod%>
@@ -267,10 +268,10 @@
                 title: 'Update Order Status',
                 input: 'select',
                 inputOptions: {
-                    'pending': 'Pending',
-                    'confirmed': 'Confirmed',
-                    'shipped': 'Shipped',
-                    'delivered': 'Delivered'
+                    '<%= STATUS.ORDER.PENDING %>': 'Pending',
+                    '<%= STATUS.ORDER.CONFIRMED %>': 'Confirmed',
+                    '<%= STATUS.ORDER.SHIPPED %>': 'Shipped',
+                    '<%= STATUS.ORDER.DELIVERED %>': 'Delivered'
                 },
                 inputPlaceholder: 'Select status',
                 showCancelButton: true,

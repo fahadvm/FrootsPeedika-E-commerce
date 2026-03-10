@@ -1,3 +1,5 @@
+const { StatusCodes, Messages } = require('../../helpers/constants');
+
 const Coupon = require("../../models/couponSchema")
 const User = require("../../models/userSchema")
 const Cart = require("../../models/cartSchema")
@@ -5,7 +7,7 @@ const Cart = require("../../models/cartSchema")
 
 function calculateShipping(prize) {
     if (prize < 100) {
-        return 10; 
+        return 10;
     }
     return 0;
 }
@@ -16,15 +18,15 @@ const loadcoupon = async (req, res) => {
         const userId = req.session.user;
         const userData = await User.findById(userId);
         const coupons = await Coupon.find({ users: { $nin: [userId] } });
-        
+
         res.render("user/coupon", {
             coupons,
-            user:userData
+            user: userData
         });
 
     } catch (error) {
         console.error("Error loading order details:", error);
-        res.status(500).render("error", { message: "Internal server error." });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).render("error", { message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -36,9 +38,9 @@ const applyCoupon = async (req, res) => {
         // Validate coupon and calculate discount
         const coupon = await Coupon.findOne({
             couponCode: couponCode,
-            users: { $nin: [userId] } 
+            users: { $nin: [userId] }
         });
-        
+
         if (!coupon) {
             return res.json({ success: false, message: "Invalid or expired coupon." });
         }
@@ -54,11 +56,11 @@ const applyCoupon = async (req, res) => {
         const discountAmount = (subTotal * coupon.offerPrice) / 100;
         let discountedTotal = subTotal - discountAmount;
         let shipping = calculateShipping(subTotal);
-        totalAmount = discountedTotal+shipping;
+        totalAmount = discountedTotal + shipping;
         await Coupon.updateOne({ _id: coupon._id }, { $inc: { usageCount: 1 } });
 
-        return res.json({ success: true, totalAmount, discountAmount,shipping,   subTotal });
-         
+        return res.json({ success: true, totalAmount, discountAmount, shipping, subTotal });
+
     } catch (error) {
         console.error("Error applying coupon:", error);
         return res.json({ success: false, message: "Something went wrong." });
@@ -69,20 +71,20 @@ const clearCoupon = async (req, res) => {
     try {
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error clearing coupon' });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Error clearing coupon' });
     }
 };
 
 const getAvailableCoupons = async (req, res) => {
     try {
-        const userId = req.session.user; 
+        const userId = req.session.user;
         const currentDate = new Date();
 
-        const coupons = await Coupon.find({isList: "false", users: { $ne: userId } });
+        const coupons = await Coupon.find({ isList: "false", users: { $ne: userId } });
         res.json(coupons);
     } catch (error) {
         console.error('Error fetching coupons:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -93,6 +95,6 @@ module.exports = {
     clearCoupon,
     loadcoupon,
     getAvailableCoupons
-   
+
 
 }

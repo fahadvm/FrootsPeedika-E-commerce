@@ -1,5 +1,6 @@
 const Wallet = require('../../models/walletSchema')
 const User = require('../../models/userSchema')
+const { StatusCodes, Messages } = require('../../helpers/constants');
 const Razorpay = require("razorpay")
 const crypto = require('crypto')
 require("dotenv").config()
@@ -24,10 +25,10 @@ const addTowallet = async (req, res) => {
     const { userId, amount } = req.body
 
     if (!userId || !amount || amount <= 0) {
-      return res.status(400).json({ message: 'Invalid input data' })
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid input data' })
     }
 
-    let wallet = await Wallet.findOne({ userId:userId })
+    let wallet = await Wallet.findOne({ userId: userId })
 
     if (!wallet) {
       wallet = new Wallet({
@@ -41,7 +42,7 @@ const addTowallet = async (req, res) => {
     }
 
     await wallet.save()
-    res.status(200).json({ message: 'Money added successfully', wallet })
+    res.status(StatusCodes.OK).json({ message: 'Money added successfully', wallet })
   } catch (error) {
     console.error('error occur while loadWallet', error)
     return res.redirect('/pageNotFound')
@@ -49,7 +50,7 @@ const addTowallet = async (req, res) => {
 }
 
 const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,       
+  key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET
 })
 
@@ -57,7 +58,7 @@ const createRazorpayOrder = async (req, res) => {
   try {
     const orderAmount = parseFloat(req.body.amount);
     if (!orderAmount || isNaN(orderAmount) || orderAmount <= 0) {
-      return res.status(400).json({ success: false, message: 'Invalid or missing amount' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Invalid or missing amount' });
     }
 
     console.log('orderAmount:', orderAmount);
@@ -76,7 +77,7 @@ const createRazorpayOrder = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating Razorpay order:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message });
   }
 };
 
@@ -92,7 +93,7 @@ const razorpayPaymentSuccess = async (req, res) => {
       .digest('hex');
 
     if (generatedSignature !== razorpay_signature) {
-      return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Invalid payment signature' });
     }
 
     // Find and update wallet
@@ -127,7 +128,7 @@ const razorpayPaymentSuccess = async (req, res) => {
     return res.json({ success: true, newBalance: wallet.balance });
   } catch (error) {
     console.error('Error in payment success:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
   }
 };
 

@@ -2,6 +2,7 @@ const Transaction = require("../../models/transactionSchema")
 const User = require("../../models/userSchema")
 const Order = require("../../models/orderSchema")
 const Wallet = require("../../models/walletSchema")
+const { TransactionType, TransactionStatus, PaymentMethod, PaymentGateway, TransactionPurpose, StatusCodes, Messages } = require('../../helpers/constants');
 
 
 
@@ -25,7 +26,7 @@ const loadtranactions = async (req, res) => {
         }
 
 
-        if (req.query.orderId) { filter["orders.orderId"] = req.query.orderId}
+        if (req.query.orderId) { filter["orders.orderId"] = req.query.orderId }
         // if (req.query.status) filter.status = req.query.status
 
         if (req.query.userId) {
@@ -55,7 +56,7 @@ const loadtranactions = async (req, res) => {
         const totalTransactions = await Transaction.countDocuments(); // Count total transactions
         const totalPages = Math.ceil(totalTransactions / limit);
 
-        
+
 
         const transactions = await Transaction.find(filter)
             .populate("userId", "name email")
@@ -73,7 +74,7 @@ const loadtranactions = async (req, res) => {
 
     } catch (error) {
         console.error("Error loading transactions:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -191,41 +192,41 @@ const getAllTransactions = async (req, res) => {
         })
     } catch (error) {
         console.error("Error fetching transactions:", error)
-        res.status(500).send("Internal Server Error")
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.INTERNAL_SERVER_ERROR)
     }
 }
 
 
 const transactionDetails = async (req, res) => {
     try {
-      const { transactionId } = req.params
-  
-      const transaction = await Transaction.findOne({ transactionId }).populate("userId")
-  
-      if (!transaction) {
-        return res.redirect("/admin/transactions")
-      }
-  
-      let orderDetails = [];  
-      if (transaction.orderIds && transaction.orderIds.length > 0) {
-        for (let i = 0; i < transaction.orderIds.length; i++) {
-            orderDetails = await Order.find({ orderId: { $in: transaction.orderIds.map(o => o.orderId) } })
-    
-        }
-      }
+        const { transactionId } = req.params
 
-      console.log("orderDetails:",orderDetails)
-      res.render("admin/transaction-details", {
-        transaction,
-        orderDetails,
-        title: "Transaction Details",
-      })
-      
+        const transaction = await Transaction.findOne({ transactionId }).populate("userId")
+
+        if (!transaction) {
+            return res.redirect("/admin/transactions")
+        }
+
+        let orderDetails = [];
+        if (transaction.orderIds && transaction.orderIds.length > 0) {
+            for (let i = 0; i < transaction.orderIds.length; i++) {
+                orderDetails = await Order.find({ orderId: { $in: transaction.orderIds.map(o => o.orderId) } })
+
+            }
+        }
+
+        console.log("orderDetails:", orderDetails)
+        res.render("admin/transaction-details", {
+            transaction,
+            orderDetails,
+            title: "Transaction Details",
+        })
+
     } catch (error) {
-      console.error("Error fetching transaction details:", error)
-      res.status(500).send("Internal Server Error")
+        console.error("Error fetching transaction details:", error)
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.INTERNAL_SERVER_ERROR)
     }
-  }
+}
 
 const createTransaction = async (transactionData) => {
     try {
@@ -250,7 +251,7 @@ const getTransactionStats = async (req, res) => {
         const creditTotal = await Transaction.aggregate([
             {
                 $match: {
-                    transactionType: "credit",
+                    transactionType: TransactionType.CREDIT,
                     createdAt: { $gte: startDate, $lte: endDate },
                 },
             },
@@ -265,7 +266,7 @@ const getTransactionStats = async (req, res) => {
         const debitTotal = await Transaction.aggregate([
             {
                 $match: {
-                    transactionType: "debit",
+                    transactionType: TransactionType.DEBIT,
                     createdAt: { $gte: startDate, $lte: endDate },
                 },
             },
@@ -321,12 +322,12 @@ const getTransactionStats = async (req, res) => {
                     },
                     credit: {
                         $sum: {
-                            $cond: [{ $eq: ["$transactionType", "credit"] }, "$amount", 0],
+                            $cond: [{ $eq: ["$transactionType", TransactionType.CREDIT] }, "$amount", 0],
                         },
                     },
                     debit: {
                         $sum: {
-                            $cond: [{ $eq: ["$transactionType", "debit"] }, "$amount", 0],
+                            $cond: [{ $eq: ["$transactionType", TransactionType.DEBIT] }, "$amount", 0],
                         },
                     },
                     count: { $sum: 1 },
@@ -347,7 +348,7 @@ const getTransactionStats = async (req, res) => {
         })
     } catch (error) {
         console.error("Error getting transaction stats:", error)
-        res.status(500).json({ success: false, message: "Internal server error" })
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR })
     }
 }
 
@@ -358,27 +359,27 @@ const createManualTransaction = async (req, res) => {
 
         const user = await User.findById(userId)
         if (!user) {
-            return res.status(404).json({ success: false, message: "User not found" })
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.USER_NOT_FOUND })
         }
 
         const transaction = await Transaction.create({
             userId,
             amount: Number.parseFloat(amount),
             transactionType,
-            paymentMethod: "admin",
-            paymentGateway: "admin",
-            status: "completed",
+            paymentMethod: PaymentMethod.ADMIN,
+            paymentGateway: PaymentGateway.ADMIN,
+            status: TransactionStatus.COMPLETED,
             purpose,
             description,
         })
 
-        if (purpose === "wallet_add" || purpose === "refund") {
+        if (purpose === TransactionPurpose.WALLET_ADD || purpose === TransactionPurpose.REFUND) {
             let wallet = await Wallet.findOne({ userId })
             if (!wallet) {
                 wallet = new Wallet({ userId, balance: 0 })
             }
 
-            if (transactionType === "credit") {
+            if (transactionType === TransactionType.CREDIT) {
                 wallet.balance += Number.parseFloat(amount)
                 if (purpose === "refund") {
                     wallet.refundAmount += Number.parseFloat(amount)
@@ -390,8 +391,7 @@ const createManualTransaction = async (req, res) => {
 
             wallet.transactions.push({
                 amount: Number.parseFloat(amount),
-                transactionType,
-                transactionPurpose: purpose === "wallet_add" ? "add" : purpose,
+                type: transactionType,
                 description,
             })
 
@@ -403,7 +403,7 @@ const createManualTransaction = async (req, res) => {
         res.json({ success: true, message: "Transaction created successfully", transaction })
     } catch (error) {
         console.error("Error creating manual transaction:", error)
-        res.status(500).json({ success: false, message: "Internal server error" })
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR })
     }
 }
 

@@ -1,12 +1,12 @@
-
 const User = require("../../models/userSchema")
+const { StatusCodes, Messages } = require('../../helpers/constants');
 
 const loadprofile = async (req, res) => {
     try {
         const adminId = req.session.admin;
-        console.log("adminId:",adminId)
+        console.log("adminId:", adminId)
         const userData = await User.findById(adminId);
-        console.log("userData:",userData)
+        console.log("userData:", userData)
         res.render("admin/admin-profile", {
             admin: userData,
 
@@ -39,31 +39,31 @@ const updateProfile = async (req, res) => {
         const { id } = req.params;
         const { username, email } = req.body;
         const profilePicture = req.file ? req.file.path : undefined;
-    
+
         const updatedData = {
-          username,
-          email,
-          ...(profilePicture && { profilePicture }),
+            username,
+            email,
+            ...(profilePicture && { profilePicture }),
         };
-    
+
         const updatedAdmin = await Admin.findByIdAndUpdate(id, updatedData, { new: true });
-    
+
         if (!updatedAdmin) {
-          return res.status(404).json({ message: 'Admin not found' });
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Admin not found' });
         }
-    
-        res.status(200).json(updatedAdmin);
-      } catch (error) {
+
+        res.status(StatusCodes.OK).json(updatedAdmin);
+    } catch (error) {
         console.error('Error updating profile:', error);
-        res.status(500).json({ message: 'Server error' });
-      }
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: Messages.INTERNAL_SERVER_ERROR });
+    }
 };
 
 
 
 
 
-module.exports ={
+module.exports = {
     loadprofile,
     loadEditProfile,
     updateProfile

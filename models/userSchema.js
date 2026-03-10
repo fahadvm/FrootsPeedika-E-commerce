@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose
 const { v4: uuidv4 } = require('uuid');
+const { CheckoutStatus } = require('../helpers/constants');
 
 
 
@@ -101,8 +102,8 @@ const userSchema = new Schema({
         checkoutId: { type: String, default: null },
         status: {
             type: String,
-            enum: ['IDLE', 'IN_PROGRESS'],
-            default: 'IDLE'
+            enum: Object.values(CheckoutStatus),
+            default: CheckoutStatus.IDLE
         },
         lastUpdated: { type: Date, default: null }
     }

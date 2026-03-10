@@ -1,3 +1,5 @@
+const { StatusCodes, Messages } = require('../../helpers/constants');
+
 const User = require("../../models/userSchema")
 const Wishlist = require("../../models/whishlistSchema")
 const Product = require("../../models/productSchema")
@@ -32,22 +34,22 @@ const removeProduct = async (req, res) => {
         const userId = req.session.user;
 
         if (!userId) {
-            return res.status(401).json({ success: false, message: "User not authenticated" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: Messages.UNAUTHORIZED });
         }
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.USER_NOT_FOUND });
         }
 
         // Use Mongoose pull to remove the item from the array
         user.wishlist.pull(productId);
         await user.save();
 
-        return res.status(200).json({ success: true, message: "Item removed from wishlist" });
+        return res.status(StatusCodes.OK).json({ success: true, message: "Item removed from wishlist" });
     } catch (error) {
         console.error("Error removing from wishlist:", error);
-        return res.status(500).json({ success: false, message: "Server Error" });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -57,16 +59,16 @@ const addToWishlist = async (req, res) => {
         const userId = req.session.user;
 
         if (!userId) {
-            return res.status(200).json({ status: false, message: "User not authenticated" });
+            return res.status(StatusCodes.OK).json({ status: false, message: "User not authenticated" });
         }
 
         if (!productId) {
-            return res.status(400).json({ status: false, message: "Invalid product ID" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ status: false, message: "Invalid product ID" });
         }
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(200).json({ status: false, message: "User not authenticated" });
+            return res.status(StatusCodes.OK).json({ status: false, message: "User not authenticated" });
         }
 
         user.wishlist = user.wishlist || [];
@@ -75,16 +77,16 @@ const addToWishlist = async (req, res) => {
         const isAlreadyInWishlist = user.wishlist.some(id => id.toString() === productId);
 
         if (isAlreadyInWishlist) {
-            return res.status(200).json({ status: false, message: "Product already in wishlist" });
+            return res.status(StatusCodes.OK).json({ status: false, message: "Product already in wishlist" });
         }
 
         user.wishlist.push(productId);
         await user.save();
 
-        return res.status(200).json({ status: true, message: "Product added to wishlist" });
+        return res.status(StatusCodes.OK).json({ status: true, message: "Product added to wishlist" });
     } catch (error) {
         console.error("Error in addToWishlist:", error);
-        return res.status(500).json({ status: false, message: "Internal server error" });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 

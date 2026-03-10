@@ -6,6 +6,7 @@ const Cart = require("../../models/cartSchema")
 const Coupon = require("../../models/couponSchema")
 const Wallet = require("../../models/walletSchema")
 const Transaction = require("../../models/transactionSchema")
+const { OrderStatus, TransactionStatus, TransactionType, PaymentMethod, PaymentGateway, CheckoutStatus, StatusCodes, Messages } = require('../../helpers/constants');
 
 
 const puppeteer = require("puppeteer")
@@ -112,7 +113,7 @@ const placeOrder = async (req, res) => {
                 couponCode: couponCode || null,
                 productName: item.productId.productName,
                 productImages: item.productId.productImages[0],
-                status: (paymentStatus === 'failed') ? 'failed' : (paymentMethod === 'cod' ? 'confirmed' : 'pending') // Online payments stay pending until verified
+                status: (paymentStatus === TransactionStatus.FAILED) ? OrderStatus.FAILED : (paymentMethod === PaymentMethod.COD ? OrderStatus.CONFIRMED : OrderStatus.PENDING) // Online payments stay pending until verified
             });
 
             orderItems.push({
@@ -130,7 +131,7 @@ const placeOrder = async (req, res) => {
 
         // Final check for wallet balance if chosen
         let wallet;
-        if (paymentMethod === 'wallet') {
+        if (paymentMethod === PaymentMethod.WALLET) {
             wallet = await Wallet.findOne({ userId });
             if (!wallet || wallet.balance < totalAmountInput) {
                 req.flash('error', 'Insufficient wallet balance');
@@ -145,12 +146,12 @@ const placeOrder = async (req, res) => {
 
         const savedOrders = await Promise.all(orders.map(order => order.save()));
 
-        if (paymentMethod === 'wallet') {
+        if (paymentMethod === PaymentMethod.WALLET) {
             wallet.balance -= totalAmountInput;
             wallet.totalDebited += totalAmountInput;
             wallet.transactions.push({
                 amount: totalAmountInput,
-                type: 'debit',
+                type: TransactionType.DEBIT,
                 transactionPurpose: 'purchase',
                 description: 'Order payment from wallet',
             });
@@ -160,10 +161,10 @@ const placeOrder = async (req, res) => {
             await Transaction.create({
                 userId,
                 amount: totalAmountInput,
-                transactionType: 'debit',
-                paymentMethod: 'wallet',
-                paymentGateway: 'wallet',
-                status: 'completed',
+                transactionType: TransactionType.DEBIT,
+                paymentMethod: PaymentMethod.WALLET,
+                paymentGateway: PaymentGateway.WALLET,
+                status: TransactionStatus.COMPLETED,
                 purpose: 'purchase',
                 description: 'Order payment from wallet',
                 orders: savedOrders.map(order => ({
@@ -177,15 +178,15 @@ const placeOrder = async (req, res) => {
         }
 
         // Handle COD Payment
-        if (paymentMethod === 'cod') {
+        if (paymentMethod === PaymentMethod.COD) {
 
             await Transaction.create({
                 userId,
                 amount: totalAmount,
-                transactionType: 'debit',
+                transactionType: TransactionType.DEBIT,
                 paymentMethod,
-                paymentGateway: paymentMethod,
-                status: 'pending',
+                paymentGateway: PaymentGateway.COD,
+                status: TransactionStatus.PENDING,
                 purpose: 'purchase',
                 description: 'Order Payment',
                 orders: savedOrders.map(order => ({
@@ -198,15 +199,15 @@ const placeOrder = async (req, res) => {
         }
 
         // Handle Online Payment (like Net Banking)
-        if (paymentMethod !== 'wallet' && paymentMethod !== 'cod') {
+        if (paymentMethod !== PaymentMethod.WALLET && paymentMethod !== PaymentMethod.COD) {
 
             await Transaction.create({
                 userId,
                 amount: totalAmount,
-                transactionType: 'debit',
-                paymentMethod: 'netbanking',
+                transactionType: TransactionType.DEBIT,
+                paymentMethod: PaymentMethod.NETBANKING,
                 paymentGateway: paymentMethod,
-                status: 'completed',
+                status: TransactionStatus.COMPLETED,
                 purpose: 'purchase',
                 description: 'Order Payment',
                 orders: savedOrders.map(order => ({
@@ -242,11 +243,11 @@ const placeOrder = async (req, res) => {
 
         // Release lock
         if (user.checkoutSession) {
-            user.checkoutSession.status = 'IDLE';
+            user.checkoutSession.status = CheckoutStatus.IDLE;
             await user.save();
         }
 
-        if (paymentStatus === 'failed') {
+        if (paymentStatus === TransactionStatus.FAILED) {
             return res.render('user/payment-failed', { order: aggregatedOrder });
         }
 
@@ -259,7 +260,7 @@ const placeOrder = async (req, res) => {
         try {
             const user = await User.findById(req.session.user);
             if (user && user.checkoutSession) {
-                user.checkoutSession.status = 'IDLE';
+                user.checkoutSession.status = CheckoutStatus.IDLE;
                 await user.save();
             }
         } catch (releaseErr) {
@@ -337,7 +338,7 @@ const getOrder = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in getOrders:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: Messages.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -363,7 +364,7 @@ const loadOrderDetails = async (req, res) => {
 
 
         if (!order) {
-            return res.status(404).render("error", { message: "Order not found." });
+            return res.status(StatusCodes.NOT_FOUND).render("error", { message: Messages.ORDER_NOT_FOUND });
         }
 
         res.render("user/order-details", {
@@ -375,7 +376,7 @@ const loadOrderDetails = async (req, res) => {
 
     } catch (error) {
         console.error("Error loading order details:", error);
-        res.status(500).render("error", { message: "Internal server error." });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).render("error", { message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -385,11 +386,11 @@ const cancelOrder = async (req, res) => {
         const orderData = await Order.findById(orderId);
 
         if (!orderData) {
-            return res.status(404).json({ success: false, message: 'Order not found' });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.ORDER_NOT_FOUND });
         }
 
-        if (orderData.status === 'cancelled') {
-            return res.status(400).json({ success: false, message: 'Order is already cancelled' });
+        if (orderData.status === OrderStatus.CANCELLED) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Order is already cancelled' });
         }
 
         // Restore product stock
@@ -398,7 +399,7 @@ const cancelOrder = async (req, res) => {
         });
 
         // Refund to wallet if not COD
-        if (orderData.paymentMethod !== 'cod') {
+        if (orderData.paymentMethod !== PaymentMethod.COD) {
             let wallet = await Wallet.findOne({ userId: orderData.userId });
 
             if (!wallet) {
@@ -412,7 +413,7 @@ const cancelOrder = async (req, res) => {
             const refundAmount = orderData.finalAmount;
             wallet.balance += refundAmount;
             wallet.transactions.push({
-                type: 'credit',
+                type: TransactionType.CREDIT,
                 amount: refundAmount,
                 description: `Refund for cancelled order #${orderData.orderId}`,
             });
@@ -423,11 +424,11 @@ const cancelOrder = async (req, res) => {
             const transaction = new Transaction({
                 userId: orderData.userId,
                 amount: refundAmount,
-                transactionType: "credit",
-                paymentMethod: "wallet",
-                paymentGateway: "wallet",
-                status: "completed",
-                purpose: "cancellation",
+                transactionType: TransactionType.CREDIT,
+                paymentMethod: PaymentMethod.WALLET,
+                paymentGateway: PaymentGateway.WALLET,
+                status: TransactionStatus.COMPLETED,
+                purpose: 'cancellation',
                 description: `Order cancellation refund to wallet for #${orderData.orderId}`,
                 orders: [{
                     name: orderData.productName,
@@ -441,7 +442,7 @@ const cancelOrder = async (req, res) => {
             await transaction.save();
         }
 
-        orderData.status = 'cancelled';
+        orderData.status = OrderStatus.CANCELLED;
         orderData.cancelReason = reason;
         await orderData.save();
 
@@ -449,7 +450,7 @@ const cancelOrder = async (req, res) => {
 
     } catch (error) {
         console.error('Error in cancelOrder:', error);
-        return res.status(500).json({ success: false, message: 'Internal Server Error' });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -462,39 +463,27 @@ const returnOrder = async (req, res) => {
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.USER_NOT_FOUND });
         }
 
         const order = await Order.findOne({ _id: orderId, userId });
         if (!order) {
-            return res.status(404).json({ success: false, message: 'Order not found' });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.ORDER_NOT_FOUND });
         }
 
-        if (order.status === 'delivered') {
-            order.status = 'return request';
+        if (order.status === OrderStatus.DELIVERED) {
+            order.status = OrderStatus.RETURN_REQUEST;
             order.returnReason = reason;
-
-            const returnAmount = order.totalPrice;
-
-            // await Product.findByIdAndUpdate(order.product, {
-            //     $inc: { stock: order.quantity }
-            // });
-
-            // const wallet = await Wallet.findOne({ userId: order.userId, })
-
-            // wallet.balance += order.finalAmount
-            // wallet.transactions = [{ type: 'credit', amount:order.discountedPrice, description: 'returned amount' }]
-            // await wallet.save()
-
+            // ... (omitted comment lines for brevity in replacement)
             await order.save();
             res.json({ success: true, message: 'Order returned successfully' });
         } else {
-            res.status(400).json({ success: false, message: 'Order cannot be returned' });
+            res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Order cannot be returned' });
         }
 
     } catch (error) {
         console.error('Error in returnOrder:', error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -510,7 +499,7 @@ const createRazorpay = async (req, res) => {
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.USER_NOT_FOUND });
         }
 
         const now = new Date();
@@ -518,10 +507,10 @@ const createRazorpay = async (req, res) => {
 
         // Check for existing lock
         if (user.checkoutSession &&
-            user.checkoutSession.status === 'IN_PROGRESS' &&
+            user.checkoutSession.status === CheckoutStatus.IN_PROGRESS &&
             user.checkoutSession.lastUpdated &&
             (now - user.checkoutSession.lastUpdated) < lockTimeout) {
-            return res.status(400).json({
+            return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "A payment is already in progress in another tab. Please complete it or wait a few minutes."
             });
@@ -529,14 +518,14 @@ const createRazorpay = async (req, res) => {
 
         // Validate checkoutId
         if (checkoutId && user.checkoutSession.checkoutId !== checkoutId) {
-            return res.status(400).json({
+            return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "Checkout session expired. Please refresh the page."
             });
         }
 
         // Set the lock
-        user.checkoutSession.status = 'IN_PROGRESS';
+        user.checkoutSession.status = CheckoutStatus.IN_PROGRESS;
         user.checkoutSession.lastUpdated = now;
         await user.save();
 
@@ -567,7 +556,7 @@ const createRazorpay = async (req, res) => {
         } else if (typeof error === 'string') {
             message = error;
         }
-        res.status(500).json({ success: false, message });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message });
     }
 };
 
@@ -576,13 +565,13 @@ const releaseCheckoutLock = async (req, res) => {
         const userId = req.session.user;
         const user = await User.findById(userId);
         if (user && user.checkoutSession) {
-            user.checkoutSession.status = 'IDLE';
+            user.checkoutSession.status = CheckoutStatus.IDLE;
             await user.save();
         }
         res.json({ success: true });
     } catch (error) {
         console.error("Error releasing checkout lock:", error);
-        res.status(500).json({ success: false });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false });
     }
 };
 
@@ -591,7 +580,7 @@ const Razorpaysubscription = async (req, res) => {
         const { plan_id } = req.body; // Get Plan ID from frontend
 
         if (!plan_id) {
-            return res.status(400).json({ success: false, message: "Plan ID is required" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Plan ID is required" });
         }
 
         const subscriptionObject = {
@@ -608,7 +597,7 @@ const Razorpaysubscription = async (req, res) => {
 
         res.json({ success: true, subscription });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message });
     }
 };
 
@@ -657,7 +646,7 @@ const removeCoupon = async (req, res) => {
         req.session.appliedCoupon = null; // Remove applied coupon
         res.json({ success: true, message: "Coupon removed successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: "Error removing coupon" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error removing coupon" });
     }
 };
 
@@ -671,11 +660,11 @@ const generateInvoice = async (req, res) => {
             select: 'productName price salePrice productImages stock category isBlocked',
         });
         if (!order) {
-            return res.status(404).send("Order not found")
+            return res.status(StatusCodes.NOT_FOUND).send(Messages.ORDER_NOT_FOUND)
         }
 
         if (order.status !== "delivered") {
-            return res.status(400).send("Invoice is only available for delivered orders")
+            return res.status(StatusCodes.BAD_REQUEST).send("Invoice is only available for delivered orders")
         }
 
         if (!order.invoiceDate) {
@@ -727,7 +716,7 @@ const generateInvoice = async (req, res) => {
         res.download(filePath, fileName, (err) => {
             if (err) {
                 console.error("Error sending file:", err)
-                res.status(500).send("Error generating invoice")
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Error generating invoice")
             }
 
             // Optionally delete the file after sending
@@ -735,7 +724,7 @@ const generateInvoice = async (req, res) => {
         })
     } catch (error) {
         console.error("Error generating invoice:", error)
-        res.status(500).send("Error generating invoice")
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Error generating invoice")
     }
 }
 
@@ -763,17 +752,17 @@ const verifyPayment = async (req, res) => {
         if (razorpaySignature === expectedSign) {
             const order = await Order.findById(orderId);
             if (order) {
-                order.status = 'confirmed';
+                order.status = OrderStatus.CONFIRMED;
                 await order.save();
 
                 await Transaction.create({
                     userId: req.session.user,
                     amount: order.finalAmount,
-                    transactionType: 'debit',
-                    paymentMethod: 'upi',
-                    paymentGateway: 'razorpay',
+                    transactionType: TransactionType.DEBIT,
+                    paymentMethod: PaymentMethod.UPI,
+                    paymentGateway: PaymentGateway.RAZORPAY,
                     gatewayTransactionId: razorpayPaymentId,
-                    status: 'completed',
+                    status: TransactionStatus.COMPLETED,
                     purpose: 'purchase',
                     description: 'Order Payment (Retry)',
                     orders: [{
@@ -786,14 +775,14 @@ const verifyPayment = async (req, res) => {
 
                 return res.json({ success: true, message: "Payment verified successfully" });
             } else {
-                return res.status(404).json({ success: false, message: "Order not found" });
+                return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.ORDER_NOT_FOUND });
             }
         } else {
-            return res.status(400).json({ success: false, message: "Invalid signature" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid signature" });
         }
     } catch (error) {
         console.error("Error in verifyPayment:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 

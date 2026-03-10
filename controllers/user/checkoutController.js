@@ -4,6 +4,7 @@ const Category = require("../../models/categorySchema");
 const Address = require("../../models/addressSchema");
 const Cart = require("../../models/cartSchema");
 const Wallet = require("../../models/walletSchema")
+const { CheckoutStatus } = require('../../helpers/constants');
 
 function calculateShipping(subtotal) {
     return subtotal > 100 ? 0 : 10;
@@ -109,7 +110,7 @@ const loadCheckoutPage = async (req, res) => {
         let paymentInProgress = false;
 
         if (user.checkoutSession &&
-            user.checkoutSession.status === 'IN_PROGRESS' &&
+            user.checkoutSession.status === CheckoutStatus.IN_PROGRESS &&
             user.checkoutSession.lastUpdated &&
             (now - user.checkoutSession.lastUpdated) < lockTimeout) {
             paymentInProgress = true;
@@ -122,7 +123,7 @@ const loadCheckoutPage = async (req, res) => {
         if (!paymentInProgress) {
             user.checkoutSession = {
                 checkoutId: checkoutId,
-                status: 'IDLE',
+                status: CheckoutStatus.IDLE,
                 lastUpdated: now
             };
             await user.save();

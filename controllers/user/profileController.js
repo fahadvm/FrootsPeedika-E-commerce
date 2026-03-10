@@ -1,3 +1,5 @@
+const { StatusCodes, Messages } = require('../../helpers/constants');
+
 const User = require("../../models/userSchema");
 const Address = require("../../models/addressSchema")
 const Order = require("../../models/orderSchema")
@@ -133,7 +135,7 @@ const verifyForgotPassOtp = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({ success: false, message: "An error occured please try again" })
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR })
 
     }
 }
@@ -154,7 +156,7 @@ const resendOtp = async (req, res) => {
     try {
         const email = req.session.email;
         if (!email) {
-            return res.status(400).json({ success: false, message: "Session expired. Please restart the process" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Session expired. Please restart the process" });
         }
 
         const otp = generateOtp();
@@ -165,13 +167,13 @@ const resendOtp = async (req, res) => {
 
         if (emailSent) {
             console.log("Resent Reset OTP:", otp);
-            res.status(200).json({ success: true, message: "A new code has been sent to your email" });
+            res.status(StatusCodes.OK).json({ success: true, message: "A new code has been sent to your email" });
         } else {
-            res.status(500).json({ success: false, message: "Failed to resend code. Please try again" });
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to resend code. Please try again" });
         }
     } catch (error) {
         console.error("Error resending reset OTP:", error);
-        res.status(500).json({ success: false, message: "An unexpected error occurred" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -323,7 +325,7 @@ const verifyemailOtp = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({ success: false, message: "An error occured please try again" })
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR })
 
     }
 }
@@ -443,7 +445,7 @@ const verifypassemailOtp = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({ success: false, message: "An error occured please try again" })
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR })
 
     }
 }
@@ -495,7 +497,7 @@ const editprofile = async (req, res) => {
 
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
-        return res.status(400).json({ success: false, message: "Invalid phone number. Must be a valid 10-digit number starting with 6-9." });
+        return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid phone number. Must be a valid 10-digit number starting with 6-9." });
     }
 
     const userId = req.session.user; // Assuming user ID is stored in session
@@ -504,7 +506,7 @@ const editprofile = async (req, res) => {
         // Find user by ID
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: "User not found." });
+            return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.USER_NOT_FOUND });
         }
 
         // Handle image upload
@@ -514,7 +516,7 @@ const editprofile = async (req, res) => {
             console.log("Uploaded file details:", file);
 
             if (!file.path) {
-                return res.status(400).json({ success: false, message: "File upload failed." });
+                return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "File upload failed." });
             }
 
             const filename = `${Date.now()}-${file.originalname.replace(/\s/g, "")}`;
@@ -531,7 +533,7 @@ const editprofile = async (req, res) => {
                 console.log(`File moved to: ${filepath}`);
             } catch (renameError) {
                 console.error("Error moving file:", renameError);
-                return res.status(500).json({ success: false, message: "Error processing image upload." });
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error processing image upload." });
             }
 
             // Save the new image path
@@ -551,10 +553,10 @@ const editprofile = async (req, res) => {
         // Save user
         await user.save();
 
-        res.status(200).json({ success: true, message: "Profile updated successfully!" });
+        res.status(StatusCodes.OK).json({ success: true, message: "Profile updated successfully!" });
     } catch (error) {
         console.error("Error in editProfile:", error);
-        res.status(500).json({ success: false, message: "An error occurred while updating the profile. Please try again later." });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -569,7 +571,7 @@ const addProfile = async (req, res) => {
 
         res.json({ success: true, imagePath });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error uploading image' });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 }
 

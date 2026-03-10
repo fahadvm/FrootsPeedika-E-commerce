@@ -109,25 +109,25 @@
                             <div class="status-line"></div>
                             <div class="status-point">
                                 <div
-                                    class="status-dot <%= order.status === 'pending' || order.status !== 'pending' ? 'status-active' : 'status-inactive' %>">
+                                    class="status-dot <%= order.status === STATUS.ORDER.PENDING || order.status !== STATUS.ORDER.PENDING ? 'status-active' : 'status-inactive' %>">
                                 </div>
                                 <small>PENDING</small>
                             </div>
                             <div class="status-point">
                                 <div
-                                    class="status-dot <%= order.status === 'confirmed' || order.status === 'shipped' || order.status === 'delivered' ? 'status-active' : 'status-inactive' %>">
+                                    class="status-dot <%= order.status === STATUS.ORDER.CONFIRMED || order.status === STATUS.ORDER.SHIPPED || order.status === STATUS.ORDER.DELIVERED ? 'status-active' : 'status-inactive' %>">
                                 </div>
                                 <small>CONFIRMED</small>
                             </div>
                             <div class="status-point">
                                 <div
-                                    class="status-dot <%= order.status === 'shipped' || order.status === 'delivered' ? 'status-active' : 'status-inactive' %>">
+                                    class="status-dot <%= order.status === STATUS.ORDER.SHIPPED || order.status === STATUS.ORDER.DELIVERED ? 'status-active' : 'status-inactive' %>">
                                 </div>
                                 <small>SHIPPED</small>
                             </div>
                             <div class="status-point">
                                 <div
-                                    class="status-dot <%= order.status === 'delivered' ? 'status-active' : 'status-inactive' %>">
+                                    class="status-dot <%= order.status === STATUS.ORDER.DELIVERED ? 'status-active' : 'status-inactive' %>">
                                 </div>
                                 <small>DELIVERED</small>
                             </div>
@@ -153,12 +153,12 @@
                                                 </p>
                                                 <p class="mb-0">Status:
                                                     <span class="badge <%= 
-                                                order.status === 'delivered' ? 'bg-success' :
-                                                ['cancelled', 'returned', 'return request rejected', 'failed'].includes(order.status) ? 'bg-danger' :
-                                                order.status === 'shipped' ? 'bg-info' :
+                                                order.status === STATUS.ORDER.DELIVERED ? 'bg-success' :
+                                                [STATUS.ORDER.CANCELLED, STATUS.ORDER.RETURNED, STATUS.ORDER.RETURN_REQUEST_REJECTED, STATUS.ORDER.FAILED].includes(order.status) ? 'bg-danger' :
+                                                order.status === STATUS.ORDER.SHIPPED ? 'bg-info' :
                                                 'bg-warning'
                                             %>">
-                                                        <%= order.status==='failed' ? 'PAYMENT FAILED' :
+                                                        <%= order.status===STATUS.ORDER.FAILED ? 'PAYMENT FAILED' :
                                                             order.status.toUpperCase() %>
                                                     </span>
                                                 </p>
@@ -191,38 +191,41 @@
                                     </div>
                                 </div>
 
-                                <%if(order.status==='delivered' ){%>
+                                <% if (order.status===STATUS.ORDER.DELIVERED) { %>
                                     <a href="/download-invoice?orderId=<%= order.orderId %>"
                                         class="btn btn-primary mt-2">Download Invoice</a>
-                                    <%}%>
+                                    <% } %>
 
 
-                                        <% if (order.status !=='cancelled' && order.status !=='delivered' &&
-                                            order.status !=='returned' && order.status !=='return request' &&
-                                            order.status !=='return request rejected' && order.status !=='failed' ) { %>
+                                        <% if (order.status !==STATUS.ORDER.CANCELLED && order.status
+                                            !==STATUS.ORDER.DELIVERED && order.status !==STATUS.ORDER.RETURNED &&
+                                            order.status !==STATUS.ORDER.RETURN_REQUEST && order.status
+                                            !==STATUS.ORDER.RETURN_REQUEST_REJECTED && order.status
+                                            !==STATUS.ORDER.FAILED) { %>
                                             <button onclick="cancelOrder('<%= order._id %>')"
                                                 class="btn btn-danger w-100 mt-3">
                                                 Cancel Order
                                             </button>
 
-                                            <% } else if (order.status==='delivered' ) { %>
+                                            <% } else if (order.status===STATUS.ORDER.DELIVERED) { %>
                                                 <button onclick="returnOrder('<%= order._id %>')"
                                                     class="btn btn-outline-primary btn-sm mt-2 w-100">
                                                     Return Order
                                                 </button>
-                                                <% } else if (order.status==='failed' ) { %>
+                                                <% } else if (order.status===STATUS.ORDER.FAILED) { %>
                                                     <button
                                                         onclick="retryPayment('<%= order._id %>', <%= order.finalAmount %>)"
                                                         class="btn btn-warning w-100 mt-3">
                                                         Retry Payment
                                                     </button>
-                                                    <% } else if (order.status==='return request' ||
-                                                        order.status==='returned' ||
-                                                        order.status==='return request rejected' ) { %>
+                                                    <% } else if (order.status===STATUS.ORDER.RETURN_REQUEST ||
+                                                        order.status===STATUS.ORDER.RETURNED ||
+                                                        order.status===STATUS.ORDER.RETURN_REQUEST_REJECTED) { %>
                                                         <div
-                                                            class="badge <%= order.status === 'return request rejected' ? 'bg-danger' : 'bg-warning' %> text-dark mt-2 w-100 p-2 text-uppercase">
-                                                            <%= order.status==='return request' ? 'Return Requested' :
-                                                                order.status==='return request rejected'
+                                                            class="badge <%= order.status === STATUS.ORDER.RETURN_REQUEST_REJECTED ? 'bg-danger' : 'bg-warning' %> text-dark mt-2 w-100 p-2 text-uppercase">
+                                                            <%= order.status===STATUS.ORDER.RETURN_REQUEST
+                                                                ? 'Return Requested' :
+                                                                order.status===STATUS.ORDER.RETURN_REQUEST_REJECTED
                                                                 ? 'Return Rejected' : 'Returned' %>
                                                         </div>
                                                         <% if (order.returnReason) { %>
@@ -231,8 +234,9 @@
                                                                 <%= order.returnReason %>
                                                             </div>
                                                             <% } %>
-                                                                <% if (order.status==='return request rejected' &&
-                                                                    order.returnRejectionReason) { %>
+                                                                <% if
+                                                                    (order.status===STATUS.ORDER.RETURN_REQUEST_REJECTED
+                                                                    && order.returnRejectionReason) { %>
                                                                     <div
                                                                         class="mt-2 alert alert-danger py-2 px-3 small">
                                                                         <strong>Rejection Reason:</strong>

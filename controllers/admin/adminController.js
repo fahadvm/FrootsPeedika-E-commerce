@@ -4,6 +4,7 @@ const env = require('dotenv').config()
 const bcrypt = require('bcrypt')
 const Product = require("../../models/productSchema")
 const Order = require("../../models/orderSchema")
+const { OrderStatus, StatusCodes, Messages } = require('../../helpers/constants');
 
 
 
@@ -67,7 +68,7 @@ const loadDashboard = async (req, res) => {
       const userCount = await User.countDocuments({ isAdmin: false })
       const orderCount = await Order.countDocuments()
       const totalRevenue = await Order.aggregate([
-        { $match: { status: { $in: ['delivered', 'return request'] } } },
+        { $match: { status: { $in: [OrderStatus.DELIVERED, OrderStatus.RETURN_REQUEST] } } },
         { $group: { _id: null, total: { $sum: "$finalAmount" } } }
       ]).then(result => result[0]?.total || 0)
       const recentOrders = await Order.find({}).sort({ createdAt: -1 }).limit(5);
@@ -77,15 +78,15 @@ const loadDashboard = async (req, res) => {
       const salesData = await getSalesDataHelper("monthly")
       const salesLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       const orderStatusData = [
-        await Order.countDocuments({ status: 'delivered' }),
-        await Order.countDocuments({ status: 'pending' }),
-        await Order.countDocuments({ status: 'shipped' }),
-        await Order.countDocuments({ status: 'return request' }),
-        await Order.countDocuments({ status: 'returned' }),
-        await Order.countDocuments({ status: 'cancelled' })
+        await Order.countDocuments({ status: OrderStatus.DELIVERED }),
+        await Order.countDocuments({ status: OrderStatus.PENDING }),
+        await Order.countDocuments({ status: OrderStatus.SHIPPED }),
+        await Order.countDocuments({ status: OrderStatus.RETURN_REQUEST }),
+        await Order.countDocuments({ status: OrderStatus.RETURNED }),
+        await Order.countDocuments({ status: OrderStatus.CANCELLED })
       ];
 
-      const orderStatusLabels = ['Delivered', 'Pending', 'Shipped', 'Return Request', 'Returned', 'Cancelled'];
+      const orderStatusLabels = ['Delivered', 'Pending', 'Shipped', 'Return Request', 'Returned', 'Cancelled']; // Using hardcoded labels for chart display as they are UI specific
       const dashboardData = {
         productCount,
         userCount,
@@ -125,7 +126,7 @@ const getSalesDataHelper = async (period = "yearly") => {
 
         const dayOrders = await Order.find({
           createdAt: { $gte: dayStart, $lte: dayEnd },
-          status: { $in: ["delivered", "return request"] },
+          status: { $in: [OrderStatus.DELIVERED, OrderStatus.RETURN_REQUEST] },
         })
 
         const daySales = dayOrders.reduce((total, order) => total + order.finalAmount, 0)
@@ -144,7 +145,7 @@ const getSalesDataHelper = async (period = "yearly") => {
 
         const monthOrders = await Order.find({
           createdAt: { $gte: monthStart, $lte: monthEnd },
-          status: { $in: ["delivered", "return request"] },
+          status: { $in: [OrderStatus.DELIVERED, OrderStatus.RETURN_REQUEST] },
         })
 
         const monthSales = monthOrders.reduce((total, order) => total + order.finalAmount, 0)
@@ -162,7 +163,7 @@ const getSalesDataHelper = async (period = "yearly") => {
 
         const yearOrders = await Order.find({
           createdAt: { $gte: yearStart, $lte: yearEnd },
-          status: { $in: ["delivered", "return request"] },
+          status: { $in: [OrderStatus.DELIVERED, OrderStatus.RETURN_REQUEST] },
         })
 
         const yearSales = yearOrders.reduce((total, order) => total + order.finalAmount, 0)
@@ -188,7 +189,7 @@ const getSalesData = async (req, res) => {
     res.json(salesData)
   } catch (error) {
     console.error("Error in getSalesData API:", error)
-    res.status(500).json({ error: "Internal server error" })
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: Messages.INTERNAL_SERVER_ERROR })
   }
 }
 
@@ -201,7 +202,7 @@ const getTopSelling = async (req, res) => {
     if (type === "categories") {
 
       const topCategories = await Order.aggregate([
-        { $match: { status: { $in: ["delivered", "return request"] } } },
+        { $match: { status: { $in: [OrderStatus.DELIVERED, OrderStatus.RETURN_REQUEST] } } },
         {
           $lookup: {
             from: "products",
@@ -246,7 +247,7 @@ const getTopSelling = async (req, res) => {
     } else {
 
       const topProducts = await Order.aggregate([
-        { $match: { status: { $in: ["delivered", "return request"] } } },
+        { $match: { status: { $in: [OrderStatus.DELIVERED, OrderStatus.RETURN_REQUEST] } } },
         { $unwind: "$product" },
         {
           $group: {
@@ -280,7 +281,7 @@ const getTopSelling = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in getTopSelling API:", error)
-    res.status(500).json({ error: "Internal server error" })
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: Messages.INTERNAL_SERVER_ERROR })
   }
 }
 

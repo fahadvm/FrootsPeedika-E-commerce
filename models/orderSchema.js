@@ -1,7 +1,7 @@
-
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { v4: uuidv4 } = require('uuid');
+const { OrderStatus, AddressType } = require('../helpers/constants');
 
 const orderSchema = new Schema(
   {
@@ -72,8 +72,8 @@ const orderSchema = new Schema(
         alternatePhone: { type: String },
         addressType: {
           type: String,
-          enum: ['home', 'work'],
-          default: 'home'
+          enum: Object.values(AddressType),
+          default: AddressType.HOME
         }
       },
       required: true,
@@ -84,34 +84,23 @@ const orderSchema = new Schema(
     },
     status: {
       type: String,
-      enum: [
-        'pending',
-        'confirmed',
-        'processing',
-        'shipped',
-        'delivered',
-        'cancelled',
-        'return request',
-        'return request rejected',
-        'returned',
-        'failed',
-      ],
+      enum: Object.values(OrderStatus),
       required: true,
-      default: 'pending',
+      default: OrderStatus.PENDING,
     },
     cancelReason: {
       type: String,
-      // required: function() { return this.status === 'cancelled'; }, // Required if cancelled
+      // required: function() { return this.status === OrderStatus.CANCELLED; }, // Required if cancelled
     },
     returnReason: {
       type: String,
       required: function () {
-        return ['return request', 'return request rejected', 'returned'].includes(this.status);
+        return [OrderStatus.RETURN_REQUEST, OrderStatus.RETURN_REQUEST_REJECTED, OrderStatus.RETURNED].includes(this.status);
       },
     },
     returnRejectionReason: {
       type: String,
-      required: function () { return this.status === 'return request rejected'; },
+      required: function () { return this.status === OrderStatus.RETURN_REQUEST_REJECTED; },
     },
     paymentMethod: {
       type: String,
