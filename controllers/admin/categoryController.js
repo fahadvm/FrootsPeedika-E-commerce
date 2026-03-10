@@ -9,11 +9,11 @@ const addCategory = async (req, res) => {
     const trimmedName = name.trim();
 
     if (!trimmedName || trimmedName.length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Category name cannot be empty" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.CATEGORY_NAME_EMPTY });
     }
 
     if (!description) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Description is required" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.DESCRIPTION_REQUIRED });
     }
 
     const existingCategory = await Category.findOne({ name: new RegExp(`^${trimmedName}$`, "i") });
@@ -23,10 +23,10 @@ const addCategory = async (req, res) => {
 
     const newCategory = new Category({ name: trimmedName, description });
     const savedCategory = await newCategory.save();
-    res.status(StatusCodes.CREATED).json({ success: true, message: "Category added successfully", category: savedCategory });
+    res.status(StatusCodes.CREATED).json({ success: true, message: Messages.CATEGORY_ADDED, category: savedCategory });
   } catch (error) {
     console.error("Error in addCategory:", error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to add category", error: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR, error: error.message });
   }
 };
 
@@ -41,7 +41,7 @@ const addCategoryOffer = async (req, res) => {
 
     const offerPercentage = parseInt(percentage);
     if (isNaN(offerPercentage) || offerPercentage < 0 || offerPercentage > 99) {
-      return res.json({ status: false, message: "Invalid percentage value" });
+      return res.json({ status: false, message: Messages.INVALID_PERCENTAGE });
     }
 
     await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: offerPercentage } });
@@ -54,7 +54,7 @@ const addCategoryOffer = async (req, res) => {
       await product.save();
     }
 
-    res.json({ status: true, message: "Offer added successfully" });
+    res.json({ status: true, message: Messages.OFFER_ADDED });
   } catch (error) {
     console.error("Error in addCategoryOffer:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -100,7 +100,7 @@ const categoryInfo = async (req, res) => {
   } catch (error) {
     console.error(error);
     if (req.xhr || req.headers.accept.indexOf("json") > -1) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "An error occurred while fetching categories" });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: Messages.INTERNAL_SERVER_ERROR });
     } else {
       res.redirect("/pageerror");
     }
@@ -126,7 +126,7 @@ const removeCategoryOffer = async (req, res) => {
       await product.save();
     }
 
-    res.json({ status: true, message: "Offer removed successfully" });
+    res.json({ status: true, message: Messages.OFFER_REMOVED });
   } catch (error) {
     console.error("Error in removeCategoryOffer:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -137,10 +137,10 @@ const getListCategory = async (req, res) => {
   try {
     const id = req.query.id;
     await Category.findByIdAndUpdate(id, { isListed: false });
-    res.json({ success: true, message: "Category unlisted successfully" });
+    res.json({ success: true, message: Messages.CATEGORY_UNLISTED });
   } catch (error) {
     console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to unlist category" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
   }
 };
 
@@ -148,10 +148,10 @@ const getUnlistCategory = async (req, res) => {
   try {
     const id = req.query.id;
     await Category.findByIdAndUpdate(id, { isListed: true });
-    res.json({ success: true, message: "Category listed successfully" });
+    res.json({ success: true, message: Messages.CATEGORY_LISTED });
   } catch (error) {
     console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to list category" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
   }
 };
 
@@ -167,7 +167,7 @@ const getEditCategory = async (req, res) => {
     res.json({ success: true, category });
   } catch (error) {
     console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to fetch category" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
   }
 };
 
@@ -177,11 +177,11 @@ const editCategory = async (req, res) => {
     const { name, description } = req.body;
 
     if (!name || name.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Category name cannot be empty" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.CATEGORY_NAME_EMPTY });
     }
 
     if (!description || description.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Description is required" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.DESCRIPTION_REQUIRED });
     }
 
     const trimmedName = name.trim();
@@ -200,10 +200,10 @@ const editCategory = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.CATEGORY_NOT_FOUND });
     }
 
-    res.json({ success: true, message: "Category updated successfully" });
+    res.json({ success: true, message: Messages.CATEGORY_UPDATED });
   } catch (error) {
     console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to update category" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
   }
 };
 
@@ -213,7 +213,7 @@ const editCategoryOffer = async (req, res) => {
     const categoryId = req.body.categoryId;
 
     if (isNaN(percentage) || percentage < 0 || percentage > 99) {
-      return res.json({ status: false, message: "Invalid percentage value" });
+      return res.json({ status: false, message: Messages.INVALID_PERCENTAGE });
     }
 
     const category = await Category.findById(categoryId);
@@ -230,7 +230,7 @@ const editCategoryOffer = async (req, res) => {
       await product.save();
     }
 
-    res.json({ status: true, message: "Offer updated successfully" });
+    res.json({ status: true, message: Messages.OFFER_UPDATED });
   } catch (error) {
     console.error("Error in editCategoryOffer:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -244,10 +244,10 @@ const deleteCategory = async (req, res) => {
     if (!deletedCategory) {
       return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.CATEGORY_NOT_FOUND });
     }
-    res.json({ success: true, message: "Category deleted successfully" });
+    res.json({ success: true, message: Messages.CATEGORY_DELETED });
   } catch (error) {
     console.error("Error in deleteCategory:", error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to delete category" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
   }
 };
 

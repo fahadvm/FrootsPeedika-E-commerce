@@ -1,5 +1,5 @@
-const { userBlockedEmitter } = require("../controllers/admin/customerController")
-
+const { StatusCodes, Messages } = require("../helpers/constants");
+const { userBlockedEmitter } = require("../controllers/admin/customerController");
 const User = require("../models/userSchema");
 
 const userAuth = (req, res, next) => {
@@ -9,16 +9,27 @@ const userAuth = (req, res, next) => {
         if (user && !user.isBlocked) {
           next()
         } else {
-          delete req.session.user
-          req.flash('error', 'Your account has been blocked')
-          res.redirect("/login")
+          delete req.session.user;
+          // Check if it's an AJAX request
+          if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: Messages.USER_BLOCKED });
+          }
+          req.flash('error', Messages.USER_BLOCKED);
+          res.redirect("/login");
         }
       })
       .catch((error) => {
-        console.log("User Auth Error", error)
-        res.status(500).send("Internal Server Error")
+        console.log("User Auth Error", error);
+        if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
+          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
+        }
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.INTERNAL_SERVER_ERROR);
       })
   } else {
+    // Check if it's an AJAX request
+    if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: Messages.UNAUTHORIZED });
+    }
     res.redirect("/login")
   }
 }

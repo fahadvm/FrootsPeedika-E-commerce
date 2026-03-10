@@ -46,7 +46,7 @@ const removeProduct = async (req, res) => {
         user.wishlist.pull(productId);
         await user.save();
 
-        return res.status(StatusCodes.OK).json({ success: true, message: "Item removed from wishlist" });
+        return res.status(StatusCodes.OK).json({ success: true, message: Messages.ITEM_REMOVED_WISHLIST });
     } catch (error) {
         console.error("Error removing from wishlist:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -59,16 +59,16 @@ const addToWishlist = async (req, res) => {
         const userId = req.session.user;
 
         if (!userId) {
-            return res.status(StatusCodes.OK).json({ status: false, message: "User not authenticated" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ status: false, message: Messages.UNAUTHORIZED });
         }
 
         if (!productId) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ status: false, message: "Invalid product ID" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ status: false, message: Messages.BAD_REQUEST });
         }
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(StatusCodes.OK).json({ status: false, message: "User not authenticated" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ status: false, message: Messages.UNAUTHORIZED });
         }
 
         user.wishlist = user.wishlist || [];
@@ -77,13 +77,13 @@ const addToWishlist = async (req, res) => {
         const isAlreadyInWishlist = user.wishlist.some(id => id.toString() === productId);
 
         if (isAlreadyInWishlist) {
-            return res.status(StatusCodes.OK).json({ status: false, message: "Product already in wishlist" });
+            return res.status(StatusCodes.OK).json({ status: false, message: Messages.ALREADY_EXISTS });
         }
 
         user.wishlist.push(productId);
         await user.save();
 
-        return res.status(StatusCodes.OK).json({ status: true, message: "Product added to wishlist" });
+        return res.status(StatusCodes.OK).json({ status: true, message: Messages.ITEM_ADDED_WISHLIST });
     } catch (error) {
         console.error("Error in addToWishlist:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: false, message: Messages.INTERNAL_SERVER_ERROR });

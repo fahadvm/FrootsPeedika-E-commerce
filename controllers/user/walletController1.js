@@ -25,7 +25,7 @@ const addTowallet = async (req, res) => {
     const { userId, amount } = req.body
 
     if (!userId || !amount || amount <= 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid input data' })
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: Messages.INVALID_INPUT })
     }
 
     let wallet = await Wallet.findOne({ userId: userId })
@@ -42,7 +42,7 @@ const addTowallet = async (req, res) => {
     }
 
     await wallet.save()
-    res.status(StatusCodes.OK).json({ message: 'Money added successfully', wallet })
+    res.status(StatusCodes.OK).json({ message: Messages.WALLET_RECHARGE_SUCCESS, wallet })
   } catch (error) {
     console.error('error occur while loadWallet', error)
     return res.redirect('/pageNotFound')
@@ -58,7 +58,7 @@ const createRazorpayOrder = async (req, res) => {
   try {
     const orderAmount = parseFloat(req.body.amount);
     if (!orderAmount || isNaN(orderAmount) || orderAmount <= 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Invalid or missing amount' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.INVALID_AMOUNT });
     }
 
     console.log('orderAmount:', orderAmount);
@@ -93,7 +93,7 @@ const razorpayPaymentSuccess = async (req, res) => {
       .digest('hex');
 
     if (generatedSignature !== razorpay_signature) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Invalid payment signature' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.INVALID_PAYMENT_SIGNATURE });
     }
 
     // Find and update wallet

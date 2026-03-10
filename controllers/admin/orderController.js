@@ -104,9 +104,7 @@ const getOrderDetails = async (req, res) => {
             }).populate("userId");
 
 
-        const addressId = order.address
-        const addressData = await Address.findOne({ "address._id": addressId }, { 'address.$': 1 })
-        const address = addressData ? addressData.address[0] : null
+        const address = order.address;
 
 
 
@@ -167,7 +165,7 @@ const updateOrderStatus = async (req, res) => {
         order.status = status;
 
         await order.save();
-        res.json({ success: true, message: "Order status updated successfully" });
+        res.json({ success: true, message: Messages.ORDER_STATUS_UPDATED });
     } catch (error) {
         console.error("Error updating order status:", error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -192,9 +190,9 @@ const cancelOrder = async (req, res) => {
             });
 
             await order.save();
-            res.json({ success: true, message: "Order cancelled successfully" });
+            res.json({ success: true, message: Messages.ORDER_CANCELLED });
         } else {
-            res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Order cannot be cancelled" });
+            res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.ORDER_CANNOT_CANCEL });
         }
     } catch (error) {
         console.error("Error cancelling order:", error);
@@ -260,7 +258,7 @@ const handleOrderReturn = async (req, res) => {
         } else if (action === 'reject') {
             const { reason } = req.body;
             if (!reason || reason.trim() === '') {
-                return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Rejection reason is mandatory' });
+                return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.REJECT_REASON_REQUIRED });
             }
             orderData.status = OrderStatus.RETURN_REQUEST_REJECTED;
             orderData.returnRejectionReason = reason;

@@ -92,14 +92,14 @@ const forgotEmailValid = async (req, res) => {
 
         if (!findUser) {
             return res.render("user/forgot-password", {
-                message: "No account found with this email address"
+                message: Messages.NO_ACCOUNT_FOR_EMAIL
             });
         }
 
         // If user is Google-only, they don't have a local password to reset
         if (findUser.googleId && !findUser.password) {
             return res.render("user/forgot-password", {
-                message: "This account is linked with Google. Please use 'Login with Google'"
+                message: Messages.GOOGLE_LOGIN_REQUIRED
             });
         }
 
@@ -113,7 +113,7 @@ const forgotEmailValid = async (req, res) => {
             console.log("OTP Sent Successfully:", otp);
         } else {
             res.render("user/forgot-password", {
-                message: "Unable to send verification code. Please check your connection"
+                message: Messages.UNABLE_SEND_OTP
             });
         }
     } catch (error) {
@@ -130,7 +130,7 @@ const verifyForgotPassOtp = async (req, res) => {
             req.session.resetAllowed = true;
             res.json({ success: true, redirectUrl: "/reset-password" })
         } else {
-            res.json({ success: false, message: "OTP not matching" })
+            res.json({ success: false, message: Messages.OTP_NOT_MATCHING })
         }
 
     } catch (error) {
@@ -156,7 +156,7 @@ const resendOtp = async (req, res) => {
     try {
         const email = req.session.email;
         if (!email) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Session expired. Please restart the process" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.SESSION_EXPIRED_RESET });
         }
 
         const otp = generateOtp();
@@ -167,9 +167,9 @@ const resendOtp = async (req, res) => {
 
         if (emailSent) {
             console.log("Resent Reset OTP:", otp);
-            res.status(StatusCodes.OK).json({ success: true, message: "A new code has been sent to your email" });
+            res.status(StatusCodes.OK).json({ success: true, message: Messages.NEW_CODE_SENT });
         } else {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to resend code. Please try again" });
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.RESEND_CODE_FAILED });
         }
     } catch (error) {
         console.error("Error resending reset OTP:", error);
@@ -183,15 +183,15 @@ const postNewPassword = async (req, res) => {
         const email = req.session.email;
 
         if (!req.session.resetAllowed) {
-            return res.render("user/reset-password", { message: "Unauthorized access. Please verify your OTP again" });
+            return res.render("user/reset-password", { message: Messages.UNAUTHORIZED_RESET });
         }
 
         if (newPass1 !== newPass2) {
-            return res.render("user/reset-password", { message: "Passwords do not match" });
+            return res.render("user/reset-password", { message: Messages.PASSWORDS_NOT_MATCH });
         }
 
         if (newPass1.length < 6) {
-            return res.render("user/reset-password", { message: "Password must be at least 6 characters long" });
+            return res.render("user/reset-password", { message: Messages.PASSWORD_MIN_LENGTH });
         }
 
         const passwordHash = await securePassword(newPass1);
@@ -277,7 +277,7 @@ const changeEmailValid = async (req, res) => {
 
         if (!userData) {
             return res.render("user/change-email", {
-                message: "User not found. Please log in again.",
+                message: Messages.USER_NOT_FOUND_LOGIN,
             });
         }
 
@@ -287,7 +287,7 @@ const changeEmailValid = async (req, res) => {
         // Check if the entered email matches the logged-in user's email
         if (email !== loggedInUserEmail) {
             return res.render("user/change-email", {
-                message: "Entered email does not match your registered email.",
+                message: Messages.EMAIL_MISMATCH,
             });
         }
 
@@ -301,7 +301,7 @@ const changeEmailValid = async (req, res) => {
             console.log("OTP Sent Successfully:", otp);
             return res.render("user/change-email-otp");
         } else {
-            return res.json({ status: "error", message: "Email sending failed." });
+            return res.json({ status: "error", message: Messages.EMAIL_SENDING_FAILED });
         }
     } catch (error) {
         console.error("Error in changeEmailValid:", error);
@@ -320,7 +320,7 @@ const verifyemailOtp = async (req, res) => {
             req.session.resetAllowed = true;
             res.json({ success: true, redirectUrl: "/reset-email" })
         } else {
-            res.json({ success: false, message: "OTP not matching" })
+            res.json({ success: false, message: Messages.OTP_NOT_MATCHING })
         }
 
     } catch (error) {
@@ -352,7 +352,7 @@ const postNewEmail = async (req, res) => {
         const emailHave = await User.findOne({ email: newEmail1 })
         if (emailHave) {
             console.log('Email already exixts')
-            return res.render("reset-email", { message: "this Email already exixts try another one" })
+            return res.render("reset-email", { message: Messages.EMAIL_ALREADY_EXISTS_TRY_ANOTHER })
         }
 
         if (newEmail1 === newEmail2) {
@@ -369,7 +369,7 @@ const postNewEmail = async (req, res) => {
 
             res.redirect("/userProfile");
         } else {
-            res.render("reset-email", { message: "Emails do not match" });
+            res.render("reset-email", { message: Messages.EMAILS_NOT_MATCH });
         }
 
     } catch (error) {
@@ -399,7 +399,7 @@ const changePassEmailValid = async (req, res) => {
 
         if (!userData) {
             return res.render("user/changepass-email-valid", {
-                message: "User not found. Please log in again.",
+                message: Messages.USER_NOT_FOUND_LOGIN,
             });
         }
 
@@ -409,7 +409,7 @@ const changePassEmailValid = async (req, res) => {
         // Check if the entered email matches the logged-in user's email
         if (email !== loggedInUserEmail) {
             return res.render("user/changepass-email-valid", {
-                message: "Entered email does not match your registered email.",
+                message: Messages.EMAIL_MISMATCH,
             });
         }
 
@@ -423,7 +423,7 @@ const changePassEmailValid = async (req, res) => {
             console.log("OTP Sent Successfully:", otp);
             return res.render("user/change-password-otp");
         } else {
-            return res.json({ status: "error", message: "Email sending failed." });
+            return res.json({ status: "error", message: Messages.EMAIL_SENDING_FAILED });
         }
     } catch (error) {
         console.error("Error in changeEmailValid:", error);
@@ -440,7 +440,7 @@ const verifypassemailOtp = async (req, res) => {
             req.session.resetAllowed = true;
             res.json({ success: true, redirectUrl: "/new-password" })
         } else {
-            res.json({ success: false, message: "OTP not matching" })
+            res.json({ success: false, message: Messages.OTP_NOT_MATCHING })
         }
 
     } catch (error) {
@@ -480,7 +480,7 @@ const NewPassword = async (req, res) => {
 
             res.redirect("/editProfile")
         } else {
-            res.render("/new-password", { message: "Password do not match" })
+            res.render("/new-password", { message: Messages.PASSWORDS_NOT_MATCH })
         }
 
     } catch (error) {
@@ -553,7 +553,7 @@ const editprofile = async (req, res) => {
         // Save user
         await user.save();
 
-        res.status(StatusCodes.OK).json({ success: true, message: "Profile updated successfully!" });
+        res.status(StatusCodes.OK).json({ success: true, message: Messages.PROFILE_UPDATED });
     } catch (error) {
         console.error("Error in editProfile:", error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });

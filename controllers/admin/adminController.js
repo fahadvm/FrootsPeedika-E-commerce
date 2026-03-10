@@ -26,17 +26,17 @@ const login = async (req, res) => {
     const findadmin = await User.findOne({ isAdmin: 1, email: email });
 
     if (!findadmin) {
-      return res.render('admin/login', { message: 'Who are you??' });
+      return res.render('admin/login', { message: Messages.ADMIN_NOT_FOUND });
     }
 
     if (findadmin.isBlocked == true) {
-      return res.render('admin/login', { message: 'Admin is blocked by admin' });
+      return res.render('admin/login', { message: Messages.ADMIN_BLOCKED });
     }
 
     const passwordMatch = await bcrypt.compare(password, findadmin.password);
 
     if (!passwordMatch) {
-      return res.render('admin/login', { message: 'Incorrect password' });
+      return res.render('admin/login', { message: Messages.INCORRECT_PASSWORD });
     }
 
     req.session.admin = findadmin._id;
@@ -44,7 +44,7 @@ const login = async (req, res) => {
     return res.redirect('/admin');
   } catch (error) {
     console.log('login error:', error);
-    return res.render("admin/login", { message: "Login failed. Please try again later" });
+    return res.render("admin/login", { message: Messages.LOGIN_FAILED });
   }
 };
 

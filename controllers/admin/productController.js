@@ -13,7 +13,7 @@ const getProductAddPage = async (req, res) => {
     })
   } catch (error) {
     console.error("Error loading product add page:", error)
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error loading product add page" })
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR })
   }
 }
 
@@ -81,7 +81,7 @@ const addProductOffer = async (req, res) => {
     product.salePrice = Math.round(product.regularPrice * (1 - bestOffer / 100));
     await product.save();
 
-    res.json({ status: true, message: "Offer added successfully" });
+    res.json({ status: true, message: Messages.OFFER_ADDED });
 
   } catch (error) {
     console.error("Error in addProductOffer:", error);
@@ -104,7 +104,7 @@ const removeProductOffer = async (req, res) => {
     product.salePrice = Math.round(product.regularPrice * (1 - categoryOffer / 100));
     await product.save();
 
-    res.json({ status: true, message: "Offer removed successfully" });
+    res.json({ status: true, message: Messages.OFFER_REMOVED });
   } catch (error) {
     console.error("Error in removeProductOffer:", error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -235,7 +235,7 @@ const editProduct = async (req, res) => {
     if (existingProduct) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "Product with this name already exists. Please try another name.",
+        message: Messages.PRODUCT_NAME_EXISTS,
       });
     }
 
@@ -320,7 +320,7 @@ const editProduct = async (req, res) => {
     Object.assign(product, updateFields);
     await product.save();
 
-    res.json({ success: true, message: "Product updated successfully" });
+    res.json({ success: true, message: Messages.PRODUCT_UPDATED });
   } catch (error) {
     console.error("Error in editProduct:", error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -360,7 +360,7 @@ const editProduct1 = async (req, res) => {
     if (existingProduct) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "Product with this name already exists. Please try another name.",
+        message: Messages.PRODUCT_NAME_EXISTS,
       });
     }
 
@@ -439,7 +439,7 @@ const editProduct1 = async (req, res) => {
     // Send a JSON response for errors
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "An error occurred while updating the product",
+      message: Messages.INTERNAL_SERVER_ERROR,
     });
   }
 };
@@ -467,7 +467,7 @@ const deleteSingleImage = async (req, res) => {
       console.log(`Image ${imageNameToServer} not found`);
     }
 
-    res.json({ status: true, message: "Image deleted successfully" });
+    res.json({ status: true, message: Messages.IMAGE_DELETED });
   } catch (error) {
     console.error("Error in deleteSingleImage:", error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -480,7 +480,7 @@ const deleteProduct = async (req, res) => {
   const productId = req.query.id;
 
   if (!productId) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ status: false, message: 'Product ID is required' });
+    return res.status(StatusCodes.BAD_REQUEST).json({ status: false, message: Messages.PRODUCT_ID_REQUIRED });
   }
 
   try {
@@ -511,7 +511,7 @@ const saveImage = async (req, res) => {
   try {
     const file = req.file;
     if (!file) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "No image file provided" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.NO_IMAGE_PROVIDED });
     }
 
     // Generate unique filename
@@ -524,10 +524,10 @@ const saveImage = async (req, res) => {
       .webp({ quality: 80 })
       .toFile(filepath);
 
-    return res.status(StatusCodes.OK).json({ success: true, message: "Image saved successfully", filename });
+    return res.status(StatusCodes.OK).json({ success: true, message: Messages.IMAGE_SAVED, filename });
   } catch (error) {
     console.error("Error saving image:", error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error saving image" });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.ERROR_SAVING_IMAGE });
   }
 };
 
@@ -539,7 +539,7 @@ const addProducts = async (req, res) => {
     // Check if product already exists
     const productExists = await Product.findOne({ productName });
     if (productExists) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Product already exists, try another name" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.PRODUCT_ALREADY_EXISTS_ALT });
     }
 
     // Ensure upload directory exists
@@ -587,7 +587,7 @@ const addProducts = async (req, res) => {
 
     // Check if we have all required images
     if (imageFilenames.length < 4) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Please upload all 4 product images" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.ALL_IMAGES_REQUIRED });
     }
 
     // Find category by name (ensure it exists)
@@ -615,10 +615,10 @@ const addProducts = async (req, res) => {
 
     });
     await newProduct.save();
-    return res.status(StatusCodes.OK).json({ success: true, message: "Product added successfully" });
+    return res.status(StatusCodes.OK).json({ success: true, message: Messages.PRODUCT_ADDED });
   } catch (error) {
     console.error("Error saving product:", error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error saving product" });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.ERROR_SAVING_PRODUCT });
   }
 };
 

@@ -400,7 +400,7 @@ const createManualTransaction = async (req, res) => {
             await wallet.save()
         }
 
-        res.json({ success: true, message: "Transaction created successfully", transaction })
+        res.json({ success: true, message: Messages.TRANSACTION_CREATED, transaction })
     } catch (error) {
         console.error("Error creating manual transaction:", error)
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR })

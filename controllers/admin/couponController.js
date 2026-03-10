@@ -65,7 +65,7 @@ const updatecoupon = async (req, res) => {
   try {
     const couponId = req.query.couponId;
     if (!mongoose.Types.ObjectId.isValid(couponId)) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid coupon ID" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: Messages.INVALID_COUPON_ID });
     }
 
     const oid = new mongoose.Types.ObjectId(couponId);
@@ -93,10 +93,10 @@ const updatecoupon = async (req, res) => {
     );
 
     if (!updatedCoupon) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Error updating coupon" });
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: Messages.ERROR_UPDATING_COUPON });
     }
 
-    res.json({ message: "Coupon updated successfully", coupon: updatedCoupon });
+    res.json({ message: Messages.COUPON_UPDATED, coupon: updatedCoupon });
   } catch (error) {
     console.error("Error updating coupon:", error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: Messages.INTERNAL_SERVER_ERROR });
@@ -108,7 +108,7 @@ const deletecoupon = async (req, res) => {
 
     const id = req.query.id;
     await Coupon.deleteOne({ _id: id })
-    res.status(StatusCodes.OK).send({ success: true, message: "Coupon deleted successfully" })
+    res.status(StatusCodes.OK).send({ success: true, message: Messages.COUPON_DELETED })
 
   } catch (error) {
     console.error("Error Deleting Coupon", error)

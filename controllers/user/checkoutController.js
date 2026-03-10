@@ -4,7 +4,7 @@ const Category = require("../../models/categorySchema");
 const Address = require("../../models/addressSchema");
 const Cart = require("../../models/cartSchema");
 const Wallet = require("../../models/walletSchema")
-const { CheckoutStatus } = require('../../helpers/constants');
+const { CheckoutStatus, StatusCodes, Messages } = require('../../helpers/constants');
 
 function calculateShipping(subtotal) {
     return subtotal > 100 ? 0 : 10;

@@ -42,12 +42,12 @@ const applyCoupon = async (req, res) => {
         });
 
         if (!coupon) {
-            return res.json({ success: false, message: "Invalid or expired coupon." });
+            return res.json({ success: false, message: Messages.INVALID_COUPON_EXPIRED });
         }
 
         const cart = await Cart.findOne({ userId }).populate("items.productId");
         if (!cart) {
-            return res.json({ success: false, message: "Cart not found." });
+            return res.json({ success: false, message: Messages.CART_NOT_FOUND });
         }
 
         const cartItems = cart.items.filter(item => item.productId && !item.productId.isBlocked && item.productId.stock > 0);
@@ -63,7 +63,7 @@ const applyCoupon = async (req, res) => {
 
     } catch (error) {
         console.error("Error applying coupon:", error);
-        return res.json({ success: false, message: "Something went wrong." });
+        return res.json({ success: false, message: Messages.SOMETHING_WENT_WRONG });
     }
 };
 
@@ -71,7 +71,7 @@ const clearCoupon = async (req, res) => {
     try {
         res.json({ success: true });
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Error clearing coupon' });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -84,7 +84,7 @@ const getAvailableCoupons = async (req, res) => {
         res.json(coupons);
     } catch (error) {
         console.error('Error fetching coupons:', error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Server error' });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 

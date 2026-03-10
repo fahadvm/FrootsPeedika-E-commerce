@@ -83,15 +83,15 @@ router.post('/set-default-address', addressController.setPrimaryAddress)
 
 // whishlist management
 router.get("/wishlist", userAuth, wishlistController.loadWishlist)
-router.patch("/addToWishlist", userAuth, wishlistController.addToWishlist)
-router.delete("/removeFromWishList", userAuth, wishlistController.removeProduct)
+router.patch("/addToWishlist", wishlistController.addToWishlist)
+router.delete("/removeFromWishList", wishlistController.removeProduct)
 
 
 //cart management
 
 router.get('/cart', userAuth, cartController.loadCart)
 router.post('/add-cart', cartController.addCart)
-router.delete('/remove-cart/:id', userAuth, cartController.removeCart)
+router.delete('/remove-cart/:id', cartController.removeCart)
 router.post('/update-cart-quantity', cartController.updatecartquantity)
 
 
@@ -111,6 +111,7 @@ router.get('/orders', userAuth, orderController.getOrder)
 router.get("/order-details", userAuth, orderController.loadOrderDetails);
 router.patch("/orders/cancel", userAuth, orderController.cancelOrder);
 router.patch("/orders/return", userAuth, orderController.returnOrder);
+router.get("/order-success", userAuth, orderController.loadOrderSuccess);
 router.post("/orders/verify-payment", userAuth, orderController.verifyPayment);
 router.get("/download-invoice", userAuth, orderController.generateInvoice);
 

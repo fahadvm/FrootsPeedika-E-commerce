@@ -1,4 +1,4 @@
-<%-include(".. /../views/partials/user/header")%>
+<%-include("../../views/partials/user/header")%>
 
     <title>Frootspeedika - Order History</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -686,7 +686,7 @@
                                                             const verifyData = await verifyResponse.json();
                                                             if (verifyData.success) {
                                                                 Swal.fire('Success!', 'Payment successful', 'success').then(() => {
-                                                                    location.reload();
+                                                                    window.location.href = '/order-success?id=' + orderId;
                                                                 });
                                                             } else {
                                                                 Swal.fire('Error!', verifyData.message, 'error');

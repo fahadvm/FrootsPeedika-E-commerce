@@ -139,7 +139,7 @@ const addCart = async (req, res) => {
 
         await userCart.save();
 
-        res.json({ success: true, message: "Product added to cart", cart: userCart });
+        res.json({ success: true, message: Messages.ITEM_ADDED_CART_SUCCESS, cart: userCart });
     } catch (error) {
         console.error(error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
@@ -171,7 +171,7 @@ const removeCart = async (req, res) => {
 
         // Respond with success or redirect
         // Respond with success
-        res.json({ success: true, message: "Product removed from cart" });
+        res.json({ success: true, message: Messages.ITEM_REMOVED_CART_SUCCESS });
 
     } catch (error) {
         console.error("Error removing from cart:", error);
@@ -204,11 +204,11 @@ const updatecartquantity = async (req, res) => {
         const parsedQuantity = parseInt(quantity); // Parse quantity as an integer
 
         if (isNaN(parsedQuantity) || parsedQuantity < 1) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid quantity" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.INVALID_QUANTITY });
         }
 
         if (parsedQuantity > 5) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Maximum quantity is 5 per product" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.MAX_QUANTITY_EXCEEDED });
         }
 
         const product = await Product.findById(productId);
@@ -217,7 +217,7 @@ const updatecartquantity = async (req, res) => {
         }
 
         if (parsedQuantity > product.stock) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: `Only ${product.stock} items available in stock` });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: `${Messages.INSUFFICIENT_STOCK}. Only ${product.stock} items available` });
         }
 
         cart.items[itemIndex].quantity = parsedQuantity; // Update the quantity in the cart item

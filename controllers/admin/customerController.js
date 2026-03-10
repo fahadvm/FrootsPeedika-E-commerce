@@ -51,7 +51,7 @@ const customerBlocked = async (req, res) => {
   try {
     const userId = req.params.id;
     await User.findByIdAndUpdate(userId, { isBlocked: true });
-    res.status(StatusCodes.OK).json({ message: 'User blocked successfully' });
+    res.status(StatusCodes.OK).json({ message: Messages.USER_BLOCKED_SUCCESS });
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: Messages.INTERNAL_SERVER_ERROR });
   }
@@ -61,7 +61,7 @@ const customerUnblocked = async (req, res) => {
   try {
     const userId = req.params.id;
     await User.findByIdAndUpdate(userId, { isBlocked: false });
-    res.status(StatusCodes.OK).json({ message: 'User unblocked successfully' });
+    res.status(StatusCodes.OK).json({ message: Messages.USER_UNBLOCKED_SUCCESS });
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: Messages.INTERNAL_SERVER_ERROR });
   }

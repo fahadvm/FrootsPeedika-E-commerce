@@ -432,7 +432,7 @@
                             const verifyData = await verifyResponse.json();
                             if (verifyData.success) {
                                 Swal.fire('Success!', 'Payment successful', 'success').then(() => {
-                                    location.reload();
+                                    window.location.href = '/order-success?id=' + orderId;
                                 });
                             } else {
                                 Swal.fire('Error!', verifyData.message, 'error');

@@ -20,7 +20,7 @@ const signup = async (req, res) => {
 
         const phoneRegex = /^[6-9]\d{9}$/;
         if (!phoneRegex.test(phone) || /^0+$/.test(phone)) {
-            return res.render("user/signup", { message: "Invalid phone number. Must be a valid 10-digit number starting with 6-9." });
+            return res.render("user/signup", { message: Messages.INVALID_PHONE });
         }
 
         // if (password !== cPassword) {
@@ -29,7 +29,7 @@ const signup = async (req, res) => {
 
         const findUser = await User.findOne({ email });
         if (findUser) {
-            return res.render("user/signup", { message: "User with this email already exists" });
+            return res.render("user/signup", { message: Messages.EMAIL_ALREADY_EXISTS });
         }
 
         // if (referCode) {
@@ -92,17 +92,17 @@ const login = async (req, res) => {
 
 
         if (!findUser) {
-            return res.render('user/login', { message: 'User not found' });
+            return res.render('user/login', { message: Messages.USER_NOT_FOUND });
         }
 
         if (findUser.isBlocked) {
-            return res.render('user/login', { message: 'User blocked by admin' });
+            return res.render('user/login', { message: Messages.USER_BLOCKED });
         }
 
         const passwordMatch = await bcrypt.compare(password, findUser.password);
 
         if (!passwordMatch) {
-            return res.render('user/login', { message: 'Incorrect password' });
+            return res.render('user/login', { message: Messages.INCORRECT_PASSWORD });
         }
 
         req.session.user = findUser._id;
@@ -110,7 +110,7 @@ const login = async (req, res) => {
         return res.redirect('/');
     } catch (error) {
         console.log('login error:', error);
-        return res.render("user/login", { message: "Login failed. Please try again later" });
+        return res.render("user/login", { message: Messages.LOGIN_FAILED });
     }
 };
 
@@ -188,7 +188,7 @@ const verifyOtp = async (req, res) => {
             res.json({ success: true, redirectUrl: "/" })
         }
         else {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid Otp,please try again" })
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.INVALID_OTP })
         }
     } catch (error) {
         console.log("error varifying otp", error)
@@ -200,7 +200,7 @@ const resendOtp = async (req, res) => {
     try {
         const { email } = req.session.userData
         if (!email) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Email is not found in session" })
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.EMAIL_NOT_FOUND_SESSION })
         }
 
         const otp = generateOtp()
@@ -209,7 +209,7 @@ const resendOtp = async (req, res) => {
         const emailSent = await sendVerificationEmail(email, otp)
         if (emailSent) {
             console.log('resend otp:', otp)
-            res.status(StatusCodes.OK).json({ success: true, message: 'OTP resend successfully' })
+            res.status(StatusCodes.OK).json({ success: true, message: Messages.OTP_RESEND_SUCCESS })
         }
         else {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR })
@@ -348,9 +348,9 @@ const loadShoppingPage = async (req, res) => {
     } catch (error) {
         console.error('Error loading shop page:', error);
         if (isAjax) {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: true, message: 'Failed to load products' });
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: true, message: Messages.INTERNAL_SERVER_ERROR });
         } else {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).send('Error loading shop page');
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.INTERNAL_SERVER_ERROR);
         }
     }
 };

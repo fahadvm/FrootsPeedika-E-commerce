@@ -49,7 +49,7 @@ const updateProfile = async (req, res) => {
         const updatedAdmin = await Admin.findByIdAndUpdate(id, updatedData, { new: true });
 
         if (!updatedAdmin) {
-            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Admin not found' });
+            return res.status(StatusCodes.NOT_FOUND).json({ message: Messages.USER_NOT_FOUND });
         }
 
         res.status(StatusCodes.OK).json(updatedAdmin);

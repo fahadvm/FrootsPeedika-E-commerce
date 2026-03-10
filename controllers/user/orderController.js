@@ -42,14 +42,14 @@ const placeOrder = async (req, res) => {
         console.log("cartData:", cartData)
 
         if (!user || !cartData || cartData.items.length === 0) {
-            req.flash('error', 'cart is empty ');
+            req.flash('error', Messages.CART_EMPTY);
             return res.redirect('/checkout');
         }
 
         // Validate user address
         const userAddress = await Address.findOne({ userId });
         if (!userAddress) {
-            req.flash('error', ' address not found');
+            req.flash('error', Messages.ADDRESS_NOT_FOUND);
             return res.redirect('/checkout');
         }
 
@@ -57,7 +57,7 @@ const placeOrder = async (req, res) => {
         const selectedAddress = userAddress.address.find(addr => addr._id.toString() === addressId);
 
         if (!selectedAddress) {
-            req.flash('error', 'Invalid address ');
+            req.flash('error', Messages.INVALID_ADDRESS);
             return res.redirect('/checkout');
         }
 
@@ -68,7 +68,7 @@ const placeOrder = async (req, res) => {
         // Validate all products and categories before proceeding
         for (const item of cartData.items) {
             if (!item.productId) {
-                req.flash('error', 'One or more products in your cart are no longer available.');
+                req.flash('error', Messages.PRODUCT_UNAVAILABLE);
                 return res.redirect('/cart');
             }
             if (item.productId.isBlocked) {
@@ -107,7 +107,7 @@ const placeOrder = async (req, res) => {
                 discount: itemDiscount,
                 finalAmount,
                 discountedPrice: discountedSubtotal,
-                address: selectedAddress,
+                address: { ...selectedAddress.toObject(), email: user.email },
                 createdOn: new Date(),
                 paymentMethod,
                 couponCode: couponCode || null,
@@ -134,7 +134,7 @@ const placeOrder = async (req, res) => {
         if (paymentMethod === PaymentMethod.WALLET) {
             wallet = await Wallet.findOne({ userId });
             if (!wallet || wallet.balance < totalAmountInput) {
-                req.flash('error', 'Insufficient wallet balance');
+                req.flash('error', Messages.INSUFFICIENT_WALLET_BALANCE);
                 return res.redirect('/checkout');
             }
         }
@@ -274,6 +274,42 @@ const placeOrder = async (req, res) => {
 };
 
 
+const loadOrderSuccess = async (req, res) => {
+    try {
+        const orderId = req.query.id;
+        if (!orderId) {
+            return res.redirect('/orders');
+        }
+
+        const order = await Order.findById(orderId).populate('product');
+        if (!order || order.userId.toString() !== req.session.user.toString()) {
+            return res.redirect('/orders');
+        }
+
+        const aggregatedOrder = {
+            orderId: order.orderId,
+            deliveryDate: new Date(order.createdAt.getTime() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
+            items: [{
+                name: order.productName,
+                quantity: order.quantity,
+                price: order.price,
+                discount: order.discount || 0,
+                finalPrice: order.finalAmount / order.quantity
+            }],
+            total: order.finalAmount,
+            appliedDiscount: order.discount || 0,
+            address: order.address,
+            paymentMethod: order.paymentMethod,
+            couponCode: order.couponCode || null,
+        };
+
+        res.render('user/order-success', { order: aggregatedOrder });
+    } catch (error) {
+        console.error('Error loading order success page:', error);
+        res.redirect('/orders');
+    }
+};
+
 const processReturn = async (orderId) => {
     try {
         const order = await Order.findById(orderId);
@@ -358,9 +394,7 @@ const loadOrderDetails = async (req, res) => {
                 select: 'productName productImages salePrice'
             });
 
-        const addressid = order.address
-        const addressData = await Address.findOne({ "address._id": addressid }, { "address.$": 1 })
-        const address = addressData ? addressData.address[0] : null;
+        const address = order.address;
 
 
         if (!order) {
@@ -390,7 +424,7 @@ const cancelOrder = async (req, res) => {
         }
 
         if (orderData.status === OrderStatus.CANCELLED) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Order is already cancelled' });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.ORDER_ALREADY_CANCELLED });
         }
 
         // Restore product stock
@@ -446,7 +480,7 @@ const cancelOrder = async (req, res) => {
         orderData.cancelReason = reason;
         await orderData.save();
 
-        return res.json({ success: true, message: 'Order cancelled successfully' });
+        return res.json({ success: true, message: Messages.ORDER_CANCELLED });
 
     } catch (error) {
         console.error('Error in cancelOrder:', error);
@@ -476,9 +510,9 @@ const returnOrder = async (req, res) => {
             order.returnReason = reason;
             // ... (omitted comment lines for brevity in replacement)
             await order.save();
-            res.json({ success: true, message: 'Order returned successfully' });
+            res.json({ success: true, message: Messages.ORDER_RETURNED });
         } else {
-            res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Order cannot be returned' });
+            res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.ORDER_CANNOT_RETURN });
         }
 
     } catch (error) {
@@ -512,7 +546,7 @@ const createRazorpay = async (req, res) => {
             (now - user.checkoutSession.lastUpdated) < lockTimeout) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: "A payment is already in progress in another tab. Please complete it or wait a few minutes."
+                message: Messages.PAYMENT_IN_PROGRESS
             });
         }
 
@@ -520,7 +554,7 @@ const createRazorpay = async (req, res) => {
         if (checkoutId && user.checkoutSession.checkoutId !== checkoutId) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: "Checkout session expired. Please refresh the page."
+                message: Messages.CHECKOUT_SESSION_EXPIRED
             });
         }
 
@@ -580,7 +614,7 @@ const Razorpaysubscription = async (req, res) => {
         const { plan_id } = req.body; // Get Plan ID from frontend
 
         if (!plan_id) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Plan ID is required" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.PLAN_ID_REQUIRED });
         }
 
         const subscriptionObject = {
@@ -613,12 +647,12 @@ const applyCoupon = async (req, res) => {
         const coupon = await Coupon.findOne({ couponCode: couponCode });
 
         if (!coupon) {
-            return res.json({ success: false, message: "Invalid or expired coupon." });
+            return res.json({ success: false, message: Messages.INVALID_COUPON });
         }
 
         const cart = await Cart.findOne({ userId }).populate("items.productId");
         if (!cart) {
-            return res.json({ success: false, message: "Cart not found." });
+            return res.json({ success: false, message: Messages.CART_NOT_FOUND });
         }
 
         const cartItems = cart.items.filter(item => item.productId && !item.productId.isBlocked && item.productId.stock > 0);
@@ -634,8 +668,8 @@ const applyCoupon = async (req, res) => {
 
     } catch (error) {
         console.error("Error applying coupon:", error);
-        return res.json({ success: false, message: "Something went wrong." });
-    }
+        return res.json({ success: false, message: Messages.SOMETHING_WENT_WRONG });
+    };
 };
 
 
@@ -644,9 +678,9 @@ const applyCoupon = async (req, res) => {
 const removeCoupon = async (req, res) => {
     try {
         req.session.appliedCoupon = null; // Remove applied coupon
-        res.json({ success: true, message: "Coupon removed successfully" });
+        res.json({ success: true, message: Messages.COUPON_REMOVED });
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error removing coupon" });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: Messages.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -664,7 +698,7 @@ const generateInvoice = async (req, res) => {
         }
 
         if (order.status !== "delivered") {
-            return res.status(StatusCodes.BAD_REQUEST).send("Invoice is only available for delivered orders")
+            return res.status(StatusCodes.BAD_REQUEST).send(Messages.INVOICE_DELIVERED_ONLY)
         }
 
         if (!order.invoiceDate) {
@@ -716,15 +750,12 @@ const generateInvoice = async (req, res) => {
         res.download(filePath, fileName, (err) => {
             if (err) {
                 console.error("Error sending file:", err)
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Error generating invoice")
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.ERROR_GENERATING_INVOICE)
             }
-
-            // Optionally delete the file after sending
-            // fs.unlinkSync(filePath);
         })
     } catch (error) {
         console.error("Error generating invoice:", error)
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Error generating invoice")
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.ERROR_GENERATING_INVOICE)
     }
 }
 
@@ -773,12 +804,12 @@ const verifyPayment = async (req, res) => {
                     orderIds: [{ orderId: order._id }]
                 });
 
-                return res.json({ success: true, message: "Payment verified successfully" });
+                return res.json({ success: true, message: Messages.PAYMENT_VERIFIED });
             } else {
                 return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.ORDER_NOT_FOUND });
             }
         } else {
-            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "Invalid signature" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: Messages.INVALID_SIGNATURE });
         }
     } catch (error) {
         console.error("Error in verifyPayment:", error);
@@ -798,5 +829,6 @@ module.exports = {
     Razorpaysubscription,
     removeCoupon,
     generateInvoice,
-    verifyPayment
+    verifyPayment,
+    loadOrderSuccess
 }

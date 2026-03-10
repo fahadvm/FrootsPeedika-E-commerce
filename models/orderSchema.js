@@ -68,8 +68,9 @@ const orderSchema = new Schema(
         address: { type: String, },
         city: { type: String, },
         state: { type: String, },
-        landmark: { type: String },
-        alternatePhone: { type: String },
+        landMark: { type: String },
+        altPhone: { type: String },
+        email: { type: String },
         addressType: {
           type: String,
           enum: Object.values(AddressType),
