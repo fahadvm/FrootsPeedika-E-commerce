@@ -113,7 +113,7 @@ const placeOrder = async (req, res) => {
                 couponCode: couponCode || null,
                 productName: item.productId.productName,
                 productImages: item.productId.productImages[0],
-                status: (paymentStatus === TransactionStatus.FAILED) ? OrderStatus.FAILED : (paymentMethod === PaymentMethod.COD ? OrderStatus.CONFIRMED : OrderStatus.PENDING) // Online payments stay pending until verified
+                status: (paymentStatus === TransactionStatus.FAILED) ? OrderStatus.FAILED : OrderStatus.PENDING // All new orders start as PENDING unless payment failed
             });
 
             orderItems.push({
@@ -783,7 +783,7 @@ const verifyPayment = async (req, res) => {
         if (razorpaySignature === expectedSign) {
             const order = await Order.findById(orderId);
             if (order) {
-                order.status = OrderStatus.CONFIRMED;
+                order.status = OrderStatus.PENDING;
                 await order.save();
 
                 await Transaction.create({
