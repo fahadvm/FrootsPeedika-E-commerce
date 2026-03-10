@@ -140,7 +140,7 @@
                 <div class="invoice-title">INVOICE</div>
                 <div>Invoice #<%= order.orderId %>
                 </div>
-                <div>Date: <%= new Date(order.invoiceDate || order.createdOn).toLocaleDateString() %>
+                <div>Date: <%= new Date(order.invoiceDate || order.createdAt).toLocaleDateString() %>
                 </div>
             </div>
             <div class="company-details">
