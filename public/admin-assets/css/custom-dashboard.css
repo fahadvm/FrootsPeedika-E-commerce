@@ -1,0 +1,351 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-bg: #f8f9fc;
+    --sidebar-bg: #4e73df;
+    --card-bg: #ffffff;
+    --text-main: #4a5568;
+    --text-heading: #2d3748;
+    --text-muted: #a0aec0;
+    
+    --primary: #4e73df;
+    --primary-hover: #2e59d9;
+    --danger: #e74a3b;
+    --danger-hover: #be2617;
+    --success: #1cc88a;
+    --success-hover: #17a673;
+    --info: #36b9cc;
+    --info-hover: #2c9faf;
+    --neutral: #858796;
+    --neutral-hover: #6e707e;
+    
+    --border-color: #e3e6f0;
+    --border-radius: 12px;
+    --shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    background-color: var(--primary-bg);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    margin: 0;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    overflow-x: hidden;
+}
+
+.dashboard-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.dashboard-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin: 0;
+}
+
+/* Modern Card Layout */
+.custom-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+.custom-card-header {
+    padding: 1.25rem 1.5rem;
+    background-color: #f8f9fc;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.custom-card-body {
+    padding: 1.5rem;
+}
+
+/* Search Bar Styles */
+.search-wrapper {
+    position: relative;
+    max-width: 400px;
+    width: 100%;
+}
+
+.modern-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.modern-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+/* Modern Table Design */
+.modern-table-container {
+    width: 100%;
+    overflow-x: hidden; /* Prevent horizontal scroll as requested */
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.95rem;
+}
+
+.modern-table thead th {
+    background-color: #f8f9fc;
+    color: var(--text-heading);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    text-align: left;
+}
+
+.modern-table tbody tr {
+    transition: var(--transition);
+}
+
+.modern-table tbody tr:hover {
+    background-color: #fdfdfd;
+}
+
+.modern-table tbody td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.modern-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Button Styles */
+.btn-modern {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modern-primary {
+    background-color: var(--primary);
+    color: white !important;
+}
+
+.btn-modern-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-modern-danger {
+    background-color: var(--danger);
+    color: white !important;
+}
+
+.btn-modern-danger:hover {
+    background-color: var(--danger-hover);
+}
+
+.btn-modern-neutral {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-main) !important;
+}
+
+.btn-modern-neutral:hover {
+    background-color: #f8f9fc;
+    border-color: var(--text-muted);
+}
+
+.btn-modern-info {
+    background-color: var(--info);
+    color: white !important;
+}
+
+.btn-modern-info:hover {
+    background-color: var(--info-hover);
+}
+
+/* Badge Styles */
+.modern-badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 6px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+/* Image styles */
+.product-thumbnail {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+}
+
+/* Pagination Modern */
+.modern-pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin-top: 2rem;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.modern-page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-main);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.modern-page-item.active .modern-page-link {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.modern-page-link:hover:not(.disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Responsive Card Style for Mobile */
+@media screen and (max-width: 992px) {
+    .modern-table, 
+    .modern-table thead, 
+    .modern-table tbody, 
+    .modern-table th, 
+    .modern-table td, 
+    .modern-table tr {
+        display: block;
+    }
+    
+    .modern-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .modern-table tr {
+        border: 1px solid var(--border-color);
+        margin-bottom: 1rem;
+        border-radius: var(--border-radius);
+        background: white;
+        padding: 0.5rem;
+    }
+    
+    .modern-table td {
+        border: none;
+        border-bottom: 1px solid #f1f1f1;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+        min-height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+    
+    .modern-table td:last-child {
+        border-bottom: 0;
+    }
+    
+    .modern-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 700;
+        color: var(--text-heading);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .search-wrapper {
+        max-width: 100%;
+    }
+}
+
+/* Ensure rows don't cause overflow in dashboard containers */
+.dashboard-container .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.dashboard-container .row > [class*="col-"] {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}

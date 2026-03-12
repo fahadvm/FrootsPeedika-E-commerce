@@ -2,347 +2,159 @@
 
     <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
-        <style>
-            /* Content Header Styles */
-            .content-header {
-                padding: 2rem 0;
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #dee2e6;
-            }
-
-            :root {
-                --primary-color: #3498db;
-                --secondary-color: #2c3e50;
-                --success-color: #2ecc71;
-                --danger-color: #e74c3c;
-                --info-color: #3498db;
-                --light-gray: #ecf0f1;
-            }
-
-            .content-title {
-                font-size: 1.75rem;
-                color: #2c3e50;
-                margin: 0;
-                text-align: center;
-            }
-
-            /* Table Styles */
-            .table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 25px 0;
-                font-size: 0.9em;
-                font-family: sans-serif;
-                min-width: 400px;
-                box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-            }
-
-            .table thead tr {
-                background-color: #009879;
-                color: #ffffff;
-                text-align: center;
-                font-weight: bold;
-            }
-
-            .table thead th {
-                padding: 12px 15px;
-                vertical-align: middle;
-                border: 1px solid #dddddd;
-                white-space: nowrap;
-                font-size: 16px;
-            }
-
-            .table tbody tr {
-                border-bottom: 1px solid #dddddd;
-            }
-
-            .table tbody tr:nth-of-type(even) {
-                background-color: #f3f3f3;
-            }
-
-            .table tbody tr:last-of-type {
-                border-bottom: 2px solid #009879;
-            }
-
-            .table tbody td {
-                padding: 12px 15px;
-                text-align: center;
-                border: 1px solid #dddddd;
-                vertical-align: middle;
-            }
-
-            /* Search Form Styles */
-            .search-form {
-                margin: 20px auto;
-                max-width: 600px;
-            }
-
-            .input-group {
-                display: flex;
-                justify-content: center;
-            }
-
-            .search-input {
-                padding: 10px;
-                font-size: 16px;
-                border: 1px solid #ddd;
-                border-radius: 4px 0 0 4px;
-                width: 70%;
-            }
-
-            .search-button {
-                padding: 10px 20px;
-                background-color: #009879;
-                color: white;
-                border: none;
-                border-radius: 0 4px 4px 0;
-                cursor: pointer;
-            }
-
-            .search-button:hover {
-                background-color: #007f67;
-            }
-
-            /* Button Styles */
-            .btn {
-                padding: 8px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-weight: 500;
-                text-decoration: none;
-                display: inline-block;
-                margin: 2px;
-            }
-
-            .btn-sm {
-                padding: 5px 10px;
-                font-size: 0.875rem;
-            }
-
-            .btn-info {
-                background-color: #17a2b8;
-                color: white;
-            }
-
-            .btn-warning {
-                background-color: #ffc107;
-                color: black;
-            }
-
-            .btn-danger {
-                background-color: #dc3545;
-                color: white;
-            }
-
-            .btn-success {
-                background-color: #28a745;
-                color: white;
-            }
-
-            /* Image Styles */
-            .product-image {
-                border-radius: 4px;
-                object-fit: cover;
-                margin: 2px;
-            }
-
-            /* Pagination Styles */
-            .pagination {
-                display: flex;
-                padding-left: 0;
-                list-style: none;
-                justify-content: center;
-                margin: 20px 0;
-            }
-
-            .page-item {
-                margin: 0 2px;
-            }
-
-            .page-link {
-                padding: 8px 16px;
-                border: 1px solid #ddd;
-                color: #009879;
-                text-decoration: none;
-                background-color: white;
-            }
-
-            .page-item.active .page-link {
-                background-color: #009879;
-                color: white;
-                border-color: #009879;
-            }
-
-            .page-link:hover {
-                background-color: #e9ecef;
-            }
-
-            /* Responsive Design */
-            @media screen and (max-width: 768px) {
-                .table {
-                    display: block;
-                    overflow-x: auto;
-                    white-space: nowrap;
-                }
-
-                .table thead th,
-                .table tbody td {
-                    min-width: 120px;
-                }
-
-                .search-input {
-                    width: 60%;
-                }
-            }
-
-            /* Action Icons */
-            .bi-trash-fill {
-                color: #dc3545;
-                transition: color 0.2s;
-            }
-
-            .bi-trash-fill:hover {
-                color: #bb2d3b;
-            }
-
-            /* Text Colors */
-            .text-white {
-                color: white !important;
-            }
-
-            /* Links */
-            a {
-                text-decoration: none;
-            }
-        </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="/admin-assets/css/custom-dashboard.css">
     </head>
-    <div class="content-header">
-        <h2 class="content-title">Products Management</h2>
-    </div>
-    <div class="container">
-        <form action="" method="get" class="search-form text-center mb-4">
-            <div class="input-group">
-                <input type="text" class="form-control search-input" placeholder="Search products or brands"
-                    name="search">
-                <button class="btn search-button" type="submit">Search</button>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h2 class="dashboard-title">Products Management</h2>
+            <div class="search-wrapper">
+                <form action="" method="get">
+                    <i class="fa fa-search search-icon"></i>
+                    <input type="text" class="modern-search-input" placeholder="Search products or brands..."
+                        name="search" value="<%= search || '' %>">
+                </form>
             </div>
-        </form>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Product name</th>
-                        <th>expire date</th>
-                        <th>Category</th>
-                        <th>Sale Price</th>
-                        <th>Regular Price</th>
-                        <th>Offer</th>
-                        <th>Quantity</th>
-                        <th>Action</th>
-                        <th>Edit</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% for(let i=data.length-1; i>=0; i--) { %>
-                        <tr>
-                            <td>
-                                <% if(data[i].productImages && data[i].productImages.length> 0) { %>
-                                    <% data[i].productImages.forEach(image=> { %>
-                                        <img src="/<%= image %>" alt="<%= data[i].productName %>" class="product-image"
-                                            style="width: 50px; height: 50px; margin: 2px;">
-                                        <% }); %>
-                                            <% } else { %>
-                                                <img src="/placeholder.svg" alt="No image" class="product-image"
-                                                    style="width: 50px; height: 50px;">
-                                                <% } %>
-                            </td>
-                            <td>
-                                <%= data[i].productName %>
-                            </td>
-                            <td>
-                                <%= new Date(data[i].expirationDate).toLocaleDateString('en-GB').replace(/\//g, '-' ) %>
-                            </td>
-                            <td>
-                                <%= data[i].category ? data[i].category.name : 'N/A' %>
-                            </td>
-                            <td>
-                                <%= data[i].salePrice %>
-                            </td>
-                            <td>
-                                <%= data[i].regularPrice %>
-                            </td>
-                            <td>
-                                <% let catOffer=data[i].category ? (data[i].category.categoryOffer || 0) : 0; let
-                                    prodOffer=data[i].productOffer || 0; let bestOffer=Math.max(catOffer, prodOffer); %>
-                                    <div class="offer-details">
-                                        <div
-                                            class="<%= (prodOffer >= catOffer && prodOffer > 0) ? 'text-success font-weight-bold' : '' %>">
-                                            <strong>Product:</strong>
-                                            <%= prodOffer %>%
-                                                <% if(prodOffer>= catOffer && prodOffer > 0) { %> <span
-                                                        class="badge bg-success text-white">BEST</span>
-                                                    <% } %>
-                                        </div>
-                                        <div
-                                            class="<%= (catOffer > prodOffer) ? 'text-success font-weight-bold' : '' %>">
-                                            <strong>Category:</strong>
-                                            <%= catOffer %>%
-                                                <% if(catOffer> prodOffer) { %> <span
-                                                        class="badge bg-success text-white">BEST</span>
-                                                    <% } %>
-                                        </div>
-
-                                        <div class="mt-2">
-                                            <% if(prodOffer> 0) { %>
-                                                <button class="btn btn-xs btn-warning"
-                                                    onclick="editOffer('<%= data[i]._id %>', '<%= prodOffer %>')">Edit</button>
-                                                <button class="btn btn-xs btn-danger"
-                                                    onclick="removeOffer('<%= data[i]._id %>')">Remove</button>
-                                                <% } else { %>
-                                                    <button class="btn btn-xs btn-info"
-                                                        onclick="addOffer('<%= data[i]._id %>')">Add Product
-                                                        Offer</button>
-                                                    <% } %>
-                                        </div>
-                                    </div>
-                            </td>
-                            <td>
-                                <%= data[i].stock %>
-                            </td>
-                            <td>
-
-                                <%if(data[i].isBlocked===false){%>
-                                    <button class="btn btn-danger">
-                                        <a href="#" onclick="confirmBlockProduct(event, '<%= data[i]._id %>')"
-                                            class="text-white" style="text-decoration: none;">Block</a>
-                                    </button>
-                                    <%} else{%>
-                                        <button class="btn btn-success">
-                                            <a href="#" onclick="confirmUnblockProduct(event, '<%= data[i]._id %>')"
-                                                class="text-white" style="text-decoration: none;">Unblock</a>
-                                        </button>
-                                        <%}%>
-
-                            </td>
-
-                            <td>
-                                <button class="btn btn-info">
-                                    <a href="/admin/editProduct?id=<%=data[i]._id%>" class="text-white"
-                                        style="text-decoration: none;">Edit</a>
-                                </button>
-                            </td>
-                        </tr>
-                        <% } %>
-                </tbody>
-            </table>
         </div>
+
+        <div class="custom-card">
+            <div class="custom-card-header">
+                <span class="fw-bold"><i class="fas fa-box me-2"></i>Product Inventory</span>
+            </div>
+            <div class="custom-card-body">
+                <div class="modern-table-container">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <!-- <th>Expiration</th> -->
+                                <th>Category</th>
+                                <th>Pricing</th>
+                                <th>Offer Details</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for(let i=data.length-1; i>=0; i--) { %>
+                                <tr>
+                                    <td data-label="Product">
+                                        <div class="d-flex align-items-center">
+                                            <% if(data[i].productImages && data[i].productImages.length> 0) { %>
+                                                <img src="/<%= data[i].productImages[0] %>"
+                                                    alt="<%= data[i].productName %>" class="product-thumbnail me-3">
+                                                <% } else { %>
+                                                    <div
+                                                        class="product-thumbnail d-flex align-items-center justify-content-center bg-light me-3">
+                                                        <i class="fas fa-image text-muted"></i>
+                                                    </div>
+                                                    <% } %>
+                                                        <span class="fw-semibold">
+                                                            <%= data[i].productName %>
+                                                        </span>
+                                        </div>
+                                    </td>
+                                    <!-- <td data-label="Expiration">
+                                        <span class="text-secondary small">
+                                            <i class="far fa-calendar-alt me-1"></i>
+                                            <%= new Date(data[i].expirationDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                                        </span>
+                                    </td> -->
+                                    <td data-label="Category">
+                                        <span class="modern-badge" style="background: #eef2ff; color: #4f46e5;">
+                                            <%= data[i].category ? data[i].category.name : 'N/A' %>
+                                        </span>
+                                    </td>
+                                    <td data-label="Pricing">
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark">₹<%= data[i].salePrice %></span>
+                                            <span class="text-muted small text-decoration-line-through">₹<%=
+                                                    data[i].regularPrice %></span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Offer">
+                                        <% let catOffer=data[i].category ? (data[i].category.categoryOffer || 0) : 0;
+                                            let prodOffer=data[i].productOffer || 0; let bestOffer=Math.max(catOffer,
+                                            prodOffer); %>
+                                            <div class="small">
+                                                <div class="mb-1">
+                                                    <span class="text-muted">Prod:</span>
+                                                    <span
+                                                        class="<%= (prodOffer >= catOffer && prodOffer > 0) ? 'text-success fw-bold' : '' %>">
+                                                        <%= prodOffer %>%
+                                                    </span>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <span class="text-muted">Cat:</span>
+                                                    <span
+                                                        class="<%= (catOffer > prodOffer) ? 'text-success fw-bold' : '' %>">
+                                                        <%= catOffer %>%
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <% if(prodOffer> 0) { %>
+                                                        <button class="btn-modern btn-modern-neutral py-1 px-2 mb-1"
+                                                            style="font-size: 10px;"
+                                                            onclick="editOffer('<%= data[i]._id %>', '<%= prodOffer %>')">Edit</button>
+                                                        <button class="btn-modern btn-modern-danger py-1 px-2"
+                                                            style="font-size: 10px;"
+                                                            onclick="removeOffer('<%= data[i]._id %>')">Remove</button>
+                                                        <% } else { %>
+                                                            <button class="btn-modern btn-modern-info py-1 px-2"
+                                                                style="font-size: 10px;"
+                                                                onclick="addOffer('<%= data[i]._id %>')"><i
+                                                                    class="fas fa-plus me-1"></i>Add Offer</button>
+                                                            <% } %>
+                                                </div>
+                                            </div>
+                                    </td>
+                                    <td data-label="Stock">
+                                        <span
+                                            class="fw-bold <%= data[i].stock < 10 ? 'text-danger' : 'text-success' %>">
+                                            <%= data[i].stock %>
+                                        </span>
+                                    </td>
+                                    <td data-label="Status">
+                                        <div class="d-flex flex-column gap-2">
+
+                                            <%if(data[i].isBlocked===false){%>
+                                                <button class="btn-modern btn-modern-danger w-100"
+                                                    onclick="confirmBlockProduct(event, '<%= data[i]._id %>')">
+                                                    Block
+                                                </button>
+                                                <%} else{%>
+                                                    <button class="btn-modern btn-modern-primary w-100"
+                                                        onclick="confirmUnblockProduct(event, '<%= data[i]._id %>')">
+                                                        Unblock
+                                                    </button>
+                                                    <%}%>
+                                        </div>
+                                    </td>
+                                    <td data-label="Edit">
+                                        <a href="/admin/products/<%= data[i]._id %>"
+                                            class="btn-modern btn-modern-neutral w-100">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <!-- <a href="/admin/editProduct?id=<%=data[i]._id%>"
+                                            class="btn-modern btn-modern-info w-100">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a> -->
+                                    </td>
+                                </tr>
+                                <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
+            <ul class="modern-pagination">
                 <% for (let i=1; i <=totalPages; i++) { %>
-                    <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
-                        <a class="page-link" href="?page=<%= i %><%= search ? `&search=${search}` : '' %>">
+                    <li class="modern-page-item <%= (i === currentPage) ? 'active' : '' %>">
+                        <a class="modern-page-link" href="?page=<%= i %><%= search ? `&search=${search}` : '' %>">
                             <%= i %>
                         </a>
                     </li>

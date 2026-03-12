@@ -1,0 +1,221 @@
+<%- include("../../views/partials/admin/header") %>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/admin-assets/css/custom-dashboard.css">
+    <style>
+        .product-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .gallery-item {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: #f8f9fc;
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .detail-row {
+            display: flex;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+        .detail-label {
+            width: 200px;
+            font-weight: 700;
+            color: var(--text-heading);
+            flex-shrink: 0;
+        }
+        .detail-value {
+            color: var(--text-main);
+            word-break: break-all;
+            flex: 1;
+            min-width: 200px;
+        }
+        @media (max-width: 576px) {
+            .detail-label {
+                width: 100%;
+                margin-bottom: 0.25rem;
+            }
+            .detail-value {
+                width: 100%;
+            }
+        }
+        .dashboard-container .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .status-pill {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-available { background: #ecfdf5; color: #059669; }
+        .status-out-of-stock { background: #fef2f2; color: #dc2626; }
+        .status-discontinued { background: #f3f4f6; color: #4b5563; }
+    </style>
+</head>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1" style="background: transparent; padding: 0;">
+                    
+                </ol>
+            </nav>
+            <h2 class="dashboard-title"><%= product.productName %></h2>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/admin/editProduct?id=<%= product._id %>" class="btn-modern btn-modern-info">
+                <i class="fas fa-edit"></i> Edit Product
+            </a>
+            <a href="/admin/products" class="btn-modern btn-modern-neutral">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="custom-card">
+                <div class="custom-card-header">
+                    <span class="fw-bold"><i class="fas fa-info-circle me-2"></i>General Information</span>
+                </div>
+                <div class="custom-card-body">
+                    <div class="detail-row">
+                        <div class="detail-label">Product Name</div>
+                        <div class="detail-value"><%= product.productName %></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Category</div>
+                        <div class="detail-value text-primary fw-bold"><%= product.category ? product.category.name : 'N/A' %></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Short Description</div>
+                        <div class="detail-value"><%= product.shortDescription %></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Nutritional Info</div>
+                        <div class="detail-value"><%= product.nutritionalInfo %></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Weight/Size</div>
+                        <div class="detail-value"><%= product.weightSize %> Units</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="custom-card">
+                <div class="custom-card-header">
+                    <span class="fw-bold"><i class="fas fa-images me-2"></i>Product Gallery</span>
+                </div>
+                <div class="custom-card-body">
+                    <div class="product-gallery">
+                        <% if(product.productImages && product.productImages.length > 0) { %>
+                            <% product.productImages.forEach(image => { %>
+                                <div class="gallery-item">
+                                    <img src="/<%= image %>" alt="Product Image">
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="gallery-item d-flex align-items-center justify-content-center">
+                                <i class="fas fa-image text-muted fa-3x"></i>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="custom-card">
+                <div class="custom-card-header">
+                    <span class="fw-bold"><i class="fas fa-tags me-2"></i>Pricing & Stock</span>
+                </div>
+                <div class="custom-card-body">
+                    <div class="detail-row">
+                        <div class="detail-label">Regular Price</div>
+                        <div class="detail-value text-muted text-decoration-line-through">₹<%= product.regularPrice %></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Sale Price</div>
+                        <div class="detail-value h4 fw-bold text-dark">₹<%= product.salePrice %></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Current Stock</div>
+                        <div class="detail-value">
+                            <span class="fw-bold <%= product.stock < 10 ? 'text-danger' : 'text-success' %>">
+                                <%= product.stock %> Units
+                            </span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Product Offer</div>
+                        <div class="detail-value"><span class="badge bg-success text-white"><%= product.productOffer %>% OFF</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="custom-card">
+                <div class="custom-card-header">
+                    <span class="fw-bold"><i class="fas fa-cog me-2"></i>Attributes & Status</span>
+                </div>
+                <div class="custom-card-body">
+                    <div class="detail-row">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <% let statusClass = 'status-available'; 
+                               if(product.status === 'out of stock') statusClass = 'status-out-of-stock';
+                               if(product.status === 'Discontinued') statusClass = 'status-discontinued';
+                            %>
+                            <span class="status-pill <%= statusClass %>">
+                                <%= product.status.toUpperCase() %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Visibility</div>
+                        <div class="detail-value">
+                            <% if(product.isBlocked) { %>
+                                <span class="text-danger fw-bold"><i class="fas fa-ban me-1"></i> Blocked</span>
+                            <% } else { %>
+                                <span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i> Active</span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Organic</div>
+                        <div class="detail-value"><%= product.organic %></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Source</div>
+                        <div class="detail-value"><%= product.importedLocal %></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Freshness</div>
+                        <div class="detail-value"><%= product.freshFrozen %></div>
+                    </div>
+                    <div class="detail-row border-bottom-0">
+                        <div class="detail-label">Expiration</div>
+                        <div class="detail-value">
+                            <i class="far fa-calendar-alt text-muted me-1"></i>
+                            <%= product.expirationDate ? new Date(product.expirationDate).toLocaleDateString('en-GB') : 'N/A' %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include("../../views/partials/admin/footer") %>

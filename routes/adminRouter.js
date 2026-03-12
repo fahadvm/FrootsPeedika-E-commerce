@@ -65,6 +65,7 @@ router.post("/addProducts",adminAuth,  upload.fields([
 
 
 router.get("/products",adminAuth,productController.getAllProducts);
+router.get("/products/:id", adminAuth, productController.getProductDetails);
 router.patch("/addProductOffer",adminAuth,productController.addProductOffer);
 router.delete("/removeProductOffer",adminAuth,productController.removeProductOffer);
 

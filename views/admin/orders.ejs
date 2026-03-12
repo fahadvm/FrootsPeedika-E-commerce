@@ -1,57 +1,41 @@
 <%- include('../partials/admin/header') %>
 
-    <style>
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2c3e50;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --info-color: #3498db;
-            --light-gray: #ecf0f1;
-        }
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="/admin-assets/css/custom-dashboard.css">
+        <style>
+            .status-badge-delivered { background: #ecfdf5; color: #059669; }
+            .status-badge-cancelled { background: #fef2f2; color: #dc2626; }
+            .status-badge-shipped { background: #eff6ff; color: #2563eb; }
+            .status-badge-returned { background: #fff7ed; color: #ea580c; }
+            .status-badge-pending { background: #fffbeb; color: #d97706; }
+        </style>
+    </head>
 
-        .order-table th,
-        .order-table td {
-            vertical-align: middle;
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-weight: 500;
-        }
-
-        .order-actions .btn {
-            margin: 0 2px;
-        }
-
-        .pagination {
-            justify-content: center;
-            margin-top: 20px;
-        }
-    </style>
-
-
-
-
-
-    <div class="container-fluid px-4">
-        <h1 class="mt-4">Order Management</h1>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-table me-1"></i>
-                All Orders (<%= totalOrders %> total)
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h2 class="dashboard-title">Order Management</h2>
+            <div class="search-wrapper">
+                <i class="fa fa-info-circle search-icon"></i>
+                <div class="modern-search-input d-flex align-items-center bg-white">
+                    Total Orders: <span class="fw-bold ms-2"><%= totalOrders %></span>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped order-table">
+        </div>
+
+        <div class="custom-card">
+            <div class="custom-card-header">
+                <span class="fw-bold"><i class="fas fa-shopping-cart me-2"></i>Recent Transactions</span>
+            </div>
+            <div class="custom-card-body">
+                <div class="modern-table-container">
+                    <table class="modern-table">
                         <thead>
                             <tr>
                                 <th>Order ID</th>
                                 <th>Date</th>
                                 <th>Customer</th>
-                                <th>Product</th>
+                                <th>Product Details</th>
                                 <th>Amount</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -60,91 +44,89 @@
                         <tbody>
                             <% orders.forEach(order=> { %>
                                 <tr>
-                                    <td>#<%= order.orderId %>
+                                    <td data-label="Order ID">
+                                        <span class="fw-bold text-primary">#<%= order.orderId %></span>
                                     </td>
-                                    <td>
-                                        <%= new Date(order.createdAt).toLocaleDateString() %>
-                                    </td>
-                                    <td>
-                                        <%= order.address.name %>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="/<%= order.product.productImages[0] %>" alt="Product"
-                                                style="width: 50px; height: 50px; object-fit: cover;" class="me-2">
-                                            <span>
-                                                <%= order.product.productName %>
-                                            </span>
+                                    <td data-label="Date">
+                                        <div class="small text-muted">
+                                            <i class="far fa-calendar-alt me-1"></i>
+                                            <%= new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) %>
                                         </div>
                                     </td>
-                                    <td>₹<%= Math.round(order.finalAmount) %>
+                                    <td data-label="Customer">
+                                        <div class="fw-semibold"><%= order.address.name %></div>
                                     </td>
-                                    <td>
-                                        <span class="status-badge <%= 
-                                        order.status === STATUS.ORDER.DELIVERED ? 'bg-success' :
-                                        order.status === STATUS.ORDER.CANCELLED ? 'bg-danger' :
-                                        order.status === STATUS.ORDER.SHIPPED ? 'bg-info' :
-                                        order.status === STATUS.ORDER.RETURNED ? 'bg-danger' :
-                                        'bg-warning'
-                                    %>">
+                                    <td data-label="Product">
+                                        <div class="d-flex align-items-center">
+                                            <% if (order.product && order.product.productImages && order.product.productImages.length > 0) { %>
+                                                <img src="/<%= order.product.productImages[0] %>" alt="Product" class="product-thumbnail me-3">
+                                            <% } %>
+                                            <span class="small fw-medium"><%= order.product ? order.product.productName : 'Product Removed' %></span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Amount">
+                                        <span class="fw-bold">₹<%= Math.round(order.finalAmount).toLocaleString('en-IN') %></span>
+                                    </td>
+                                    <td data-label="Status">
+                                        <% 
+                                            let statusClass = 'status-badge-pending';
+                                            if (order.status === STATUS.ORDER.DELIVERED) statusClass = 'status-badge-delivered';
+                                            else if (order.status === STATUS.ORDER.CANCELLED) statusClass = 'status-badge-cancelled';
+                                            else if (order.status === STATUS.ORDER.SHIPPED) statusClass = 'status-badge-shipped';
+                                            else if (order.status === STATUS.ORDER.RETURNED) statusClass = 'status-badge-returned';
+                                        %>
+                                        <span class="modern-badge <%= statusClass %>">
                                             <%= order.status.toUpperCase() %>
                                         </span>
                                     </td>
-                                    <td class="order-actions">
-                                        <a href="/admin/orders/<%= order._id %>" class="btn btn-primary btn-sm">
-                                            View Details
-                                        </a>
-                                        <% if (order.status !==STATUS.ORDER.CANCELLED && order.status
-                                            !==STATUS.ORDER.DELIVERED && order.status !==STATUS.ORDER.RETURNED) { %>
-                                            <button onclick="updateStatus('<%= order._id %>')"
-                                                class="btn btn-info btn-sm">
-                                                Update Status
-                                            </button>
-                                            <button onclick="cancelOrder('<%= order._id %>')"
-                                                class="btn btn-danger btn-sm">
-                                                Cancel
-                                            </button>
+                                    <td data-label="Actions">
+                                        <div class="btn-group-modern d-flex flex-wrap gap-2">
+                                            <a href="/admin/orders/<%= order._id %>" class="btn-modern btn-modern-neutral py-1 px-3">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <% if (order.status !== STATUS.ORDER.CANCELLED && order.status !== STATUS.ORDER.DELIVERED && order.status !== STATUS.ORDER.RETURNED) { %>
+                                                <button onclick="updateStatus('<%= order._id %>')" class="btn-modern btn-modern-primary py-1 px-3">
+                                                    <i class="fas fa-sync-alt"></i> Status
+                                                </button>
+                                                <button onclick="cancelOrder('<%= order._id %>')" class="btn-modern btn-modern-danger py-1 px-3">
+                                                    <i class="fas fa-times"></i> Cancel
+                                                </button>
                                             <% } %>
+                                        </div>
                                     </td>
                                 </tr>
-                                <% }); %>
+                            <% }); %>
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Pagination Controls -->
-                <% if (totalPages> 1) { %>
-                    <nav aria-label="Order pagination">
-                        <ul class="pagination">
-                            <!-- Previous Button -->
-                            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                                <a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>"
-                                    aria-label="Previous">
-                                    <span aria-hidden="true">«</span>
-                                </a>
-                            </li>
-
-                            <!-- Page Numbers -->
-                            <% for(let i=1; i <=totalPages; i++) { %>
-                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                    <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>">
-                                        <%= i %>
-                                    </a>
-                                </li>
-                                <% } %>
-
-                                    <!-- Next Button -->
-                                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                                        <a class="page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>"
-                                            aria-label="Next">
-                                            <span aria-hidden="true">»</span>
-                                        </a>
-                                    </li>
-                        </ul>
-                    </nav>
-                    <% } %>
             </div>
         </div>
+
+        <% if (totalPages > 1) { %>
+            <nav aria-label="Order pagination">
+                <ul class="modern-pagination">
+                    <li class="modern-page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                        <a class="modern-page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <% for(let i=1; i <=totalPages; i++) { %>
+                        <li class="modern-page-item <%= currentPage === i ? 'active' : '' %>">
+                            <a class="modern-page-link" href="?page=<%= i %>&limit=<%= limit %>">
+                                <%= i %>
+                            </a>
+                        </li>
+                    <% } %>
+
+                    <li class="modern-page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                        <a class="modern-page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        <% } %>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

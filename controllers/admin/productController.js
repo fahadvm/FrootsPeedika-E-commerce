@@ -622,11 +622,26 @@ const addProducts = async (req, res) => {
   }
 };
 
+const getProductDetails = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await Product.findById(id).populate("category");
+    if (!product) {
+      return res.status(StatusCodes.NOT_FOUND).redirect("/admin/pageerror");
+    }
+    res.render("admin/product-details", { product });
+  } catch (error) {
+    console.error("Error in getProductDetails:", error);
+    res.redirect("/admin/pageerror");
+  }
+};
+
 module.exports = {
   getProductAddPage,
   saveImage,
   addProducts,
   getAllProducts,
+  getProductDetails,
   addProductOffer,
   removeProductOffer,
   blockProduct,
