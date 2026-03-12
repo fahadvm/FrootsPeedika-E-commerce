@@ -51,10 +51,14 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    if (req.session.admin) {
-      delete req.session.admin; // ✅ Remove only admin session
-    }
-    res.redirect('/admin/login'); // Redirect admin to login page
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Session destruction error:", err);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(Messages.INTERNAL_SERVER_ERROR);
+      }
+      res.clearCookie('connect.sid'); // Clear the session cookie
+      res.redirect('/admin/login'); // Redirect to login
+    });
   } catch (error) {
     console.log('Logout Error', error);
     res.redirect('/pageerror');

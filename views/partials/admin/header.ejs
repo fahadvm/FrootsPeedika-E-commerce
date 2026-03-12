@@ -12,163 +12,254 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css">
     <script src="https://kit.fontawesome.com/16d4885483.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Popper.js first, then Bootstrap JS for BS4 -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
         :root {
-            --primary-color: #1a237e;
-            --secondary-color: #283593;
-            --accent-color: #3949ab;
-            --text-color: #ffffff;
-            --hover-color: #5c6bc0;
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --primary: #4f46e5;
+            --primary-light: #eef2ff;
+            --text-main: #374151;
+            --text-muted: #6b7280;
+            --bg-body: #f9fafb;
+            --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
 
         body {
-            background-color: #f0f2f5;
-            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow-x: hidden;
         }
 
-        .navbar {
-            background-color: #3498db;
-        }
-
+        /* Sidebar Styling */
         .navbar-aside {
-            background-color: #2c3e50;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            width: var(--sidebar-width);
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
 
-        .menu-item a.menu-link {
-            color: var(--text-color);
-            transition: all 0.3s ease;
+        .aside-top {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f3f4f6;
         }
 
-        .menu-item a.menu-link:hover,
-        .menu-item a.menu-link.active {
-            background-color: var(--accent-color);
-            color: var(--text-color);
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.025em;
         }
 
-        .dropdown-menu {
-            background-color: var(--secondary-color);
-            border: none;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        .menu-aside {
+            padding: 1.25rem 0.75rem;
+            flex: 1;
+            overflow-y: auto;
         }
 
-        .dropdown-item {
-            color: var(--text-color);
+        .menu-item {
+            margin-bottom: 0.25rem;
         }
 
-        .dropdown-item:hover {
-            background-color: var(--hover-color);
-            color: var(--text-color);
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none !important;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
         }
 
-        .brand-wrap .logo {
-            max-height: 50px;
+        .menu-link i {
+            width: 1.5rem;
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+            text-align: center;
         }
 
-        .btn-icon {
-            color: var(--text-color);
+        .menu-link:hover {
+            background: #f3f4f6;
+            color: var(--text-main);
         }
 
+        .menu-link.active {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Header Styling */
         .main-header {
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            height: var(--header-height);
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 999;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: left 0.3s ease;
         }
 
-        .menu-aside .menu-item .icon {
-            color: var(--text-color);
+        .main-wrap {
+            margin-left: var(--sidebar-width);
+            padding-top: var(--header-height);
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
         }
 
-        .img-xs {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
+        /* Responsive Behavior */
+        @media (max-width: 1024px) {
+            .navbar-aside {
+                transform: translateX(-100%);
+            }
+            .navbar-aside.show {
+                transform: translateX(0);
+            }
+            .main-header, .main-wrap {
+                left: 0;
+                margin-left: 0;
+            }
+            .hamburger-btn {
+                display: block;
+            }
+            .screen-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .screen-overlay.show {
+                display: block;
+            }
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
         }
     </style>
 </head>
 
 <body>
-    <div class="screen-overlay"></div>
+    <div class="screen-overlay" onclick="toggleSidebar()"></div>
+    
     <aside class="navbar-aside" id="offcanvas_aside">
         <div class="aside-top">
-            <a href="/admin" class="brand-wrap">
-                <!-- <img src="assets/img/frootspeedika.png" class="logo" alt="Froots Peedika"> -->
+            <a href="/admin" class="brand-name text-decoration-none">
+                FROOTSPEEDIKA
             </a>
-            <div>
-                <button class="btn btn-icon btn-aside-minimize">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
+            <button class="hamburger-btn" onclick="toggleSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         <nav>
-            <ul class="menu-aside">
-                <% const menuItems=[ { link: '/admin' , icon: 'fas fa-home' , text: 'Dashboard' }, {
-                    link: '/admin/users' , icon: 'fas fa-users' , text: 'Customers' }, { link: '/admin/category' ,
-                    icon: 'fas fa-list' , text: 'Category' }, { link: '/admin/addProducts' , icon: 'fas fa-plus-square'
-                    , text: 'Add product' }, { link: '/admin/products' , icon: 'fas fa-box' , text: 'Products' }, {
-                    link: '/admin/coupon' , icon: 'fas fa-ticket-alt' , text: 'Coupon' }, { link: '/admin/transactions'
-                    , icon: 'fa-solid fa-wallet' , text: 'Transactions' }, { link: '/admin/salesReport' ,
-                    icon: 'fas fa-image' , text: 'Sales' }, { link: '/admin/orders' , icon: 'fas fa-shopping-cart' ,
-                    text: 'Orders' } ]; %>
+            <ul class="menu-aside list-unstyled">
+                <% 
+                const menuItems = [
+                    { link: '/admin', icon: 'fas fa-chart-line', text: 'Dashboard' },
+                    { link: '/admin/orders', icon: 'fas fa-shopping-cart', text: 'Orders' },
+                    { link: '/admin/products', icon: 'fas fa-box', text: 'Products' },
+                    { link: '/admin/users', icon: 'fas fa-users', text: 'Customers' },
+                    { link: '/admin/category', icon: 'fas fa-tags', text: 'Category' },
+                    { link: '/admin/coupon', icon: 'fas fa-ticket-alt', text: 'Coupons' },
+                    { link: '/admin/transactions', icon: 'fas fa-wallet', text: 'Transactions' },
+                    { link: '/admin/salesReport', icon: 'fas fa-file-invoice-dollar', text: 'Sales' }
+                ]; 
+                %>
 
-                    <% menuItems.forEach(item=> { %>
-                        <li class="menu-item">
-                            <a class="menu-link" href="<%= item.link %>">
-                                <i class="icon <%= item.icon %>"></i>
-                                <span class="text">
-                                    <%= item.text %>
-                                </span>
-                            </a>
-                        </li>
-                        <% }); %>
+                <% menuItems.forEach(item => { %>
+                    <li class="menu-item">
+                        <a class="menu-link" href="<%= item.link %>">
+                            <i class="<%= item.icon %>"></i>
+                            <span><%= item.text %></span>
+                        </a>
+                    </li>
+                <% }); %>
             </ul>
         </nav>
     </aside>
 
+    <main class="main-wrap">
+        <header class="main-header">
+            <button class="hamburger-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-search d-none d-md-flex align-items-center">
+                <!-- Search can go here -->
+            </div>
+            <div class="user-nav nav-item dropdown">
+                <a class="text-decoration-none d-flex align-items-center gap-2" href="#" data-toggle="dropdown">
+                    <span class="user-avatar"><i class="fas fa-user-shield"></i></span>
+                    <span class="d-none d-sm-inline font-weight-bold text-dark">Administrator</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow-sm border-0 mt-3">
+                    <a class="dropdown-item py-2" href="#" onclick="confirmAdminLogout(event)">
+                        <i class="fas fa-sign-out-alt text-danger mr-2"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </header>
+
     <script>
+        function toggleSidebar() {
+            document.getElementById('offcanvas_aside').classList.toggle('show');
+            document.querySelector('.screen-overlay').classList.toggle('show');
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const currentPath = window.location.pathname;
             const menuLinks = document.querySelectorAll(".menu-link");
 
             menuLinks.forEach(link => {
                 const href = link.getAttribute("href");
-
-                // Highlight exact matches, or subpaths for non-dashboard items
                 if (currentPath === href || (href !== '/admin' && currentPath.startsWith(href))) {
                     link.classList.add("active");
-                    // Also expand parent if needed (for more complex menus)
-                    const menuItem = link.closest('.menu-item');
-                    if (menuItem) menuItem.classList.add('active');
                 }
             });
         });
     </script>
-    <main class="main-wrap">
-        <header class="main-header navbar">
-            <div class="col-search">
-                <!-- Add search functionality if needed -->
-            </div>
-            <div class="col-nav">
-
-                <ul class="nav">
-                    <li class="dropdown nav-item">
-                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount"
-                            aria-expanded="false">
-                            <!-- <img class="img-xs rounded-circle" src="assets\img\frootspeedika.png" alt="User"> -->
-                            <i class="fa-solid fa-user"></i> </a>
-                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
-                            <!-- <a class="dropdown-item text-secondary" href="/admin/profile">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                    class="bi bi-person-fill" viewBox="0 0 16 16">
-                                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
-                                </svg> Profile
-                            </a> -->
-                            <a class="dropdown-item text-danger" href="#" onclick="confirmAdminLogout(event)">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </header>
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>

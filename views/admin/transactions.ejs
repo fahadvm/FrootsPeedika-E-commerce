@@ -1,223 +1,182 @@
-
 <%- include("../../views/partials/admin/header") %>
 
-<style>
-    :root {
-      --primary-color: #3498db;
-      --secondary-color: #2c3e50;
-      --success-color: #2ecc71;
-      --danger-color: #e74c3c;
-      --info-color: #3498db;
-      --light-gray: #ecf0f1;
-    }
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/admin-assets/css/custom-dashboard.css">
+</head>
 
-</style>
-
-
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Transactions</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-        <li class="active"> > Transactions</li>
-    </ol>
-    
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-filter me-1"></i>
-            Filter Transactions
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h2 class="dashboard-title">Financial Transactions</h2>
+            <p class="text-muted small mb-0">Monitor and audit all customer wallet, refund, and payment transactions.</p>
         </div>
-        <div class="card-body">
-            <form id="filterForm" method="GET" action="/admin/transactions">
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label for="transactionType" class="form-label">Transaction Type</label>
-                        <select class="form-select" id="transactionType" name="transactionType">
-                            <option value="">All</option>
-                            <option value="credit">Credit</option>
-                            <option value="debit">Debit</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="paymentMethod" class="form-label">Payment Method</label>
-                        <select class="form-select" id="paymentMethod" name="paymentMethod">
-                            <option value="">All</option>
-                            <option value="wallet">Wallet</option>
-                            <option value="cod">cod</option>
-                            <option value="refund">Refund</option>
-                            <option value="admin">admin</option>
-                            <option value="razorpay">razorpay</option>
-
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="purpose" class="form-label">Purpose</label>
-                        <select class="form-select" id="purpose" name="purpose">
-                            <option value="">All</option>
-                            <option value="purchase">Purchase</option>
-                            <option value="refund">Refund</option>
-                            <option value="wallet_add">Wallet Add</option>
-                            <option value="wallet_withdraw">Wallet Withdraw</option>
-                            <option value="cancellation">Cancellation</option>
-                            <option value="return">Return</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="orderId" class="form-label">Order ID</label>
-                        <input type="text" class="form-control" id="orderId" name="orderId" placeholder="Enter Order ID">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label for="startDate" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="startDate" name="startDate">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" name="endDate">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="userId" class="form-label">User Email</label>
-                        <select class="form-control" id="userId" name="userId">
-                            <option value="">Select a user</option>
-                            <% users.forEach(user => { %>
-                                <option value="<%= user.email %>"  >
-                                    <%= user.email %>
-                                </option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-3 mb-3 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
-                        <button type="button" class="btn btn-secondary" onclick="resetFilters()">Reset</button>
-                    </div>
-                </div>
-            </form>
+        <div class="d-flex gap-2">
+            <button class="btn-modern btn-modern-neutral" onclick="resetFilters()">
+                <i class="fas fa-undo"></i> Reset Filters
+            </button>
         </div>
     </div>
-    
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-table me-1"></i>
-            Transactions List
+
+    <!-- Filter Card -->
+    <div class="custom-card mb-4">
+        <div class="custom-card-header" style="cursor: pointer;" data-toggle="collapse" data-target="#filterBody">
+            <span class="fw-bold"><i class="fas fa-filter me-2"></i>Filter Options</span>
+            <i class="fas fa-chevron-down small"></i>
         </div>
-        <div class="card-body">
-            <table id="transactionsTable" class="table table-striped table-bordered">
+        <div class="collapse show" id="filterBody">
+            <div class="custom-card-body">
+                <form id="filterForm" method="GET" action="/admin/transactions">
+                    <div class="row g-3">
+                        <div class="col-md-2 col-6">
+                            <label class="form-label small fw-bold text-muted">Type</label>
+                            <select class="form-control form-control-sm" name="transactionType" id="transactionType">
+                                <option value="">All Types</option>
+                                <option value="credit">Credit</option>
+                                <option value="debit">Debit</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <label class="form-label small fw-bold text-muted">Method</label>
+                            <select class="form-control form-control-sm" name="paymentMethod" id="paymentMethod">
+                                <option value="">All Methods</option>
+                                <option value="wallet">Wallet</option>
+                                <option value="cod">COD</option>
+                                <option value="razorpay">Razorpay</option>
+                                <option value="refund">Refund</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted">User Email</label>
+                            <select class="form-control form-control-sm" name="userId" id="userId">
+                                <option value="">Select Customer</option>
+                                <% users.forEach(user => { %>
+                                    <option value="<%= user.email %>"><%= user.email %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted">Order ID</label>
+                            <input type="text" class="form-control form-control-sm" name="orderId" id="orderId" placeholder="Enter Order ID">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn-modern btn-modern-primary w-100 py-2">
+                                <i class="fas fa-search"></i> Apply
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions List -->
+    <div class="custom-card">
+        <div class="custom-card-header">
+            <span class="fw-bold"><i class="fas fa-exchange-alt me-2"></i>Transaction Ledger</span>
+        </div>
+        <div class="modern-table-container">
+            <table class="modern-table">
                 <thead>
                     <tr>
-                        <th>Transaction ID</th>
+                        <th>Transaction Info</th>
                         <th>User</th>
                         <th>Amount</th>
-                        <th>Type</th>
-                        <th>Method</th>
-                        <th>Purpose</th>
+                        <th>Method / Purpose</th>
                         <th>Date</th>
-                        <th>Orders</th>
-                        <th>Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if (transactions && transactions.length > 0) { %>
                         <% transactions.forEach(transaction => { %>
                             <tr>
-                                <td><%= transaction.transactionId %></td>
                                 <td>
-                                    <% if (transaction.userId) { %>
-                                        <%= transaction.userId.name %><br>
-                                        <small><%= transaction.userId.email %></small>
-                                    <% } else { %>
-                                        Unknown User
-                                    <% } %>
-                                </td>
-                                <td class="<%= transaction.transactionType === 'credit' ? 'text-success' : 'text-danger' %>">
-                                    <%= transaction.transactionType === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
-                                </td>
-                                <td><span class="badge <%= transaction.transactionType === 'credit' ? 'bg-success' : 'bg-danger' %>">
-                                    <%= transaction.transactionType %>
-                                </span></td>
-                                <td><%= transaction.paymentMethod %></td>
-                                <td><%= transaction.purpose %></td>
-                                <td><%= new Date(transaction.createdAt).toLocaleString() %></td>
-                                <td>
-                                    <% if (transaction.orders && transaction.orders.length > 0) { %>
-                                        <% transaction.orders.forEach(order => { %>
-                                            <% if (order.orderDetails) { %>
-                                                <a href="/admin/orders/<%= order.orderDetails._id %>" class="badge bg-info text-decoration-none">
-                                                    <%= order.orderId %>
-                                                </a>
-                                            <% } else { %>
-                                                <span class="badge bg-secondary"><%= order.orderId %></span>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark font-monospace" style="font-size: 11px;"><%= transaction.transactionId %></span>
+                                            <% if (transaction.orderIds && transaction.orderIds.length > 0) { %>
+                                                <% transaction.orderIds.forEach(order => { %>
+                                                    <% if (order.orderId) { %>
+                                                        <span class="badge bg-light text-primary border p-1 mt-1" style="font-size: 9px; width: fit-content;">
+                                                            #<%= order.orderId.slice(-6).toUpperCase() %>
+                                                        </span>
+                                                    <% } %>
+                                                <% }); %>
+                                            <% } else if (transaction.orders && transaction.orders.length > 0) { %>
+                                                <% transaction.orders.forEach(order => { %>
+                                                    <% if (order.orderId) { %>
+                                                        <span class="badge bg-light text-primary border p-1 mt-1" style="font-size: 9px; width: fit-content;">
+                                                            #<%= order.orderId.slice(-6).toUpperCase() %>
+                                                        </span>
+                                                    <% } %>
+                                                <% }); %>
                                             <% } %>
-                                        <% }); %>
-                                    <% } else { %>
-                                        N/A
-                                    <% } %>
+                                        </div>
                                 </td>
-                                <td>
-                                    <a href="/admin/transactions/<%= transaction.transactionId %>" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i> View
+                                <td data-label="User">
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-dark text-truncate-custom" style="max-width: 150px;">
+                                            <%= transaction.userId ? transaction.userId.name : 'System' %>
+                                        </span>
+                                        <span class="text-muted small"><%= transaction.userId ? transaction.userId.email : 'N/A' %></span>
+                                    </div>
+                                </td>
+                                <td data-label="Amount">
+                                    <span class="fw-bold <%= transaction.transactionType === 'credit' ? 'text-success' : 'text-danger' %>">
+                                        <%= transaction.transactionType === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toLocaleString() %>
+                                    </span>
+                                </td>
+                                <td data-label="Meta">
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark small fw-bold"><%= transaction.paymentMethod.toUpperCase() %></span>
+                                        <span class="text-muted small"><%= transaction.purpose %></span>
+                                    </div>
+                                </td>
+                                <td data-label="Date">
+                                    <span class="text-muted small"><%= new Date(transaction.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) %></span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="/admin/transactions/<%= transaction.transactionId %>" class="btn-modern btn-modern-neutral py-1 px-2" title="View Details">
+                                        <i class="fas fa-eye"></i>
                                     </a>
                                 </td>
                             </tr>
                         <% }); %>
                     <% } else { %>
-                        <tr>
-                            <td colspan="9" class="text-center">No transactions found</td>
-                        </tr>
+                        <tr><td colspan="6" class="text-center py-5">No transactions found matching your filters.</td></tr>
                     <% } %>
                 </tbody>
             </table>
-            
-            <!-- Pagination -->
-            <% if (totalPages > 1) { %>
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                            <a class="page-link" href="?page=<%= currentPage - 1 %>" tabindex="-1">Previous</a>
-                        </li>
-                        
-                        <% for(let i = 1; i <= totalPages; i++) { %>
-                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                            </li>
-                        <% } %>
-                        
-                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                            <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                        </li>
-                    </ul>
-                </nav>
-            <% } %>
         </div>
     </div>
+
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+        <nav class="mt-4">
+            <ul class="modern-pagination">
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <li class="modern-page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="modern-page-link" href="?page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
+    <% } %>
 </div>
 
 <script>
     function resetFilters() {
-        document.getElementById('filterForm').reset();
         window.location.href = '/admin/transactions';
     }
-    
-    // Preserve filter values after form submission
-    document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        const fields = [
-            'transactionType', 'paymentMethod', 'purpose', 
-            'orderId', 'startDate', 'endDate', 'userId'
-        ];
-        
-        fields.forEach(field => {
-            const value = urlParams.get(field);
-            if (value) {
-                document.getElementById(field).value = value;
-            }
+
+    // Restore filter values on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        ['transactionType', 'paymentMethod', 'userId', 'orderId'].forEach(f => {
+            const el = document.getElementById(f);
+            if(el && params.get(f)) el.value = params.get(f);
         });
     });
 </script>
- 
-
-
-
 
 <%- include("../../views/partials/admin/footer") %>

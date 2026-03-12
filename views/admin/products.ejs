@@ -1,318 +1,251 @@
 <%- include("../../views/partials/admin/header") %>
 
-    <head>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link rel="stylesheet" href="/admin-assets/css/custom-dashboard.css">
-    </head>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/admin-assets/css/custom-dashboard.css">
+    <style>
+        .offer-section {
+            background: #f8fafc;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .offer-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
 
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <h2 class="dashboard-title">Products Management</h2>
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h2 class="dashboard-title">Product Inventory</h2>
+            <p class="text-muted small mb-0">Manage your product catalog, stock, and promotional offers.</p>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
             <div class="search-wrapper">
                 <form action="" method="get">
                     <i class="fa fa-search search-icon"></i>
-                    <input type="text" class="modern-search-input" placeholder="Search products or brands..."
-                        name="search" value="<%= search || '' %>">
+                    <input type="text" class="modern-search-input" placeholder="Search products..." name="search" value="<%= search || '' %>">
                 </form>
             </div>
+            <a href="/admin/addProducts" class="btn-modern btn-modern-primary">
+                <i class="fas fa-plus"></i> Add Product
+            </a>
         </div>
-
-        <div class="custom-card">
-            <div class="custom-card-header">
-                <span class="fw-bold"><i class="fas fa-box me-2"></i>Product Inventory</span>
-            </div>
-            <div class="custom-card-body">
-                <div class="modern-table-container">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <!-- <th>Expiration</th> -->
-                                <th>Category</th>
-                                <th>Pricing</th>
-                                <th>Offer Details</th>
-                                <th>Stock</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% for(let i=data.length-1; i>=0; i--) { %>
-                                <tr>
-                                    <td data-label="Product">
-                                        <div class="d-flex align-items-center">
-                                            <% if(data[i].productImages && data[i].productImages.length> 0) { %>
-                                                <img src="/<%= data[i].productImages[0] %>"
-                                                    alt="<%= data[i].productName %>" class="product-thumbnail me-3">
-                                                <% } else { %>
-                                                    <div
-                                                        class="product-thumbnail d-flex align-items-center justify-content-center bg-light me-3">
-                                                        <i class="fas fa-image text-muted"></i>
-                                                    </div>
-                                                    <% } %>
-                                                        <span class="fw-semibold">
-                                                            <%= data[i].productName %>
-                                                        </span>
-                                        </div>
-                                    </td>
-                                    <!-- <td data-label="Expiration">
-                                        <span class="text-secondary small">
-                                            <i class="far fa-calendar-alt me-1"></i>
-                                            <%= new Date(data[i].expirationDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
-                                        </span>
-                                    </td> -->
-                                    <td data-label="Category">
-                                        <span class="modern-badge" style="background: #eef2ff; color: #4f46e5;">
-                                            <%= data[i].category ? data[i].category.name : 'N/A' %>
-                                        </span>
-                                    </td>
-                                    <td data-label="Pricing">
-                                        <div class="d-flex flex-column">
-                                            <span class="fw-bold text-dark">₹<%= data[i].salePrice %></span>
-                                            <span class="text-muted small text-decoration-line-through">₹<%=
-                                                    data[i].regularPrice %></span>
-                                        </div>
-                                    </td>
-                                    <td data-label="Offer">
-                                        <% let catOffer=data[i].category ? (data[i].category.categoryOffer || 0) : 0;
-                                            let prodOffer=data[i].productOffer || 0; let bestOffer=Math.max(catOffer,
-                                            prodOffer); %>
-                                            <div class="small">
-                                                <div class="mb-1">
-                                                    <span class="text-muted">Prod:</span>
-                                                    <span
-                                                        class="<%= (prodOffer >= catOffer && prodOffer > 0) ? 'text-success fw-bold' : '' %>">
-                                                        <%= prodOffer %>%
-                                                    </span>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <span class="text-muted">Cat:</span>
-                                                    <span
-                                                        class="<%= (catOffer > prodOffer) ? 'text-success fw-bold' : '' %>">
-                                                        <%= catOffer %>%
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <% if(prodOffer> 0) { %>
-                                                        <button class="btn-modern btn-modern-neutral py-1 px-2 mb-1"
-                                                            style="font-size: 10px;"
-                                                            onclick="editOffer('<%= data[i]._id %>', '<%= prodOffer %>')">Edit</button>
-                                                        <button class="btn-modern btn-modern-danger py-1 px-2"
-                                                            style="font-size: 10px;"
-                                                            onclick="removeOffer('<%= data[i]._id %>')">Remove</button>
-                                                        <% } else { %>
-                                                            <button class="btn-modern btn-modern-info py-1 px-2"
-                                                                style="font-size: 10px;"
-                                                                onclick="addOffer('<%= data[i]._id %>')"><i
-                                                                    class="fas fa-plus me-1"></i>Add Offer</button>
-                                                            <% } %>
-                                                </div>
-                                            </div>
-                                    </td>
-                                    <td data-label="Stock">
-                                        <span
-                                            class="fw-bold <%= data[i].stock < 10 ? 'text-danger' : 'text-success' %>">
-                                            <%= data[i].stock %>
-                                        </span>
-                                    </td>
-                                    <td data-label="Status">
-                                        <div class="d-flex flex-column gap-2">
-
-                                            <%if(data[i].isBlocked===false){%>
-                                                <button class="btn-modern btn-modern-danger w-100"
-                                                    onclick="confirmBlockProduct(event, '<%= data[i]._id %>')">
-                                                    Block
-                                                </button>
-                                                <%} else{%>
-                                                    <button class="btn-modern btn-modern-primary w-100"
-                                                        onclick="confirmUnblockProduct(event, '<%= data[i]._id %>')">
-                                                        Unblock
-                                                    </button>
-                                                    <%}%>
-                                        </div>
-                                    </td>
-                                    <td data-label="Edit">
-                                        <a href="/admin/products/<%= data[i]._id %>"
-                                            class="btn-modern btn-modern-neutral w-100">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
-                                        <!-- <a href="/admin/editProduct?id=<%=data[i]._id%>"
-                                            class="btn-modern btn-modern-info w-100">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </a> -->
-                                    </td>
-                                </tr>
-                                <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <nav aria-label="Page navigation">
-            <ul class="modern-pagination">
-                <% for (let i=1; i <=totalPages; i++) { %>
-                    <li class="modern-page-item <%= (i === currentPage) ? 'active' : '' %>">
-                        <a class="modern-page-link" href="?page=<%= i %><%= search ? `&search=${search}` : '' %>">
-                            <%= i %>
-                        </a>
-                    </li>
-                    <% } %>
-            </ul>
-        </nav>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <div class="custom-card">
+        <div class="custom-card-header">
+            <span class="fw-bold"><i class="fas fa-boxes me-2"></i>Product List</span>
+        </div>
+        <div class="modern-table-container">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Product Details</th>
+                        <th>Category</th>
+                        <th>Pricing</th>
+                        <th>Offers</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(data && data.length > 0) { %>
+                        <% for(let i=0; i<data.length; i++) { %>
+                            <tr>
+                                <td data-label="Product">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <% if(data[i].productImages && data[i].productImages.length > 0) { %>
+                                            <img src="/<%= data[i].productImages[0] %>" alt="" class="product-thumbnail">
+                                        <% } else { %>
+                                            <div class="product-thumbnail d-flex align-items-center justify-content-center bg-light">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
+                                        <% } %>
+                                        <div class="d-flex flex-column" style="min-width: 120px;">
+                                            <span class="fw-bold text-dark text-truncate-custom"><%= data[i].productName %></span>
+                                            <span class="text-muted small">ID: <%= data[i]._id.toString().slice(-6).toUpperCase() %></span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Category">
+                                    <span class="modern-badge text-truncate-custom" style="background: #eef2ff; color: #4f46e5; max-width: 100px;">
+                                        <%= data[i].category ? data[i].category.name : 'Uncategorized' %>
+                                    </span>
+                                </td>
+                                <td data-label="Pricing">
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-dark">₹<%= data[i].salePrice %></span>
+                                        <span class="text-muted small text-decoration-line-through">₹<%= data[i].regularPrice %></span>
+                                    </div>
+                                </td>
+                                <td data-label="Offers">
+                                    <% 
+                                        let catOffer = data[i].category ? (data[i].category.categoryOffer || 0) : 0;
+                                        let prodOffer = data[i].productOffer || 0;
+                                    %>
+                                    <div class="offer-section">
+                                        <div class="offer-row">
+                                            <span class="text-muted">Product:</span>
+                                            <span class="fw-bold <%= prodOffer > 0 ? 'text-success' : '' %>"><%= prodOffer %>%</span>
+                                        </div>
+                                        <div class="offer-row">
+                                            <span class="text-muted">Category:</span>
+                                            <span class="fw-bold <%= catOffer > 0 ? 'text-info' : '' %>"><%= catOffer %>%</span>
+                                        </div>
+                                        <div class="mt-2 d-flex gap-1">
+                                            <% if(prodOffer > 0) { %>
+                                                <button class="btn btn-sm btn-outline-secondary py-0" style="font-size: 10px;" onclick="editOffer('<%= data[i]._id %>', '<%= prodOffer %>')">Edit</button>
+                                                <button class="btn btn-sm btn-outline-danger py-0" style="font-size: 10px;" onclick="removeOffer('<%= data[i]._id %>')">Remove</button>
+                                            <% } else { %>
+                                                <button class="btn btn-sm btn-outline-primary py-0 w-100" style="font-size: 10px;" onclick="addOffer('<%= data[i]._id %>')">+ Add</button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Stock">
+                                    <div class="d-flex flex-column align-items-end">
+                                        <span class="fw-bold <%= data[i].stock < 10 ? 'text-danger' : 'text-dark' %>"><%= data[i].stock %></span>
+                                        <% if(data[i].stock < 10) { %>
+                                            <span class="badge bg-danger-light text-danger" style="font-size: 9px;">LOW STOCK</span>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td data-label="Status">
+                                    <% if(!data[i].isBlocked) { %>
+                                        <span class="badge bg-success">Active</span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger">Blocked</span>
+                                    <% } %>
+                                </td>
+                                <td data-label="Actions">
+                                    <div class="dropdown">
+                                        <button class="btn-modern btn-modern-neutral py-1 px-2" type="button" data-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right shadow border-0">
+                                            <a class="dropdown-item" href="/admin/products/<%= data[i]._id %>"><i class="fas fa-eye me-2 text-muted"></i> View Details</a>
+                                            <a class="dropdown-item" href="/admin/editProduct?id=<%= data[i]._id %>"><i class="fas fa-edit me-2 text-muted"></i> Edit Item</a>
+                                            <div class="dropdown-divider"></div>
+                                            <% if(!data[i].isBlocked) { %>
+                                                <a class="dropdown-item text-danger" href="#" onclick="confirmBlockProduct(event, '<%= data[i]._id %>')"><i class="fas fa-ban me-2"></i> Block Product</a>
+                                            <% } else { %>
+                                                <a class="dropdown-item text-success" href="#" onclick="confirmUnblockProduct(event, '<%= data[i]._id %>')"><i class="fas fa-check-circle me-2"></i> Unblock Product</a>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% } %>
+                    <% } else { %>
+                        <tr><td colspan="7" class="text-center py-5">No products found</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    <script>
-        async function addOffer(productId) {
-            const { value: percentage } = await Swal.fire({
-                title: "Add Offer",
-                input: "number",
-                inputLabel: "Offer Percentage",
-                inputPlaceholder: "Enter offer percentage",
-                inputAttributes: {
-                    min: 1,
-                    max: 99,
-                    step: 1
-                },
-                showCancelButton: true,
-                inputValidator: (value) => {
-                    if (!value || value < 1 || value > 99) {
-                        return "Please enter a valid percentage between 1 and 99";
-                    }
-                }
-            });
+    <!-- Pagination -->
+    <nav class="mt-4">
+        <ul class="modern-pagination">
+            <% for (let i=1; i <=totalPages; i++) { %>
+                <li class="modern-page-item <%= (i === currentPage) ? 'active' : '' %>">
+                    <a class="modern-page-link" href="?page=<%= i %><%= search ? `&search=${search}` : '' %>"><%= i %></a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>
+</div>
 
-            if (percentage) {
-                updateOffer(productId, percentage);
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<script>
+    async function addOffer(productId) {
+        const { value: percentage } = await Swal.fire({
+            title: "Add Offer",
+            input: "number",
+            inputLabel: "Offer Percentage",
+            inputAttributes: { min: 1, max: 99 },
+            showCancelButton: true
+        });
+        if (percentage) updateOffer(productId, percentage);
+    }
+
+    async function editOffer(productId, currentOffer) {
+        const { value: percentage } = await Swal.fire({
+            title: "Edit Offer",
+            input: "number",
+            inputValue: currentOffer,
+            inputAttributes: { min: 1, max: 99 },
+            showCancelButton: true
+        });
+        if (percentage) updateOffer(productId, percentage);
+    }
+
+    function updateOffer(productId, percentage) {
+        $.ajax({
+            url: "/admin/addProductOffer",
+            method: "patch",
+            data: { productId, percentage },
+            success: (res) => {
+                if (res.status) Swal.fire('Success', 'Offer updated', 'success').then(() => location.reload());
+                else Swal.fire('Error', res.message, 'error');
             }
-        }
+        });
+    }
 
-        async function editOffer(productId, currentOffer) {
-            const { value: percentage } = await Swal.fire({
-                title: "Edit Offer",
-                input: "number",
-                inputLabel: "Offer Percentage",
-                inputPlaceholder: "Enter offer percentage",
-                inputValue: currentOffer,
-                inputAttributes: {
-                    min: 1,
-                    max: 99,
-                    step: 1
-                },
-                showCancelButton: true,
-                inputValidator: (value) => {
-                    if (!value || value < 1 || value > 99) {
-                        return "Please enter a valid percentage between 1 and 99";
-                    }
-                }
-            });
-
-            if (percentage) {
-                updateOffer(productId, percentage);
+    function removeOffer(productId) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Remove this product offer?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc2626"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "/admin/removeProductOffer",
+                    method: 'delete',
+                    data: { productId },
+                    success: (res) => { if (res.status) location.reload(); }
+                });
             }
-        }
+        });
+    }
 
-        function updateOffer(productId, percentage) {
-            $.ajax({
-                url: "/admin/addProductOffer",
-                method: "patch",
-                data: {
-                    productId: productId,
-                    percentage: percentage
-                },
-                success: (response) => {
-                    if (response.status) {
-                        Swal.fire('Success', 'Offer updated successfully', 'success').then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire('Error', response.message || 'Failed to update offer', 'error');
-                    }
-                },
-                error: (error) => {
-                    console.error('Error:', error);
-                    Swal.fire('Error', 'An unexpected error occurred', 'error');
-                }
-            });
-        }
+    function confirmBlockProduct(event, productId) {
+        event.preventDefault();
+        Swal.fire({
+            title: "Block Product?",
+            text: "This item will be hidden from users.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc2626",
+            confirmButtonText: "Yes, Block it"
+        }).then((result) => {
+            if (result.isConfirmed) window.location.href = "/admin/blockProduct?id=" + productId;
+        });
+    }
 
-        function removeOffer(productId) {
-            Swal.fire({
-                title: "Remove offer",
-                text: "Are you sure you want to remove this offer?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, remove it"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: "/admin/removeProductOffer",
-                        method: 'delete',
-                        data: {
-                            productId: productId
-                        },
-                        success: (response) => {
-                            if (response.status) {
-                                Swal.fire("Removed!", "The offer has been removed", "success").then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire('Error', response.message || 'Failed to remove offer', 'error');
-                            }
-                        },
-                        error: (error) => {
-                            console.error('Error:', error);
-                            Swal.fire('Error', 'An unexpected error occurred', 'error');
-                        }
-                    });
-                }
-            });
-        }
+    function confirmUnblockProduct(event, productId) {
+        event.preventDefault();
+        Swal.fire({
+            title: "Unblock Product?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#059669"
+        }).then((result) => {
+            if (result.isConfirmed) window.location.href = "/admin/unblockProduct?id=" + productId;
+        });
+    }
+</script>
 
-        function confirmBlockProduct(event, productId) {
-            event.preventDefault();
-            Swal.fire({
-                title: "Are you sure?",
-                text: "You are about to block this product!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, Block!",
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "/admin/blockProduct?id=" + productId;
-                }
-            });
-        }
-
-        function confirmUnblockProduct(event, productId) {
-            event.preventDefault();
-            Swal.fire({
-                title: "Are you sure?",
-                text: "You are about to unblock this product!",
-                icon: "info",
-                showCancelButton: true,
-                confirmButtonColor: "#28a745",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, Unblock!",
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "/admin/unblockProduct?id=" + productId;
-                }
-            });
-        }
-
-
-
-
-
-    </script>
-
-    <%- include("../../views/partials/admin/footer") %>
+<%- include("../../views/partials/admin/footer") %>

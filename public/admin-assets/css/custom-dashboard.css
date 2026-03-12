@@ -120,14 +120,17 @@ body {
 /* Modern Table Design */
 .modern-table-container {
     width: 100%;
-    overflow-x: hidden; /* Prevent horizontal scroll as requested */
+    overflow-x: hidden; /* Scrollbars removed as requested */
 }
+
+/* Scrollbar styles removed */
 
 .modern-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 0.95rem;
+    font-size: 0.875rem; /* Reduced for compactness */
+    table-layout: auto;
 }
 
 .modern-table thead th {
@@ -135,11 +138,12 @@ body {
     color: var(--text-heading);
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: 0.7rem; /* More compact */
     letter-spacing: 0.05em;
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1rem; /* Reduced padding */
     border-bottom: 2px solid var(--border-color);
     text-align: left;
+    white-space: nowrap;
 }
 
 .modern-table tbody tr {
@@ -151,7 +155,7 @@ body {
 }
 
 .modern-table tbody td {
-    padding: 1.25rem 1.5rem;
+    padding: 0.75rem 1rem; /* Significantly reduced for compactness */
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
 }
@@ -232,11 +236,18 @@ body {
 
 /* Image styles */
 .product-thumbnail {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
+    width: 40px; /* More compact thumbnail */
+    height: 40px;
+    border-radius: 6px;
     object-fit: cover;
     border: 1px solid var(--border-color);
+}
+
+.text-truncate-custom {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Pagination Modern */
@@ -339,10 +350,78 @@ body {
     }
 }
 
+/* Dashboard Analytics Cards */
+.stats-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: var(--transition);
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+}
+
+.stats-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.stats-info {
+    flex: 1;
+}
+
+.stats-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.stats-value {
+    color: var(--text-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stats-change {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.stats-change.up { color: var(--success); }
+.stats-change.down { color: var(--danger); }
+
+/* Chart Containers */
+.chart-card {
+    height: 100%;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
 /* Ensure rows don't cause overflow in dashboard containers */
 .dashboard-container .row {
-    margin-left: 0;
-    margin-right: 0;
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
 }
 
 .dashboard-container .row > [class*="col-"] {

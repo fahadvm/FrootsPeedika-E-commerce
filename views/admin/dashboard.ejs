@@ -1,419 +1,284 @@
 <%- include("../../views/partials/admin/header") %>
 
+<head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/admin-assets/css/custom-dashboard.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-        :root {
-            --primary-color: #1e90ff;
-            --secondary-color: #2d3436;
-            --success-color: #00b894;
-            --danger-color: #d63031;
-            --info-color: #0984e3;
-            --light-gray: #dfe6e9;
-            --background-color: #f5f6fa;
-            --white: #ffffff;
-            --shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-            --transition: all 0.3s ease;
-        }
+        .icon-blue { background-color: #eef2ff; color: #4f46e5; }
+        .icon-green { background-color: #ecfdf5; color: #059669; }
+        .icon-orange { background-color: #fff7ed; color: #ea580c; }
+        .icon-red { background-color: #fef2f2; color: #dc2626; }
+        .icon-purple { background-color: #f5f3ff; color: #7c3aed; }
 
-        .dashboard-container {
-            background-color: #f8f9fa;
-            color: #343a40;
+        .time-filter-btn {
+            padding: 0.35rem 1rem;
+            font-size: 0.8rem;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            color: #4b5563;
         }
-
-        .card-custom {
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .card-custom:hover {
-            transform: translateY(-5px);
-        }
-
-        .icon-container {
-            padding: 15px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-blue {
-            background-color: #e0f7fa;
-            color: #007bff;
-        }
-
-        .icon-green {
-            background-color: #e8f5e9;
-            color: #28a745;
-        }
-
-        .icon-orange {
-            background-color: #ffe5d9;
-            color: #fd7e14;
-        }
-
-        .icon-purple {
-            background-color: #f3e5f5;
-            color: #6f42c1;
-        }
-
-        .table-custom th,
-        .table-custom td {
-            vertical-align: middle;
-        }
-
-        .pagination-custom .page-item.active .page-link {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        span {
-            text-decoration: none;
-        }
-
-        .status-delivered {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .status-cancelled {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        button {
-            background: #0077ff;
-            font-family: inherit;
-            padding: 0.6em 1.3em;
-            font-weight: 700;
-            font-size: 18px;
-            border: 3px solid black;
-            border-radius: 0.4em;
-            box-shadow: 0.1em 0.1em;
-            cursor: pointer;
-        }
-
-        button:hover {
-            transform: translate(-0.05em, -0.05em);
-            box-shadow: 0.15em 0.15em;
-        }
-
-        button:active {
-            transform: translate(0.05em, 0.05em);
-            box-shadow: 0.05em 0.05em;
+        .time-filter-btn.active {
+            background: #4f46e5;
+            color: #fff;
+            border-color: #4f46e5;
         }
     </style>
+</head>
 
-    <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between col-lg-8">
-            <h1 class="font-weight-bold mb-4">Dashboard</h1>
-            <!-- <button onclick="window.location.href='/admin/salesReport'" >Get Or Download Sales Report</button> -->
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h2 class="dashboard-title">Dashboard Overview</h2>
+            <p class="text-muted small mb-0">Welcome back! Here's what's happening with your store today.</p>
         </div>
+        <div class="d-flex gap-2">
+            <button class="btn-modern btn-modern-neutral" onclick="window.location.reload()">
+                <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+            <a href="/admin/salesReport" class="btn-modern btn-modern-primary">
+                <i class="fas fa-file-export"></i> Sales Report
+            </a>
+        </div>
+    </div>
 
-        <!-- Top Stats -->
-        <div class="row mb-4">
-            <div class="col-md-3 mb-3">
-                <div class="card card-custom p-3 d-flex flex-row align-items-center">
-                    <div class="icon-container icon-blue">
-                        <i class="fas fa-box fa-2x"></i>
-                    </div>
-                    <div class="ml-3">
-                        <h2 class="font-weight-bold">
-                            <%= dashboardData.productCount %>
-                        </h2>
-                        <p class="mb-0">Total Products</p>
-                    </div>
+    <!-- Stats Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon icon-blue">
+                    <i class="fas fa-shopping-bag"></i>
                 </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card card-custom p-3 d-flex flex-row align-items-center">
-                    <div class="icon-container icon-green">
-                        <i class="fas fa-users fa-2x"></i>
-                    </div>
-                    <div class="ml-3">
-                        <h2 class="font-weight-bold">
-                            <%= dashboardData.userCount %>
-                        </h2>
-                        <p class="mb-0">Total Customers</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card card-custom p-3 d-flex flex-row align-items-center">
-                    <div class="icon-container icon-orange">
-                        <i class="fas fa-shopping-bag fa-2x"></i>
-                    </div>
-                    <div class="ml-3">
-                        <h2 class="font-weight-bold">
-                            <%= dashboardData.orderCount %>
-                        </h2>
-                        <p class="mb-0">Total Orders</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card card-custom p-3 d-flex flex-row align-items-center">
-                    <div class="icon-container icon-purple">
-                        <i class="fas fa-rupee-sign fa-2x"></i>
-                    </div>
-                    <div class="ml-3">
-                        <h2 class="font-weight-bold">₹<%= dashboardData.totalRevenue.toLocaleString() %>
-                        </h2>
-                        <p class="mb-0">Total Revenue</p>
-                    </div>
+                <div class="stats-info">
+                    <div class="stats-label">Total Orders</div>
+                    <div class="stats-value"><%= dashboardData.orderCount %></div>
+                    <div class="stats-change up"><i class="fas fa-arrow-up"></i> 12.5% <span class="text-muted">vs last month</span></div>
                 </div>
             </div>
         </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon icon-green">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-label">Total Revenue</div>
+                    <div class="stats-value">₹<%= dashboardData.totalRevenue.toLocaleString() %></div>
+                    <div class="stats-change up"><i class="fas fa-arrow-up"></i> 8.2% <span class="text-muted">vs last month</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon icon-orange">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-label">Total Products</div>
+                    <div class="stats-value"><%= dashboardData.productCount %></div>
+                    <div class="stats-change text-muted">Active items in catalog</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon icon-purple">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-label">Customers</div>
+                    <div class="stats-value"><%= dashboardData.userCount %></div>
+                    <div class="stats-change up"><i class="fas fa-arrow-up"></i> 4.1% <span class="text-muted">vs last month</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <!-- Reports and Analytics -->
-        <div class="row mb-4">
-            <div class="col-lg-8 mb-3">
-                <div class="card card-custom p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="font-weight-bold">Sales Overview</h5>
-                        <div>
-                            <button class="btn btn-outline-primary btn-sm" id="weeklyBtn"
-                                onclick="updateSalesChart('weekly')">Weekly</button>
-                            <button class="btn btn-outline-primary btn-sm" id="monthlyBtn"
-                                onclick="updateSalesChart('monthly')">Monthly</button>
-                            <button class="btn btn-outline-primary btn-sm" id="yearlyBtn"
-                                onclick="updateSalesChart('yearly')">Yearly</button>
-                        </div>
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="custom-card chart-card h-100">
+                <div class="custom-card-header">
+                    <span class="fw-bold"><i class="fas fa-chart-line me-2"></i>Revenue Overview</span>
+                    <div class="btn-group shadow-sm">
+                        <button class="time-filter-btn rounded-start" id="weeklyBtn" onclick="updateSalesChart('weekly')">Week</button>
+                        <button class="time-filter-btn" id="monthlyBtn" onclick="updateSalesChart('monthly')">Month</button>
+                        <button class="time-filter-btn rounded-end" id="yearlyBtn" onclick="updateSalesChart('yearly')">Year</button>
                     </div>
-                    <div class="chart-container">
+                </div>
+                <div class="custom-card-body">
+                    <div class="chart-wrapper">
                         <canvas id="salesChart"></canvas>
                     </div>
                 </div>
-                <button id="downloadSalesChart" class="btn btn-sm btn-outline-primary mt-2">Download Chart</button>
-            </div>
-            <div class="col-lg-4 mb-3">
-                <div class="card card-custom p-3">
-                    <h5 class="font-weight-bold mb-4">Order Status</h5>
-                    <div class="chart-container">
-                        <canvas id="orderStatusChart"></canvas>
-                    </div>
-                </div>
             </div>
         </div>
-
-        <!-- Top Selling Products and Recent Orders -->
-        <div class="row">
-            <div class="col-lg-8 mb-3">
-                <div class="card card-custom p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-
-                        <h5 class="font-weight-bold" id="best-product-head">Top Selling Products & Categories</h5>
-                        <div>
-                            <select class="form-control form-control-sm" id="productFilter"
-                                onchange="updateTopSellingProducts(this.value), ggggg(this.value)" please select>
-                                <option value="products">Products</option>
-                                <option value="categories">Categories</option>
-                            </select>
-                        </div>
-                        <script>
-                            function ggggg(value) {
-                                const title = document.getElementById("best-product-head");
-                                if (value === "products") {
-                                    title.innerText = "Top Selling Products";
-                                } else {
-                                    title.innerText = "Top Selling Categories";
-                                }
-                            }
-                        </script>
-
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-custom">
-                            <thead>
-                                <tr id="tableHeader">
-                                    <th>Product</th>
-                                    <th>Category</th>
-                                    <th>Price</th>
-                                    <th>Sold</th>
-                                </tr>
-                            </thead>
-                            <tbody id="topSellingItemsTable">
-                                <% if (dashboardData.topProducts && dashboardData.topProducts.length> 0) { %>
-                                    <% dashboardData.topProducts.forEach(product=> { %>
-                                        <tr>
-                                            <td class="d-flex align-items-center">
-                                                <img src="<%= product.image || 'https://via.placeholder.com/40' %>"
-                                                    alt="<%= product.name %>" class="mr-2"
-                                                    style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
-                                                <span>
-                                                    <%= product.name %>
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <%= product.category %>
-                                            </td>
-                                            <td>₹<%= product.price.toLocaleString() %>
-                                            </td>
-                                            <td>
-                                                <%= product.soldCount %>
-                                            </td>
-                                        </tr>
-                                        <% }); %>
-                                            <% } else { %>
-                                                <tr>
-                                                    <td colspan="4" class="text-center">No products found</td>
-                                                </tr>
-                                                <% } %>
-                            </tbody>
-                        </table>
-                    </div>
+        <div class="col-lg-4">
+            <div class="custom-card chart-card h-100">
+                <div class="custom-card-header">
+                    <span class="fw-bold"><i class="fas fa-chart-pie me-2"></i>Order Status</span>
                 </div>
-            </div>
-            <div class="col-lg-4 mb-3">
-                <div class="card card-custom p-3">
-                    <h5 class="font-weight-bold mb-4">Recent Orders</h5>
-                    <div class="table-responsive">
-                        <table class="table table-custom">
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Customer</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% if (dashboardData.recentOrders && dashboardData.recentOrders.length> 0) { %>
-                                    <% dashboardData.recentOrders.forEach(order=> { %>
-                                        <tr>
-                                            <td><a href="/admin/orders/<%= order._id %>" class="text-primary">#<%=
-                                                        order.orderId.slice(-6) %></a></td>
-                                            <td>
-                                                <%= order.customerName %>
-                                            </td>
-                                            <td>₹<%= order.finalAmount.toLocaleString() %>
-                                            </td>
-                                            <td>
-                                                <% if (order.status===STATUS.ORDER.DELIVERED) { %>
-                                                    <span class="status-badge status-delivered">Delivered</span>
-                                                    <% } else if (order.status===STATUS.ORDER.CANCELLED) { %>
-                                                        <span class="status-badge status-cancelled">Cancelled</span>
-                                                        <% } else { %>
-                                                            <span class="status-badge status-pending">
-                                                                <%= order.status.charAt(0).toUpperCase() +
-                                                                    order.status.slice(1) %>
-                                                            </span>
-                                                            <% } %>
-                                            </td>
-                                        </tr>
-                                        <% }); %>
-                                            <% } else { %>
-                                                <tr>
-                                                    <td colspan="4" class="text-center">No recent orders</td>
-                                                </tr>
-                                                <% } %>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="text-right mt-3">
-                        <a href="/admin/orders" class="btn btn-sm btn-outline-primary">View All Orders</a>
+                <div class="custom-card-body">
+                    <div class="chart-wrapper">
+                        <canvas id="orderStatusChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Tables Row -->
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="custom-card">
+                <div class="custom-card-header">
+                    <span class="fw-bold"><i class="fas fa-crown me-2"></i>Best Selling Products</span>
+                    <select class="form-select form-select-sm w-auto" id="productFilter" onchange="updateTopSelling(this.value)">
+                        <option value="products">Top Products</option>
+                        <option value="categories">Top Categories</option>
+                    </select>
+                </div>
+                <div class="modern-table-container">
+                    <table class="modern-table">
+                        <thead id="topSellingHeader">
+                            <tr>
+                                <th>Product Details</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Sold</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topSellingBody">
+                            <!-- Populated via script or EJS loop -->
+                        </tbody>
+                    </table>
+                    <div id="topSellingLoading" class="text-center py-4 d-none">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="custom-card">
+                <div class="custom-card-header">
+                    <span class="fw-bold"><i class="fas fa-history me-2"></i>Recent Orders</span>
+                    <a href="/admin/orders" class="btn btn-sm btn-link text-primary text-decoration-none">View All</a>
+                </div>
+                <div class="modern-table-container">
+                    <table class="modern-table">
+                                <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer Name</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (dashboardData.recentOrders && dashboardData.recentOrders.length > 0) { %>
+                                <% dashboardData.recentOrders.forEach(order => { %>
+                                    <tr>
+                                        <td><span class="fw-bold text-muted small">#<%= order.orderId.slice(-6).toUpperCase() %></span></td>
+                                        <td><span class="text-dark text-truncate-custom" style="max-width: 100px;"><%= order.address.name %></span></td>
+                                        <td class="small fw-bold">₹<%= order.finalAmount.toLocaleString() %></td>
+                                        <td>
+                                            <% 
+                                                let badgeClass = 'bg-secondary';
+                                                if(order.status === 'Delivered') badgeClass = 'bg-success';
+                                                if(['Pending', 'Shipped', 'Confirmed'].includes(order.status)) badgeClass = 'bg-info';
+                                                if(['Cancelled', 'Returned'].includes(order.status)) badgeClass = 'bg-danger';
+                                            %>
+                                            <span class="badge <%= badgeClass %>"><%= order.status %></span>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">No recent orders found</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // Sales Chart
-        const salesCtx = document.getElementById('salesChart').getContext('2d');
-        const salesData = <% - JSON.stringify(dashboardData.salesData) %>;
-        const salesLabels = <% - JSON.stringify(dashboardData.salesLabels) %>;
+<script>
+    // Initialize Dashboard Charts
+    let salesChart;
+    let statusChart;
 
-        const salesChart = new Chart(salesCtx, {
+    document.addEventListener('DOMContentLoaded', function() {
+        initSalesChart();
+        initStatusChart();
+        updateTopSelling('products');
+        
+        // Set default active period
+        document.getElementById('monthlyBtn').classList.add('active');
+    });
+
+    function initSalesChart() {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesData = <%- JSON.stringify(dashboardData.salesData) %>;
+        const salesLabels = <%- JSON.stringify(dashboardData.salesLabels) %>;
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.2)');
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)');
+
+        salesChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: salesLabels,
                 datasets: [{
-                    label: 'Sales (₹)',
+                    label: 'Revenue',
                     data: salesData,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2,
+                    borderColor: '#4f46e5',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    fill: true,
                     tension: 0.4,
-                    fill: true
+                    pointRadius: 4,
+                    pointBackgroundColor: '#4f46e5',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 6
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function (value) {
-                                return '₹' + value.toLocaleString();
-                            }
-                        }
-                    }
-                },
                 plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                return '₹' + context.parsed.y.toLocaleString();
-                            }
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { 
+                        grid: { borderDash: [5, 5] },
+                        ticks: {
+                            callback: function(v) { return '₹' + v.toLocaleString(); }
                         }
                     }
                 }
             }
         });
+    }
 
-        // Order Status Chart
-        const statusCtx = document.getElementById('orderStatusChart').getContext('2d');
-        const orderStatusData = <% - JSON.stringify(dashboardData.orderStatusData) %>;
-        const orderStatusLabels = <% - JSON.stringify(dashboardData.orderStatusLabels) %>;
+    function initStatusChart() {
+        const ctx = document.getElementById('orderStatusChart').getContext('2d');
+        const statusData = <%- JSON.stringify(dashboardData.orderStatusData) %>;
+        const statusLabels = <%- JSON.stringify(dashboardData.orderStatusLabels) %>;
 
-        const orderStatusChart = new Chart(statusCtx, {
+        statusChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: orderStatusLabels,
+                labels: statusLabels,
                 datasets: [{
-                    data: orderStatusData,
-                    backgroundColor: [
-                        'rgba(46, 204, 113, 0.7)',
-                        'rgba(52, 152, 219, 0.7)',
-                        'rgba(231, 76, 60, 0.7)',
-                        'rgba(241, 196, 15, 0.7)',
-                        'rgba(155, 89, 182, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(46, 204, 113, 1)',
-                        'rgba(52, 152, 219, 1)',
-                        'rgba(231, 76, 60, 1)',
-                        'rgba(241, 196, 15, 1)',
-                        'rgba(155, 89, 182, 1)'
-                    ],
-                    borderWidth: 1
+                    data: statusData,
+                    backgroundColor: ['#10b981', '#3b82f6', '#4f46e5', '#f59e0b', '#ef4444', '#6b7280'],
+                    borderWidth: 0,
+                    hoverOffset: 15
                 }]
             },
             options: {
@@ -421,146 +286,76 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right'
+                        position: 'bottom',
+                        labels: { padding: 20, usePointStyle: true }
                     }
+                },
+                cutout: '75%'
+            }
+        });
+    }
+
+    function updateSalesChart(period) {
+        // UI feedback
+        document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(period + 'Btn').classList.add('active');
+
+        fetch(`/admin/api/sales-data?period=${period}`)
+            .then(res => res.json())
+            .then(data => {
+                salesChart.data.labels = data.labels;
+                salesChart.data.datasets[0].data = data.data;
+                salesChart.update();
+            });
+    }
+
+    function updateTopSelling(type) {
+        const body = document.getElementById('topSellingBody');
+        const header = document.getElementById('topSellingHeader');
+        const loader = document.getElementById('topSellingLoading');
+
+        body.classList.add('opacity-50');
+        loader.classList.remove('d-none');
+
+        fetch(`/admin/api/top-selling?type=${type}`)
+            .then(res => res.json())
+            .then(data => {
+                loader.classList.add('d-none');
+                body.classList.remove('opacity-50');
+                body.innerHTML = '';
+
+                if (type === 'products') {
+                    header.innerHTML = `<tr><th>Product Details</th><th>Category</th><th>Price</th><th>Sold</th></tr>`;
+                    data.products.forEach(p => {
+                        body.innerHTML += `
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="/${p.image}" class="rounded shadow-sm" style="width:32px; height:32px; object-fit:cover">
+                                        <span class="fw-semibold text-dark text-truncate-custom" style="max-width: 150px;">${p.name}</span>
+                                    </div>
+                                </td>
+                                <td><span class="modern-badge text-truncate-custom" style="background:#f3f4f6; max-width: 80px;">${p.category}</span></td>
+                                <td class="fw-bold small">₹${p.price.toLocaleString()}</td>
+                                <td class="text-primary fw-bold small">${p.soldCount}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    header.innerHTML = `<tr><th>Category Name</th><th>Item Count</th><th>Popularity Score</th><th>Total Units Sold</th></tr>`;
+                    data.categories.forEach(c => {
+                        body.innerHTML += `
+                            <tr>
+                                <td><span class="fw-bold text-dark">${c.name}</span></td>
+                                <td>${c.productCount}</td>
+                                <td><div class="progress" style="height:6px; width:100px"><div class="progress-bar" style="width:${Math.min(c.soldCount * 2, 100)}%"></div></div></td>
+                                <td class="fw-bold">${c.soldCount} Units</td>
+                            </tr>
+                        `;
+                    });
                 }
-            }
-        });
+            });
+    }
+</script>
 
-
-        // Update Sales Chart based on time period
-        function updateSalesChart(period) {
-            // Highlight the active button
-            document.getElementById('weeklyBtn').classList.remove('btn-primary');
-            document.getElementById('weeklyBtn').classList.add('btn-outline-primary');
-            document.getElementById('monthlyBtn').classList.remove('btn-primary');
-            document.getElementById('monthlyBtn').classList.add('btn-outline-primary');
-            document.getElementById('yearlyBtn').classList.remove('btn-primary');
-            document.getElementById('yearlyBtn').classList.add('btn-outline-primary');
-
-            document.getElementById(period + 'Btn').classList.remove('btn-outline-primary');
-            document.getElementById(period + 'Btn').classList.add('btn-primary');
-
-            let url = `/admin/api/sales-data?period=${period}`;
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    salesChart.data.labels = data.labels;
-                    salesChart.data.datasets[0].data = data.data;
-                    salesChart.update();
-                })
-                .catch(error => {
-                    console.error('Error fetching sales data:', error);
-                    alert('Failed to update chart. Please try again.');
-                });
-        }
-
-        // Initialize with active button styling
-        document.addEventListener('DOMContentLoaded', function () {
-            // Set default values
-            document.getElementById('productFilter').value = 'products';
-
-            // Set the monthly button as active by default
-            document.getElementById('monthlyBtn').classList.remove('btn-outline-primary');
-            document.getElementById('monthlyBtn').classList.add('btn-primary');
-        });
-        // Update Top Selling Products/Categories based on filter
-        function updateTopSellingProducts(filter) {
-            let url = `/admin/api/top-selling?type=${filter}`;
-
-            // Update table header based on selection
-            const tableHeader = document.getElementById('tableHeader');
-            if (filter === 'categories') {
-                tableHeader.innerHTML = `
-                <th>Category</th>
-                <th>Products Count</th>
-                <th>Total Sales</th>
-                <th>Items Sold</th>
-            `;
-            } else {
-                tableHeader.innerHTML = `
-                <th>Product</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Sold</th>
-            `;
-            }
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const tableBody = document.getElementById('topSellingItemsTable');
-                    tableBody.innerHTML = '';
-
-                    if (filter === 'categories') {
-                        // Render categories
-                        if (data.categories && data.categories.length > 0) {
-                            data.categories.forEach(category => {
-                                tableBody.innerHTML += `
-                                <tr>
-                                    <td>${category.name}</td>
-                                    <td>${category.productCount}</td>
-                                    <td>₹${category.totalSales.toLocaleString()}</td>
-                                    <td>${category.soldCount}</td>
-                                </tr>
-                            `;
-                            });
-                        } else {
-                            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No categories found</td></tr>';
-                        }
-                    } else {
-                        // Render products
-                        if (data.products && data.products.length > 0) {
-                            data.products.forEach(product => {
-                                tableBody.innerHTML += `
-                                <tr>
-                                    <td class="d-flex align-items-center">
-                                        <img src="${product.image || 'https://via.placeholder.com/40'}" alt="${product.name}" class="mr-2" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
-                                        <span>${product.name}</span>
-                                    </td>
-                                    <td>${product.category}</td>
-                                    <td>₹${product.price.toLocaleString()}</td>
-                                    <td>${product.soldCount}</td>
-                                </tr>
-                            `;
-                            });
-                        } else {
-                            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No products found</td></tr>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching top selling items:', error);
-                    alert('Failed to update data. Please try again.');
-                });
-        }
-
-        // Initialize with active buttons
-        document.getElementById('monthlyBtn').classList.add('active');
-
-        // Add event listener for when the page loads
-        document.addEventListener('DOMContentLoaded', function () {
-            // Set default values
-            document.getElementById('productFilter').value = 'products';
-        });
-
-        document.getElementById('downloadSalesChart').addEventListener('click', function () {
-            const link = document.createElement('a');
-            link.href = salesChart.toBase64Image();
-            link.download = 'sales-chartnewdate().png';
-            link.click();
-        });
-    </script>
-
-    <%- include("../../views/partials/admin/footer") %>
+<%- include("../../views/partials/admin/footer") %>

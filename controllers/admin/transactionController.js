@@ -208,11 +208,18 @@ const transactionDetails = async (req, res) => {
         }
 
         let orderDetails = [];
-        if (transaction.orderIds && transaction.orderIds.length > 0) {
-            for (let i = 0; i < transaction.orderIds.length; i++) {
-                orderDetails = await Order.find({ orderId: { $in: transaction.orderIds.map(o => o.orderId) } })
+        const idsFromOrderIds = (transaction.orderIds || []).map(o => o.orderId).filter(id => id);
+        const idsFromOrders = (transaction.orders || []).map(o => o.orderId).filter(id => id);
+        const allPotentialIds = [...new Set([...idsFromOrderIds, ...idsFromOrders])];
 
-            }
+        if (allPotentialIds.length > 0) {
+            orderDetails = await Order.find({
+                $or: [
+                    { _id: { $in: allPotentialIds } },
+                    { orderId: { $in: allPotentialIds } },
+                    { parentOrderId: { $in: allPotentialIds } }
+                ]
+            });
         }
 
         console.log("orderDetails:", orderDetails)
