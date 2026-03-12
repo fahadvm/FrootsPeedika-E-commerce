@@ -113,7 +113,7 @@ const placeOrder = async (req, res) => {
                 couponCode: couponCode || null,
                 productName: item.productId.productName,
                 productImages: item.productId.productImages[0],
-                status: (paymentStatus === TransactionStatus.FAILED) ? OrderStatus.FAILED : OrderStatus.PENDING // All new orders start as PENDING unless payment failed
+                status: (paymentStatus === TransactionStatus.FAILED) ? OrderStatus.FAILED : OrderStatus.PENDING,
             });
 
             orderItems.push({
@@ -127,6 +127,14 @@ const placeOrder = async (req, res) => {
 
             totalAmount += finalAmount;
             orders.push(order);
+        }
+
+        // Group orders together using the first order's UUID as parent
+        if (orders.length > 1) {
+            const firstOrderUUID = orders[0].orderId;
+            for (let i = 1; i < orders.length; i++) {
+                orders[i].parentOrderId = firstOrderUUID;
+            }
         }
 
         // Final check for wallet balance if chosen
@@ -221,7 +229,8 @@ const placeOrder = async (req, res) => {
 
         // Prepare Aggregated Order Data
         const aggregatedOrder = {
-            orderId: orders.length > 0 ? orders[0]._id : null,
+            orderId: orders[0]._id, // Use the MongoDB ID of the first order for consistency in links
+            parentOrderId: orders[0].orderId,
             deliveryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
             items: orderItems,
             total: totalAmount,
@@ -248,7 +257,11 @@ const placeOrder = async (req, res) => {
         }
 
         if (paymentStatus === TransactionStatus.FAILED) {
-            return res.render('user/payment-failed', { order: aggregatedOrder });
+            return res.render('user/payment-failed', {
+                order: aggregatedOrder,
+                user: user,
+                razorpayKey: process.env.RAZORPAY_KEY_ID
+            });
         }
 
         res.render('user/order-success', { order: aggregatedOrder });
@@ -280,7 +293,6 @@ const loadOrderSuccess = async (req, res) => {
         if (!orderId) {
             return res.redirect('/orders');
         }
-
         const order = await Order.findById(orderId).populate('product');
         if (!order || order.userId.toString() !== req.session.user.toString()) {
             return res.redirect('/orders');
@@ -306,6 +318,46 @@ const loadOrderSuccess = async (req, res) => {
         res.render('user/order-success', { order: aggregatedOrder });
     } catch (error) {
         console.error('Error loading order success page:', error);
+        res.redirect('/orders');
+    }
+};
+
+const loadOrderFailed = async (req, res) => {
+    try {
+        const orderId = req.query.id;
+        const user = await User.findById(req.session.user);
+        
+        let aggregatedOrder = null;
+        if (orderId) {
+            const order = await Order.findById(orderId);
+            if (order && order.userId.toString() === req.session.user.toString()) {
+                aggregatedOrder = {
+                    _id: order._id,
+                    orderId: order.orderId,
+                    items: [{
+                        _id: order._id,
+                        name: order.productName,
+                        quantity: order.quantity,
+                        price: order.price,
+                        discount: order.discount || 0,
+                        finalPrice: order.finalAmount / order.quantity,
+                        totalPrice: order.finalAmount,
+                        status: order.status
+                    }],
+                    total: order.finalAmount,
+                    address: order.address,
+                    paymentMethod: order.paymentMethod,
+                };
+            }
+        }
+
+        res.render('user/payment-failed', {
+            order: aggregatedOrder,
+            user: user,
+            razorpayKey: process.env.RAZORPAY_KEY_ID
+        });
+    } catch (error) {
+        console.error('Error loading payment failed page:', error);
         res.redirect('/orders');
     }
 };
@@ -537,7 +589,7 @@ const createRazorpay = async (req, res) => {
         }
 
         const now = new Date();
-        const lockTimeout = 5 * 60 * 1000;
+        const lockTimeout = 10 * 1000;
 
         // Check for existing lock
         if (user.checkoutSession &&
@@ -830,5 +882,6 @@ module.exports = {
     removeCoupon,
     generateInvoice,
     verifyPayment,
-    loadOrderSuccess
+    loadOrderSuccess,
+    loadOrderFailed
 }

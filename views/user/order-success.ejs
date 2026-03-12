@@ -6,25 +6,33 @@
     <title>Order Success</title>
     
     <style>
+        :root {
+            --dark-bg: #ffffff;
+            --accent-gold: #ff8c42;
+            --secondary-bg: #0A2E36;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+        }
+
         .success-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--dark-bg);
+            background: #f8f9fa;
             padding: 2rem;
         }
 
         .success-box {
-            background: var(--secondary-bg);
-            border: 1px solid rgba(196, 162, 119, 0.3);
+            background: white;
+            border: 1px solid #dee2e6;
             padding: 3rem;
             border-radius: 16px;
             text-align: center;
             max-width: 800px;
             width: 100%;
-            color: var(--text-primary);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            color: #333;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         }
 
         .success-icon {
@@ -35,84 +43,88 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background: rgba(196, 162, 119, 0.1);
-            border: 2px solid var(--accent-gold);
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid #28a745;
             animation: checkmark 1s ease;
         }
 
         .success-icon svg {
             width: 40px;
             height: 40px;
-            color: var(--accent-gold);
+            color: #28a745;
         }
 
         .success-title {
             font-size: 2.5rem;
             font-weight: 600;
-            color: var(--accent-gold);
+            color: #28a745;
             margin-bottom: 1rem;
             letter-spacing: 0.5px;
         }
 
         .success-text {
             font-size: 1.1rem;
-            color: var(--text-secondary);
+            color: #666;
             margin-bottom: 2rem;
         }
 
         .order-card {
-            background: var(--dark-bg);
+            background: #ffffff;
             border-radius: 12px;
-            padding: 2rem;
-            margin: 1.5rem 0;
-            border: 1px solid rgba(196, 162, 119, 0.1);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid #eee;
+            text-align: left;
         }
 
         .order-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            text-align: left;
+            gap: 1rem;
         }
 
         .order-detail {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.2rem;
         }
 
         .detail-label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+            color: #888;
+            font-size: 0.85rem;
+            text-transform: uppercase;
         }
 
         .detail-value {
-            color: var(--text-primary);
+            color: #333;
             font-weight: 500;
         }
 
         .highlight {
-            color: var(--accent-gold);
+            color: #F28123;
             font-weight: 600;
         }
 
         .shop-btn {
-            background: var(--accent-gold);
-            color: var(--dark-bg);
+            background: #F28123;
+            color: white;
             padding: 1rem 2.5rem;
             border-radius: 8px;
             font-weight: 600;
             text-transform: uppercase;
+            text-decoration: none;
             margin-top: 2rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             display: inline-flex;
             align-items: center;
             gap: 0.8rem;
         }
 
         .shop-btn:hover {
+            opacity: 0.9;
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(196, 162, 119, 0.3);
+            color: white;
+            box-shadow: 0 8px 16px rgba(242, 129, 35, 0.3);
         }
 
         @keyframes checkmark {

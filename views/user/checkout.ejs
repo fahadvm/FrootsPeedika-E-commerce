@@ -807,10 +807,10 @@
                         },
                         modal: {
                             ondismiss: function () {
-                                // Release lock if payment is cancelled
-                                fetch('/razorpay/release-lock', { method: 'POST' })
-                                    .then(() => console.log("Checkout lock released"))
-                                    .catch(err => console.error("Error releasing lock:", err));
+                                // If the user closes the modal, we still want to create the order in FAILED status
+                                // so they can retry later from the failure page or order list.
+                                orderData.paymentStatus = 'failed';
+                                finalizeOrder(orderData);
                             }
                         },
                         prefill: {

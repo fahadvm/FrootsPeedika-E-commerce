@@ -468,8 +468,9 @@
                                                     </button>
                                                     <% } else if (order.status===STATUS.ORDER.FAILED ) { %>
                                                         <button
-                                                            onclick="retryPayment('<%= order._id %>', <%= order.finalAmount %>)"
-                                                            class="btn btn-warning btn-sm mt-2">
+                                                            class="btn btn-warning btn-sm mt-2 retry-trigger"
+                                                            data-id="<%= order._id %>"
+                                                            data-amount="<%= order.finalAmount %>">
                                                             Retry Payment
                                                         </button>
                                                         <% } %>
@@ -651,6 +652,16 @@
                                                     confirmButtonText: 'Yes, Logout'
                                                 }).then((result) => result.isConfirmed && window.location.assign('/logout'));
                                             }
+                                               </script>
+                                               <script>
+                                            document.addEventListener('click', function(e) {
+                                                if (e.target && e.target.classList.contains('retry-trigger')) {
+                                                    const orderId = e.target.getAttribute('data-id');
+                                                    const amount = e.target.getAttribute('data-amount');
+                                                    retryPayment(orderId, amount);
+                                                }
+                                            });
+
                                             // Retry Payment Function
                                             async function retryPayment(orderId, amount) {
                                                 try {
@@ -692,6 +703,11 @@
                                                                 Swal.fire('Error!', verifyData.message, 'error');
                                                             }
                                                         },
+                                                        modal: {
+                                                            ondismiss: function () {
+                                                                window.location.href = '/payment-failed?id=' + orderId;
+                                                            }
+                                                        },
                                                         prefill: {
                                                             name: '<%= user.name %>',
                                                             email: '<%= user.email %>'
@@ -699,6 +715,9 @@
                                                     };
 
                                                     const rzp = new Razorpay(options);
+                                                    rzp.on('payment.failed', function (response) {
+                                                        window.location.href = '/payment-failed?id=' + orderId;
+                                                    });
                                                     rzp.open();
                                                 } catch (error) {
                                                     console.error('Error:', error);

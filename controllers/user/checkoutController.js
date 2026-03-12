@@ -106,7 +106,7 @@ const loadCheckoutPage = async (req, res) => {
 
         // Checkout Locking Logic
         const now = new Date();
-        const lockTimeout = 5 * 60 * 1000; // 5 minutes
+        const lockTimeout = 10 * 1000; // 5 minutes
         let paymentInProgress = false;
 
         if (user.checkoutSession &&

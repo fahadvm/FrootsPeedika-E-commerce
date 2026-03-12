@@ -27,18 +27,18 @@
         .failed-box {
             background: white;
             border: 1px solid #dee2e6;
-            padding: 3rem;
+            padding: 2.5rem;
             border-radius: 16px;
             text-align: center;
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         }
 
         .failed-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 2rem;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -48,55 +48,119 @@
         }
 
         .failed-icon svg {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             color: #dc3545;
         }
 
         .failed-title {
-            font-size: 2rem;
-            font-weight: 600;
+            font-size: 1.8rem;
+            font-weight: 700;
             color: #dc3545;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .failed-text {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #6c757d;
             margin-bottom: 2rem;
+        }
+
+        .items-list {
+            text-align: left;
+            margin-bottom: 2rem;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            display: block;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .item-meta {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .item-price {
+            font-weight: 600;
+            color: #F28123;
+            margin: 0 1.5rem;
+        }
+
+        .item-status {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            margin-right: 1rem;
+        }
+
+        .status-failed {
+            background: #fff5f5;
+            color: #e03131;
+        }
+
+        .status-paid {
+            background: #ebfbee;
+            color: #099268;
         }
 
         .btn-group {
             display: flex;
             gap: 1rem;
             justify-content: center;
-            margin-top: 2rem;
         }
 
-        .retry-btn {
+        .retry-btn-small {
             background: #F28123;
             color: white;
-            padding: 0.8rem 2rem;
-            border-radius: 8px;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
             font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .retry-btn-small:hover {
+            background: #e67616;
+            transform: translateY(-1px);
         }
 
         .orders-btn {
-            background: #343a40;
-            color: white;
-            padding: 0.8rem 2rem;
+            background: #f1f3f5;
+            color: #495057;
+            padding: 0.8rem 2.5rem;
             border-radius: 8px;
             font-weight: 600;
             text-decoration: none;
             transition: all 0.3s;
         }
 
-        .retry-btn:hover,
         .orders-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
+            background: #e9ecef;
         }
     </style>
 </head>
@@ -106,23 +170,120 @@
     <div class="failed-container">
         <div class="failed-box">
             <div class="failed-icon">
-                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </div>
 
             <h2 class="failed-title">Payment Failed!</h2>
-            <p class="failed-text">We couldn't process your payment. Don't worry, your order has been saved and you can
-                retry the payment from your order history.</p>
+            <p class="failed-text">We couldn't process your payment. You can retry payment for each item below or from your order history.</p>
+
+            <% if (order && order.items && order.items.length > 0) { %>
+                <div class="items-list">
+                    <% order.items.forEach(item => { %>
+                        <div class="item-row">
+                            <div class="item-info">
+                                <span class="item-name"><%= item.name %></span>
+                                <span class="item-meta">Qty: <%= item.quantity %></span>
+                            </div>
+                            <span class="item-status <%= item.status === 'failed' ? 'status-failed' : 'status-paid' %>">
+                                <%= item.status %>
+                            </span>
+                            <div class="item-price">₹<%= item.totalPrice.toFixed(2) %></div>
+                            <% if (item.status === 'failed') { %>
+                                <button class="retry-btn-small retry-trigger" 
+                                        data-id="<%= item._id %>" 
+                                        data-amount="<%= item.totalPrice %>">
+                                    Retry
+                                </button>
+                            <% } %>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
 
             <div class="btn-group">
-                <a href="/orders" class="orders-btn">Go to Orders</a>
-                <a href="/checkout" class="retry-btn">Try Again</a>
+                <a href="/orders" class="orders-btn">Go to Order History</a>
+                <% if (!order) { %>
+                    <a href="/checkout" class="retry-btn-small" style="padding: 0.8rem 2.5rem;">Try Checkout Again</a>
+                <% } %>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('retry-trigger')) {
+                const orderId = e.target.getAttribute('data-id');
+                const amount = e.target.getAttribute('data-amount');
+                retryPayment(orderId, amount);
+            }
+        });
+
+        async function retryPayment(orderId, amount) {
+            try {
+                const response = await fetch('/razorpay/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount })
+                });
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to initialize payment');
+                }
+
+                const options = {
+                    key: '<%= razorpayKey %>',
+                    amount: data.order.amount,
+                    currency: 'INR',
+                    name: 'Froots Peedika',
+                    description: 'Retry Order Payment',
+                    order_id: data.order.id,
+                    handler: async function (response) {
+                        const verifyResponse = await fetch('/orders/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                orderId: orderId,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpaySignature: response.razorpay_signature
+                            })
+                        });
+                        const verifyData = await verifyResponse.json();
+                        if (verifyData.success) {
+                            Swal.fire('Success!', 'Payment successful', 'success').then(() => {
+                                window.location.href = '/order-success?id=' + orderId;
+                            });
+                        } else {
+                            Swal.fire('Error!', verifyData.message, 'error');
+                        }
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            window.location.href = '/payment-failed?id=' + orderId;
+                        }
+                    },
+                    prefill: {
+                        name: '<%= locals.user ? user.name : "" %>',
+                        email: '<%= locals.user ? user.email : "" %>'
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response) {
+                    window.location.href = '/payment-failed?id=' + orderId;
+                });
+                rzp.open();
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire('Error!', error.message, 'error');
+            }
+        }
+    </script>
 </body>
 
 </html>

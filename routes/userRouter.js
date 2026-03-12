@@ -112,6 +112,7 @@ router.get("/order-details", userAuth, orderController.loadOrderDetails);
 router.patch("/orders/cancel", userAuth, orderController.cancelOrder);
 router.patch("/orders/return", userAuth, orderController.returnOrder);
 router.get("/order-success", userAuth, orderController.loadOrderSuccess);
+router.get("/payment-failed", userAuth, orderController.loadOrderFailed);
 router.post("/orders/verify-payment", userAuth, orderController.verifyPayment);
 router.get("/download-invoice", userAuth, orderController.generateInvoice);
 

@@ -118,6 +118,10 @@ const orderSchema = new Schema(
     },
     deliveredOn: {
       type: Date,
+    },
+    parentOrderId: {
+      type: String,
+      index: true,
     }
   },
   { timestamps: true }
