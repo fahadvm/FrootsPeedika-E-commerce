@@ -78,7 +78,6 @@
                 <form id="editProductForm" method="POST" action="/admin/editProduct/<%= product._id %>"
                     enctype="multipart/form-data">
 
-                    <body onload="setDefaultendDate()"></body>
 
                     <!-- Product Name -->
                     <div class="mb-4">
@@ -185,9 +184,8 @@
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="mb-4">
-                                <label for="expirationDate" class="form-label">Expiration Date</label>
                                 <input name="expirationDate" type="date" class="form-control" id="expirationDate"
-                                    required>
+                                    value="<%= product.expirationDate ? new Date(product.expirationDate).toISOString().split('T')[0] : '' %>" required>
                                 <div id="expirationDate-error" class="text-danger" style="display: none;"></div>
                             </div>
                         </div>
@@ -224,37 +222,51 @@
 
                     <div class="mb-4">
                         <label class="form-label">Product Images</label>
-                        <div class="row">
+                        <input type="hidden" name="deletedImages" id="deletedImagesInput" value="[]">
+                        <div class="row" id="imagesContainer">
                             <% for(let i=0; i < 4; i++) { %>
-                                <div class="col-md-3 mb-3">
-                                    <div class="card">
+                                <div class="col-md-3 mb-3 image-slot" data-index="<%= i %>">
+                                    <div class="card h-100">
                                         <% if(product.productImages[i]) { %>
-                                            <img src="/<%= product.productImages[i] %>" class="card-img-top"
-                                                alt="Product Image">
-                                            <div class="card-body">
-                                                <button type="button" class="btn btn-danger btn-sm"
-                                                    onclick="deleteSingleImage('<%= product.productImages[i] %>', '<%= product._id %>', <%= i %>)">Delete</button>
-                                            </div>
-                                            <% } else { %>
-                                                <div class="card-body">
-                                                    <div class="image-upload-container">
-                                                        <input type="file" name="image<%= i+1 %>" accept="image/*"
-                                                            class="form-control image-input" data-index="<%= i %>"
-                                                            onchange="previewImage(event, <%= i %>)">
-                                                        <div class="preview-container"
-                                                            style="margin-top: 10px; display: none;">
-                                                            <img id="preview<%= i %>" src="#" alt="Image preview"
-                                                                style="max-width: 100%; height: auto;">
-                                                        </div>
-                                                        <input type="hidden" name="croppedImage<%= i+1 %>"
-                                                            id="croppedImage<%= i+1 %>" value="">
-                                                    </div>
+                                            <div class="current-image-container">
+                                                <img src="/<%= product.productImages[i] %>" class="card-img-top preview-img"
+                                                    alt="Product Image" style="height: 150px; object-fit: cover;">
+                                                <div class="card-body text-center">
+                                                    <button type="button" class="btn btn-danger btn-sm w-100"
+                                                        onclick="queueImageDeletion('<%= product.productImages[i] %>', <%= i %>)">Remove</button>
                                                 </div>
-                                                <% } %>
+                                            </div>
+                                            <div class="new-upload-container" style="display: none;">
+                                                <div class="card-body">
+                                                    <input type="file" name="image<%= i+1 %>" accept="image/*"
+                                                        class="form-control image-input" data-index="<%= i %>"
+                                                        onchange="previewImage(event, <%= i %>)">
+                                                    <div class="preview-container mt-2" style="display: none;">
+                                                        <img id="preview<%= i %>" src="#" alt="Image preview"
+                                                            style="max-width: 100%; height: auto;">
+                                                    </div>
+                                                    <input type="hidden" name="croppedImage<%= i+1 %>"
+                                                        id="croppedImage<%= i+1 %>" value="">
+                                                </div>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="card-body">
+                                                <input type="file" name="image<%= i+1 %>" accept="image/*"
+                                                    class="form-control image-input" data-index="<%= i %>"
+                                                    onchange="previewImage(event, <%= i %>)">
+                                                <div class="preview-container mt-2" style="display: none;">
+                                                    <img id="preview<%= i %>" src="#" alt="Image preview"
+                                                        style="max-width: 100%; height: auto;">
+                                                </div>
+                                                <input type="hidden" name="croppedImage<%= i+1 %>"
+                                                    id="croppedImage<%= i+1 %>" value="">
+                                            </div>
+                                        <% } %>
                                     </div>
                                 </div>
-                                <% } %>
+                            <% } %>
                         </div>
+                        <div id="images-error" class="text-danger small mt-1" style="display: none;">At least one product image is required.</div>
                     </div>
 
                     <div id="cropperContainer" class="cropper-container" style="display: none;">
@@ -275,22 +287,85 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
     <script>
-        function validateFields() {
-            const fields = [
-                { id: 'productName', errorId: 'productName-error', validation: (value) => !value.trim() ? 'Product Name is required.' : '' },
-                { id: 'shortDescription', errorId: 'description-error', validation: (value) => !value.trim() ? 'Short Description is required.' : '' },
-                { id: 'nutritionalInfo', errorId: 'nutritionalInfo-error', validation: (value) => !value.trim() ? 'Nutritional Information is required.' : '' },
-                { id: 'weightSize', errorId: 'weightSize-error', validation: (value) => !value.trim() ? 'Weight/Size is required.' : '' },
-                { id: 'regularPrice', errorId: 'regularPrice-error', validation: (value) => isNaN(value) || value < 0 ? 'Regular Price must be a positive number.' : '' },
-                { id: 'salePrice', errorId: 'salePrice-error', validation: (value) => value !== "" && (isNaN(value) || value < 0 || value >= parseFloat(document.getElementById('regularPrice').value)) ? 'Sale Price must be a positive number and less than Regular Price.' : '' },
-                { id: 'stock', errorId: 'stock-error', validation: (value) => isNaN(value) || value < 0 ? 'Stock must be a positive number.' : '' },
-                { id: 'organic', errorId: 'organic-error', validation: (value) => !value ? 'Organic field is required.' : '' },
-                { id: 'expirationDate', errorId: 'expirationDate-error', validation: (value) => value && new Date(value) < new Date() ? 'Expiration Date must be in the future.' : '' },
-                { id: 'importedLocal', errorId: 'importedLocal-error', validation: (value) => !value ? 'Product Origin is required.' : '' },
-                { id: 'freshFrozen', errorId: 'freshFrozen-error', validation: (value) => !value ? 'Product Condition is required.' : '' },
-                { id: 'category', errorId: 'category-error', validation: (value) => !value ? 'Category is required.' : '' },
-            ];
+        let isDirty = false;
+        let deletedImages = [];
 
+        // Track changes to mark form as dirty
+        document.getElementById('editProductForm').addEventListener('input', () => {
+            isDirty = true;
+        });
+
+        // Navigation Protection (Native browser alert for tab/refresh)
+        window.addEventListener('beforeunload', (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = 'Changes that you made may not be saved.';
+                return e.returnValue;
+            }
+        });
+
+        // Custom Navigation Protection (SweetAlert for internal links)
+        document.addEventListener('click', function(e) {
+            if (isDirty) {
+                const link = e.target.closest('a');
+                // Only intercept actual page navigations (not modals, javascript links, or external tabs)
+                if (link && 
+                    link.href && 
+                    !link.href.startsWith('javascript:') && 
+                    !link.href.includes('#') &&
+                    link.target !== '_blank' &&
+                    !link.getAttribute('data-bs-toggle')) {
+                    
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Leave page?',
+                        text: "Changes that you made may not be saved.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, leave',
+                        cancelButtonText: 'Stay'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            isDirty = false;
+                            window.location.href = link.href;
+                        }
+                    });
+                }
+            }
+        }, true);
+
+        const fields = [
+            { id: 'productName', errorId: 'productName-error', validation: (value) => !value.trim() ? 'Product Name is required.' : '' },
+            { id: 'shortDescription', errorId: 'description-error', validation: (value) => !value.trim() ? 'Short Description is required.' : '' },
+            { id: 'nutritionalInfo', errorId: 'nutritionalInfo-error', validation: (value) => !value.trim() ? 'Nutritional Information is required.' : '' },
+            { id: 'weightSize', errorId: 'weightSize-error', validation: (value) => !value.trim() || isNaN(value) || value < 0 ? 'Weight/Size must be a positive number.' : '' },
+            { id: 'regularPrice', errorId: 'regularPrice-error', validation: (value) => isNaN(value) || value < 0 ? 'Regular Price must be a positive number.' : '' },
+            { id: 'salePrice', errorId: 'salePrice-error', validation: (value) => value !== "" && (isNaN(value) || value < 0 || parseFloat(value) >= parseFloat(document.getElementById('regularPrice').value)) ? 'Sale Price must be less than Regular Price.' : '' },
+            { id: 'stock', errorId: 'stock-error', validation: (value) => isNaN(value) || value < 0 ? 'Stock must be a positive number.' : '' },
+            { id: 'organic', errorId: 'organic-error', validation: (value) => !value ? 'Organic field is required.' : '' },
+            { id: 'expirationDate', errorId: 'expirationDate-error', validation: (value) => value && new Date(value) < new Date() ? 'Expiration Date must be in the future.' : '' },
+            { id: 'importedLocal', errorId: 'importedLocal-error', validation: (value) => !value ? 'Product Origin is required.' : '' },
+            { id: 'freshFrozen', errorId: 'freshFrozen-error', validation: (value) => !value ? 'Product Condition is required.' : '' },
+            { id: 'category', errorId: 'category-error', validation: (value) => !value ? 'Category is required.' : '' },
+        ];
+
+        function setDefaultendDate() {
+            if (document.getElementById("expirationDate").value) return;
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 3);
+
+            const year = tomorrow.getFullYear();
+            let month = (tomorrow.getMonth() + 1).toString().padStart(2, "0");
+            let day = tomorrow.getDate().toString().padStart(2, "0");
+            document.getElementById("expirationDate").value = `${year}-${month}-${day}`;
+        }
+        
+        document.addEventListener('DOMContentLoaded', setDefaultendDate);
+
+        function validateFields() {
             let isValid = true;
             fields.forEach(field => {
                 const input = document.getElementById(field.id);
@@ -301,28 +376,41 @@
                 if (errorMessage) isValid = false;
             });
 
+            // Image Validation: Check if at least one image remains
+            const activeImages = document.querySelectorAll('.current-image-container:not([style*="display: none"])').length;
+            const newlySelectedImages = Array.from(document.querySelectorAll('.image-input')).filter(input => input.files.length > 0).length;
+            
+            if (activeImages + newlySelectedImages === 0) {
+                document.getElementById('images-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('images-error').style.display = 'none';
+            }
+
             return isValid;
         }
 
-        function setDefaultendDate() {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(today.getDate() + 3);
-
-            const year = tomorrow.getFullYear();
-            let month = (tomorrow.getMonth() + 1).toString().padStart(2, "0");
-            let day = tomorrow.getDate().toString().padStart(2, "0");
-            document.getElementById("expirationDate").value = `${year}-${month}-${day}`;
+        function queueImageDeletion(imageName, index) {
+            Swal.fire({
+                title: "Remove Image?",
+                text: "This image will be marked for deletion. Click 'Update Product' to save changes.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                confirmButtonText: "Yes, remove it"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const slot = document.querySelector(`.image-slot[data-index="${index}"]`);
+                    slot.querySelector('.current-image-container').style.display = 'none';
+                    slot.querySelector('.new-upload-container').style.display = 'block';
+                    
+                    deletedImages.push(imageName);
+                    document.getElementById('deletedImagesInput').value = JSON.stringify(deletedImages);
+                    isDirty = true;
+                    validateFields();
+                }
+            });
         }
-
-
-        // Attach live validation
-        document.querySelectorAll('input, select, textarea').forEach(field => {
-            field.addEventListener('input', validateFields);
-        });
-
-        // Cropper handling for single and multiple images
-
 
         let croppers = {};
 
@@ -345,105 +433,48 @@
                     croppers[index] = new Cropper(preview, {
                         aspectRatio: 1,
                         viewMode: 1,
-                        ready: function () {
-                            this.cropper.crop();
-                        }
                     });
                 };
                 reader.readAsDataURL(input.files[0]);
+                isDirty = true;
+                validateFields();
             }
         }
-
-
-
-
-        function deleteSingleImage(imageName, productId, index) {
-            Swal.fire({
-                title: "delete image",
-                text: "Are you sure you want to delete this image?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, delete it"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: "/admin/deleteImage",
-                        method: "DELETE",
-                        contentType: "application/json",
-                        data: JSON.stringify({
-                            imageNameToServer: imageName,
-                            productIdToServer: productId,
-                            imageIndex: index
-                        }),
-                        success: (response) => {
-                            console.log("Server Response:", response);
-                            if (response.status) {
-                                Swal.fire("Deleted!", "The photo has been removed", "success").then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire("Error", response.message || "Failed to delete photo", "error");
-                            }
-                        },
-                        error: (error) => {
-                            console.error("AJAX Error:", error);
-                            Swal.fire("Error", "An unexpected error occurred", "error");
-                        }
-                    });
-                }
-            });
-        }
-
-
 
         // Form submission handling
         document.getElementById('editProductForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            if (!validateFields()) return;
-
-            let imageMissing = false;
-            for (let i = 0; i < 4; i++) {
-                const input = document.querySelector(`input[name="image${i + 1}"]`);
-                if (input && (!input.files || input.files.length === 0)) {
-                    imageMissing = true;
-                    break;
-                }
-            }
-
-            if (imageMissing) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Images Required',
-                    text: 'Please provide exactly 4 images. Upload images for all empty slots.'
-                });
+            if (!validateFields()) {
+                Swal.fire({ icon: 'error', title: 'Validation Error', text: 'Please check all required fields and images.' });
                 return;
             }
+
+            // Preparations before fetch
             for (let i = 0; i < 4; i++) {
                 if (croppers[i]) {
-                    // Get the cropped canvas as a data URL
                     const croppedDataUrl = croppers[i].getCroppedCanvas().toDataURL('image/jpeg');
-                    // Store the cropped image data in the hidden input
-                    document.getElementById(`croppedImage${i + 1}`).value = croppedDataUrl;
+                    const hiddenInput = document.getElementById(`croppedImage${i + 1}`);
+                    if (hiddenInput) hiddenInput.value = croppedDataUrl;
                 }
             }
 
             const formData = new FormData(this);
 
+            try {
+                const response = await fetch(this.action, { method: 'PUT', body: formData });
+                const data = await response.json();
 
-
-            // Submit form data
-            const response = await fetch(this.action, { method: 'put', body: formData });
-            const data = await response.json();
-
-            Swal.fire({
-                icon: data.success ? 'success' : 'error',
-                title: data.success ? 'Success' : 'Error',
-                text: data.message
-            }).then(() => {
-                if (data.success) window.location.href = '/admin/products';
-            });
+                if (data.success) {
+                    isDirty = false; // Reset flag so we can navigate
+                    Swal.fire({ icon: 'success', title: 'Successful', text: data.message }).then(() => {
+                        window.location.href = '/admin/products';
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                }
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'Submission Failed', text: 'An unexpected error occurred.' });
+            }
         });
     </script>

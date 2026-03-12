@@ -224,9 +224,11 @@ const editProduct = async (req, res) => {
       freshFrozen,
       category,
       status,
+      deletedImages: deletedImagesJSON,
     } = req.body;
 
-    // Check if product with the same name already exists (excluding the current product)
+    const deletedImages = deletedImagesJSON ? JSON.parse(deletedImagesJSON) : [];
+
     const existingProduct = await Product.findOne({
       productName: productName,
       _id: { $ne: id },
@@ -239,23 +241,83 @@ const editProduct = async (req, res) => {
       });
     }
 
-    // Find the product by ID
-    // const product = await Product.findById(id);
-    // if (!product) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     message: "Product not found",
-    //   });
-    // }
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.PRODUCT_NOT_FOUND });
+    }
 
-    // Update product fields
+    // Work with a copy of current images
+    let finalImages = [...product.productImages];
+
+    // 1. Process deletions
+    if (deletedImages.length > 0) {
+      deletedImages.forEach(imageName => {
+        const index = finalImages.indexOf(imageName);
+        if (index > -1) {
+          finalImages[index] = null; // Mark slot as empty
+          // Delete physical file
+          const filePath = path.join(__dirname, "../../public", imageName);
+          if (fs.existsSync(filePath)) {
+            try { fs.unlinkSync(filePath); } catch (err) { console.error(`Failed to delete file: ${filePath}`, err); }
+          }
+        }
+      });
+    }
+
+    // 2. Process new uploads for specific slots
+    for (let i = 1; i <= 4; i++) {
+      const croppedImageData = req.body[`croppedImage${i}`];
+      let newImagePath = null;
+
+      if (croppedImageData && croppedImageData.startsWith('data:image')) {
+        const base64Data = croppedImageData.replace(/^data:image\/\w+;base64,/, '');
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        const filename = `${Date.now()}-slot${i}-${Math.random().toString(36).substring(7)}.webp`;
+        const filepath = path.join(__dirname, "../../public/uploads/product-images", filename);
+
+        await sharp(imageBuffer).webp({ quality: 80 }).toFile(filepath);
+        newImagePath = `uploads/product-images/${filename}`;
+      } else if (req.files && req.files[`image${i}`]) {
+        const file = req.files[`image${i}`][0];
+        const filename = `${Date.now()}-slot${i}-${file.originalname.replace(/\s/g, "")}.webp`;
+        const filepath = path.join(__dirname, "../../public/uploads/product-images", filename);
+
+        await sharp(file.buffer)
+          .resize(800, 800, { fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 80 })
+          .toFile(filepath);
+        newImagePath = `uploads/product-images/${filename}`;
+      }
+
+      if (newImagePath) {
+        // If finalImages has something at this slot AND it wasn't marks as null, we should delete the old one first
+        if (finalImages[i - 1] && finalImages[i - 1] !== null) {
+            const oldPath = path.join(__dirname, "../../public", finalImages[i-1]);
+            if (fs.existsSync(oldPath)) { try { fs.unlinkSync(oldPath); } catch(e){} }
+        }
+        finalImages[i - 1] = newImagePath;
+      }
+    }
+
+    // 3. Compact the array (remove nulls)
+    product.productImages = finalImages.filter(img => img !== null);
+
+    // Final Validation: At least one image must exist
+    if (product.productImages.length === 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "At least one product image is required."
+      });
+    }
+
+    // Update other fields
     const updateFields = {
       productName,
       shortDescription,
       nutritionalInfo,
       weightSize,
       regularPrice,
-      salePrice,
+      salePrice: salePrice || null,
       stock,
       organic,
       expirationDate,
@@ -264,58 +326,6 @@ const editProduct = async (req, res) => {
       category,
       status,
     };
-
-    const product = await Product.findById(id)
-    if (!product) {
-      return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: Messages.PRODUCT_NOT_FOUND })
-    }
-
-    // Handle image updates with cropped data
-    for (let i = 1; i <= 4; i++) {
-      const croppedImageData = req.body[`croppedImage${i}`];
-
-      if (croppedImageData && croppedImageData.startsWith('data:image')) {
-        // Extract base64 data from the data URL
-        const base64Data = croppedImageData.replace(/^data:image\/\w+;base64,/, '');
-        const imageBuffer = Buffer.from(base64Data, 'base64');
-
-        // Generate filename
-        const filename = Date.now() + "-" + `cropped-image-${i}` + ".webp";
-        const filepath = path.join(__dirname, "../../public/uploads/product-images", filename);
-
-        // Save the cropped image
-        await sharp(imageBuffer)
-          .webp({ quality: 80 })
-          .toFile(filepath);
-
-        const imagePath = `uploads/product-images/${filename}`;
-
-        // Update product image array
-        if (product.productImages[i - 1]) {
-          product.productImages[i - 1] = imagePath;
-        } else {
-          product.productImages.push(imagePath);
-        }
-      } else if (req.files && req.files[`image${i}`]) {
-        // Fallback to original file handling if no cropped data
-        const file = req.files[`image${i}`][0];
-        const filename = Date.now() + "-" + file.originalname.replace(/\s/g, "") + ".webp";
-        const filepath = path.join(__dirname, "../../public/uploads/product-images", filename);
-
-        await sharp(file.buffer)
-          .resize(800, 800, { fit: "inside", withoutEnlargement: true })
-          .webp({ quality: 80 })
-          .toFile(filepath);
-
-        const imagePath = `uploads/product-images/${filename}`;
-
-        if (product.productImages[i - 1]) {
-          product.productImages[i - 1] = imagePath;
-        } else {
-          product.productImages.push(imagePath);
-        }
-      }
-    }
 
     Object.assign(product, updateFields);
     await product.save();
