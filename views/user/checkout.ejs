@@ -814,8 +814,8 @@
                             }
                         },
                         prefill: {
-                            name: '<%= user.name %>',
-                            email: '<%= user.email %>'
+                            name: '<%= locals.user ? user.username : "" %>',
+                            email: '<%= locals.user ? user.email : "" %>'
                         }
                     };
 

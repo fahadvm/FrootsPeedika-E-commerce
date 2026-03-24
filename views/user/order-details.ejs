@@ -214,8 +214,9 @@
                                                 </button>
                                                 <% } else if (order.status===STATUS.ORDER.FAILED) { %>
                                                     <button
-                                                        onclick="retryPayment('<%= order._id %>', <%= order.finalAmount %>)"
-                                                        class="btn btn-warning w-100 mt-3">
+                                                        class="btn btn-warning w-100 mt-3 retry-trigger"
+                                                        data-id="<%= order._id %>"
+                                                        data-amount="<%= order.finalAmount %>">
                                                         Retry Payment
                                                     </button>
                                                     <% } else if (order.status===STATUS.ORDER.RETURN_REQUEST ||
@@ -398,6 +399,14 @@
                 }
             }
 
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('retry-trigger')) {
+                    const orderId = e.target.getAttribute('data-id');
+                    const amount = e.target.getAttribute('data-amount');
+                    retryPayment(orderId, amount);
+                }
+            });
+
             async function retryPayment(orderId, amount) {
                 try {
                     const response = await fetch('/razorpay/create-order', {
@@ -435,16 +444,26 @@
                                     window.location.href = '/order-success?id=' + orderId;
                                 });
                             } else {
-                                Swal.fire('Error!', verifyData.message, 'error');
+                                Swal.fire('Error!', verifyData.message, 'error').then(() => {
+                                    window.location.href = '/payment-failed?id=' + orderId;
+                                });
+                            }
+                        },
+                        modal: {
+                            ondismiss: function () {
+                                window.location.href = '/payment-failed?id=' + orderId;
                             }
                         },
                         prefill: {
-                            name: '<%= user.name %>',
-                            email: '<%= user.email %>'
+                            name: '<%= locals.user ? user.username : "" %>',
+                            email: '<%= locals.user ? user.email : "" %>'
                         }
                     };
 
                     const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', function (response) {
+                        window.location.href = '/payment-failed?id=' + orderId;
+                    });
                     rzp.open();
                 } catch (error) {
                     console.error('Error:', error);

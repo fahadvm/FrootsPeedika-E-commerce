@@ -189,7 +189,7 @@
                             <span class="item-status <%= item.status === 'failed' ? 'status-failed' : 'status-paid' %>">
                                 <%= item.status %>
                             </span>
-                            <div class="item-price">₹<%= item.totalPrice.toFixed(2) %></div>
+                            <div class="item-price">₹<%= (item.totalPrice || 0).toFixed(2) %></div>
                             <% if (item.status === 'failed') { %>
                                 <button class="retry-btn-small retry-trigger" 
                                         data-id="<%= item._id %>" 
@@ -259,7 +259,9 @@
                                 window.location.href = '/order-success?id=' + orderId;
                             });
                         } else {
-                            Swal.fire('Error!', verifyData.message, 'error');
+                            Swal.fire('Error!', verifyData.message, 'error').then(() => {
+                                window.location.href = '/payment-failed?id=' + orderId;
+                            });
                         }
                     },
                     modal: {
@@ -268,7 +270,7 @@
                         }
                     },
                     prefill: {
-                        name: '<%= locals.user ? user.name : "" %>',
+                        name: '<%= locals.user ? user.username : "" %>',
                         email: '<%= locals.user ? user.email : "" %>'
                     }
                 };

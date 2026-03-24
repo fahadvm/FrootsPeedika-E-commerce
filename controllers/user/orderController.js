@@ -117,12 +117,15 @@ const placeOrder = async (req, res) => {
             });
 
             orderItems.push({
+                _id: order._id,
                 name: item.productId.productName,
                 price: item.productId.salePrice,
                 quantity: item.quantity,
                 discount: itemDiscount,
                 finalPrice: finalAmount / item.quantity,
-                discountedUnitPrice: discountedSubtotal / item.quantity
+                discountedUnitPrice: discountedSubtotal / item.quantity,
+                totalPrice: finalAmount,
+                status: order.status
             });
 
             totalAmount += finalAmount;
@@ -215,7 +218,7 @@ const placeOrder = async (req, res) => {
                 transactionType: TransactionType.DEBIT,
                 paymentMethod: PaymentMethod.NETBANKING,
                 paymentGateway: paymentMethod,
-                status: TransactionStatus.COMPLETED,
+                status: (paymentStatus === TransactionStatus.FAILED) ? TransactionStatus.FAILED : TransactionStatus.COMPLETED,
                 purpose: 'purchase',
                 description: 'Order Payment',
                 orders: savedOrders.map(order => ({
