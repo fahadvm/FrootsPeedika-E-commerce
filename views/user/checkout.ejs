@@ -671,12 +671,10 @@
 
                             const couponDiv = document.createElement('div');
                             couponDiv.className = `coupon-item ${coupon.isUsed ? 'used-coupon' : ''}`;
-                            couponDiv.className = `coupon-item ${coupon.isUsed ? 'used-coupon' : ''}`;
                             couponDiv.innerHTML = `
-
                         <div class="coupon-code">${coupon.couponCode}</div>
-                        <div class="coupon-description">Minimum Price: ${coupon.minPrice}</div>
-                        <div class="coupon-description">Minimum Price: ${coupon.maxPrice}</div>
+                        <div class="coupon-description">Min Purchase: ₹${coupon.minPrice}</div>
+                        <div class="coupon-description">Max Purchase: ₹${coupon.maxPrice}</div>
                         <div class="coupon-description">Discount: ${coupon.offerPrice}%</div>
                     `;
                             if (!coupon.isUsed) {

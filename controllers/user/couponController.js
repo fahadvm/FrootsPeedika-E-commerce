@@ -56,6 +56,14 @@ const applyCoupon = async (req, res) => {
         const cartItems = cart.items.filter(item => item.productId && !item.productId.isBlocked && item.productId.stock > 0);
         let subTotal = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
+        // Validate min and max price criteria
+        if (subTotal < coupon.minPrice) {
+            return res.json({ success: false, message: `Minimum purchase amount for this coupon is ₹${coupon.minPrice}` });
+        }
+        if (coupon.maxPrice && subTotal > coupon.maxPrice) {
+            return res.json({ success: false, message: `Maximum purchase amount for this coupon is ₹${coupon.maxPrice}` });
+        }
+
         const discountAmount = (subTotal * coupon.offerPrice) / 100;
         let discountedTotal = subTotal - discountAmount;
         let shipping = calculateShipping(subTotal);
