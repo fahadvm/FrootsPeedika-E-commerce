@@ -139,11 +139,15 @@
 ---
 
 ## 📸 Screenshots
+<<<<<<< HEAD
 *(Add your project screenshots here to showcase your beautiful UI!)*
 
 | Home Page | Admin Dashboard |
 |-----------|------------------|
 | ![Home Placeholder](https://via.placeholder.com/400x250?text=Home+Page+Preview) | ![Admin Placeholder](https://via.placeholder.com/400x250?text=Admin+Dashboard+Preview) |
+=======
+
+>>>>>>> ca4a48394b447db71fd64c09def3763e8c9921f7
 
 ---
 
@@ -156,6 +160,7 @@
 ---
 
 ## 🔗 Live Demo
+<<<<<<< HEAD
 [View Live Project](https://froots-peedika.onrender.com) *(Update this if you have a live link)*
 
 ---
@@ -165,3 +170,13 @@ This project is licensed under the ISC License.
 
 ---
 Developed with ❤️ by [Fahad](https://github.com/fahadvm)
+=======
+[View Live Project](https://frootspeedika.fahadvm.xyz/) 
+
+---
+
+
+
+---
+Developed by Fahad VM (https://github.com/fahadvm)
+>>>>>>> ca4a48394b447db71fd64c09def3763e8c9921f7
