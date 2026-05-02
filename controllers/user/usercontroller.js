@@ -87,6 +87,26 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        // --- Demo HR Login Bypass ---
+        if (email === 'demo@example.com' && password === 'password123') {
+            let demoUser = await User.findOne({ email: 'demo@example.com' });
+            if (!demoUser) {
+                const passwordHash = await bcrypt.hash('password123', 10);
+                demoUser = new User({
+                    username: 'Demo HR',
+                    email: 'demo@example.com',
+                    phone: '9999999999',
+                    password: passwordHash,
+                    isVerified: true
+                });
+                await demoUser.save();
+            }
+            req.session.user = demoUser._id;
+            console.log('in login session.user (demo):', req.session.user);
+            return res.redirect('/');
+        }
+        // ----------------------------
+
         const findUser = await User.findOne({ isAdmin: 0, email: email });
 
 

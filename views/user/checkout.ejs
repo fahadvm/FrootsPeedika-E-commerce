@@ -661,14 +661,22 @@
                     const coupons = await response.json();
                     const couponList = document.getElementById('couponList');
                     couponList.innerHTML = '';
+                    const total = document.getElementById('totalAmount').innerText
 
                     if (coupons.length > 0) {
+
                         coupons.forEach(coupon => {
+                            const isValid = total >= coupon.minPrice && total <= coupon.maxPrice;
+                            if (!isValid || coupon.isUsed) return;
+
                             const couponDiv = document.createElement('div');
                             couponDiv.className = `coupon-item ${coupon.isUsed ? 'used-coupon' : ''}`;
+                            couponDiv.className = `coupon-item ${coupon.isUsed ? 'used-coupon' : ''}`;
                             couponDiv.innerHTML = `
+
                         <div class="coupon-code">${coupon.couponCode}</div>
                         <div class="coupon-description">Minimum Price: ${coupon.minPrice}</div>
+                        <div class="coupon-description">Minimum Price: ${coupon.maxPrice}</div>
                         <div class="coupon-description">Discount: ${coupon.offerPrice}%</div>
                     `;
                             if (!coupon.isUsed) {

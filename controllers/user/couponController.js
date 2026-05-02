@@ -18,6 +18,7 @@ const loadcoupon = async (req, res) => {
         const userId = req.session.user;
         const userData = await User.findById(userId);
         const coupons = await Coupon.find({ users: { $nin: [userId] } });
+        console.log("sending all of the coupons")
 
         res.render("user/coupon", {
             coupons,
@@ -32,6 +33,8 @@ const loadcoupon = async (req, res) => {
 
 const applyCoupon = async (req, res) => {
     try {
+
+        console.log('apply coupon working here')
         const { couponCode } = req.body;
         const userId = req.session.user;
 

@@ -15,13 +15,14 @@ const loadCoupon = async (req, res) => {
 
 const createCoupon = async (req, res) => {
   try {
-
+console.log("new coupon testing",req.body)
     const data = {
       couponCode: req.body.couponName,
       createdOn: new Date(req.body.startDate + 'T00:00:00'),
       expireOn: new Date(req.body.endDate + "T00:00:00"),
       offerPrice: parseInt(req.body.offerPrice),
-      minPrice: parseInt(req.body.minimumPrice)
+      minPrice: parseInt(req.body.minimumPrice),
+      maxPrice: parseInt(req.body.maximumPrice)
     }
     const newCoupon = new Coupon({
       couponCode: data.couponCode,
@@ -29,6 +30,7 @@ const createCoupon = async (req, res) => {
       expireOn: data.expireOn,
       offerPrice: data.offerPrice,
       minPrice: data.minPrice,
+      maxPrice: data.maxPrice,
       users: []
     })
 

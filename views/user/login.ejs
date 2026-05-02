@@ -133,6 +133,50 @@
             display: none;
         }
 
+        .demo-login-box {
+            background-color: #f8f9fa;
+            border: 1px dashed #F28123;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .demo-login-box h4 {
+            font-size: 16px;
+            color: #051922;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .demo-login-box p {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .demo-btn {
+            background-color: #051922;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .demo-btn:hover {
+            background-color: #F28123;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .demo-btn i {
+            margin-right: 8px;
+        }
+
         .breadcrumb-bg {
             background-image: url('assets/img/breadcrumb-bg.jpg');
             background-size: cover;
@@ -220,6 +264,15 @@
 
                                 <div class="signup-link">
                                     Don't have an account? <a href="/signup">Sign Up</a>
+                                </div>
+
+                                <!-- Demo HR Login Section -->
+                                <div class="demo-login-box">
+                                    <h4><i class="fas fa-id-badge text-warning mr-2"></i>Recruiter / HR Access</h4>
+                                    <p>Skip registration and explore the platform instantly.</p>
+                                    <button type="button" class="demo-btn" id="demoLoginBtn">
+                                        <i class="fas fa-sign-in-alt"></i> Try Demo Login
+                                    </button>
                                 </div>
                     </div>
                 </div>
@@ -313,6 +366,27 @@
                 if (!isValid) {
                     e.preventDefault();
                 }
+            });
+
+            // Demo Login Logic
+            document.getElementById('demoLoginBtn').addEventListener('click', function() {
+                // Populate demo credentials
+                emailInput.value = 'demo@example.com';
+                passwordInput.value = 'password123';
+                
+                // Clear any validation errors
+                emailError.style.display = 'none';
+                passwordError.style.display = 'none';
+                emailInput.style.borderColor = '#ddd';
+                passwordInput.style.borderColor = '#ddd';
+                
+                // Optional: Add a small visual feedback before submitting
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                
+                // Submit the form after a short delay for visual effect
+                setTimeout(() => {
+                    document.getElementById('mainLoginForm').submit();
+                }, 800);
             });
         });
     </script>
